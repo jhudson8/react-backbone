@@ -5,8 +5,16 @@ backbone-aware mixins for react
 
 Installation
 ==============
-* Browser: include *react-backbone.js/react-backbone.min.js* after [React](http://facebook.github.io/react/), [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies), [Backbone](http://backbonejs.org/) and optionally [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
+* Browser: include *react-backbone.js/react-backbone.min.js* after the listed dependencies
 * CommonJS: ```require('react-backbone');```
+
+Dependencies
+--------------
+* [React](http://facebook.github.io/react/)
+* [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies)
+* [Backbone](http://backbonejs.org/)
+* [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
+
 
 Mixins
 ==============
