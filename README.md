@@ -5,8 +5,8 @@ backbone-aware mixins for react
 
 Installation
 ==============
-* Browser: include *react-backbone.js/react-backbone.min.js* after the listed dependencies
-* CommonJS: ```require('react-backbone');```
+* Browser: include *react-backbone[.min].js* after the listed dependencies
+* CommonJS: ```require('react-backbone')(require('react'));```
 
 Dependencies
 --------------

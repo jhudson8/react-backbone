@@ -1,26 +1,18 @@
 var fs = require('fs'),
     UglifyJS = require('uglify-js');
 
-var version = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf-8'})).version;
+var packageInfo = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf-8'})),
+    name = packageInfo.name,
+    version = packageInfo.version,
+    file = './' + name + '.js',
+    minimizedFile = './' + name + '.min.js',
+    repo = 'https://github.com/jhudson8/' + name,
+    content = fs.readFileSync(file, {encoding: 'utf8'}),
+    versionMatcher = new RegExp(name + ' v[0-9\.]+');
 
-function wrap(wrapperFile, contents) {
-  var wrapper = fs.readFileSync('./lib/' + wrapperFile + '.wrapper', {encoding: 'utf8'});
-  var parts = wrapper.split('{core}');
-  return replaceTokens(parts[0] + contents + parts[1]);
-}
+content = content.replace(versionMatcher, name + ' v' + version);
+fs.writeFileSync(file, content, {encoding: 'utf8'});
 
-function write(outfile, wrapper, contents) {
-  fs.writeFileSync('./' + outfile + '.js', wrap(wrapper, contents), {encoding: 'utf8'});  
-}
-
-function replaceTokens(content) {
-  return content.replace('{version}', version);
-}
-
-var contents = fs.readFileSync('./lib/core.js', {encoding: 'utf8'});
-write('react-backbone', 'browser', contents);
-write('index', 'commonjs', contents);
-
-var minimized = UglifyJS.minify('./react-backbone.js');
-var minimizedHeader = '/*!\n * react-backbone v' + version + ';  MIT license\n */\n';
-fs.writeFileSync('./react-backbone.min.js', minimizedHeader + minimized.code, {encoding: 'utf8'});
+var minimized = UglifyJS.minify(file);
+var minimizedHeader = '/*!\n * [' + name + '](' + repo + ') v' + version + ';  MIT license; Joe Hudson<joehud@gmail.com>\n */\n';
+fs.writeFileSync(minimizedFile, minimizedHeader + minimized.code, {encoding: 'utf8'});

@@ -23,11 +23,11 @@ chai.use(sinonChai);
 Backbone.$ = $;
 
 // intitialize mixin-dependencies
-require('react-mixin-dependencies')(React);
+require('react-mixin-manager')(React);
 // initialize backbone-async-event
 require('backbone-async-event')(Backbone);
 // add react-backbone mixins
-require('../index');
+require('../index')(React);
 
 function newComponent(props, list) {
   var obj = {

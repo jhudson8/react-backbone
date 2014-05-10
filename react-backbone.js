@@ -23,19 +23,16 @@
  */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
-    define(['react', 'backbone'], function(React, Backbone) {
-      main(React, Backbone);
-    });
+    define(['react', 'underscore'], main);
+  } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
+    module.exports = function(React) {
+      main(React, require('underscore'));
+    };
   } else {
-    main(React, Backbone);
+    main(React, _);
   }
 })(
-/**
- * Dependencies
- * - (react-mixin-dependencies)[https://github.com/jhudson8/react-mixin-dependencies]
- * - optional (backbone-async-event)[https://github.com/jhudson8/backbone-async-event]
- */
-function(React, Backbone, _) {
+function(React, _) {
 
   /**
    * Internal model event binding handler

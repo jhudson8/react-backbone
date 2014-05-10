@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "react": "*",
-    "react-mixin-dependencies": "*",
+    "react-mixin-manager": "*",
     "backbone": "*",
     "underscore": "*"
   },
