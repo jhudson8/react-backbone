@@ -10,7 +10,8 @@ Installation
 
 Mixins
 ==============
-The ```React.mixins.get``` function is available from react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies).
+The ```React.mixins.get``` function is available from [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies).
+See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
 
 
 modelAccessor
