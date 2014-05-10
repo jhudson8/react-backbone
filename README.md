@@ -19,6 +19,7 @@ Dependencies
 Mixins
 ==============
 The ```React.mixins.get``` function is available from [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies).
+
 See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
 
 
@@ -72,7 +73,7 @@ var MyComponent = React.createClass({
 myModel.fetch();
 // MyComponent.state.loading is now true
 ```
-Gives any comonent the ability to listen to a specific async event.  When this event is fired, the state attribute "loading" will be set to *true*.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
+Gives any comonent the ability to listen to a specific async event.  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
 
 
 asyncListener
@@ -86,4 +87,4 @@ var MyComponent = React.createClass({
 myModel.fetch();
 // MyComponent.state.loading is now true
 ```
-Gives any comonent the ability to listen to ***all*** async events.  When any async event is fired, the state attribute "loading" will be set to *true*.  state.loading will be set to false when the async event is complete.
+Gives any comonent the ability to listen to ***all*** async events.  When any async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
