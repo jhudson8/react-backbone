@@ -1,0 +1,2 @@
+// commonjs impl for react-mixin-dependencies
+({core})(require('react'), require('backbone'), require('underscore'));

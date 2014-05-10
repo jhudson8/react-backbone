@@ -1,0 +1,31 @@
+{
+  "name": "react-backbone",
+  "version": "0.1.0",
+  "author": "Joe Hudson <joehud@gmail.com>",
+  "description": "backbone-aware mixins for React",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhudson8/react-backbone.git"
+  },
+  "keywords": [
+    "react",
+    "mixin",
+    "backbone"
+  ],
+  "dependencies": {
+    "react": "*",
+    "react-mixin-dependencies": "*",
+    "backbone": "*",
+    "underscore": "*"
+  },
+  "analyze": false,
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*",
+    "sinon": "*",
+    "sinon-chai": "*",
+    "uglify-js": "*",
+    "backbone-async-event": "*"
+  },
+  "license": "MIT"
+}
