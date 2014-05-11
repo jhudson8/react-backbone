@@ -13,13 +13,13 @@
     "backbone"
   ],
   "dependencies": {
-    "react": "*",
-    "react-mixin-manager": "*",
-    "backbone": "*",
     "underscore": "*"
   },
   "analyze": false,
   "devDependencies": {
+    "react-mixin-manager": "*",
+    "react": "*",
+    "backbone": "*",
     "chai": "*",
     "mocha": "*",
     "sinon": "*",
