@@ -11,8 +11,8 @@ Installation
 Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
-* [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies)
 * [Backbone](http://backbonejs.org/)
+* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
 
 
