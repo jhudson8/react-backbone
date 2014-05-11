@@ -18,7 +18,7 @@ Dependencies
 
 Mixins
 ==============
-The ```React.mixins.get``` function is available from [react-mixin-dependencies](https://github.com/jhudson8/react-mixin-dependencies).
+The named mixins exists by including [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
 
 See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
 
@@ -27,7 +27,7 @@ modelAccessor
 --------------
 ```
 React.createClass({
-  mixins: React.mixins.get('modelAccessor')
+  mixins: ['modelAccessor']
 });
 ```
 Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
@@ -37,7 +37,7 @@ modelEventBinder
 --------------
 ```
 React.createClass({
-  mixins: React.mixins.get('modelEventBinder')
+  mixins: ['modelEventBinder']
 });
 ```
 Exposes model event binding functions that will be cleaned up when the component is unmounted and not actually executed until the component
@@ -51,7 +51,7 @@ modelChangeListener
 --------------
 ```
 React.createClass({
-  mixins: React.mixins.get('modelChangeListener')
+  mixins: ['modelChangeListener']
 });
 ```
 Will force a render if the associated model has changed.  The "change" events are for models or collections and include
@@ -67,7 +67,7 @@ loadOn
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: React.mixins.get('loadOn')
+  mixins: ['loadOn']
 });
 <MyComponent model: {myModel}, loadOn: "read"/>
 myModel.fetch();
@@ -81,7 +81,7 @@ asyncListener
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: React.mixins.get('asyncListener')
+  mixins: ['asyncListener']
 });
 <MyComponent model: {myModel}/>
 myModel.fetch();
