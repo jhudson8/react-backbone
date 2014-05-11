@@ -193,11 +193,11 @@ describe('modelChangeListener', function() {
 
 // THE FOLLING TESTS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
 
-describe('loadOn', function() {
+describe('modelLoadOn', function() {
 
   it('should set loading state when an async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('loadOn')),
+        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('modelLoadOn')),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -211,7 +211,7 @@ describe('loadOn', function() {
 
   it('should set loading state when an async event is triggered (error condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('loadOn')),
+        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('modelLoadOn')),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -226,16 +226,16 @@ describe('loadOn', function() {
   });
 
   it('should not error if no "loadOn" property is defined', function() {
-    newComponent({model: new Backbone.Model()}, React.mixins.get('loadOn'));
+    newComponent({model: new Backbone.Model()}, React.mixins.get('modelLoadOn'));
     // we are just looking for an error thrown in getInitialState
   });
 });
 
-describe('asyncListener', function() {
+describe('modelAsyncListener', function() {
 
   it('should set loading state when *any* async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('asyncListener')),
+        obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -259,7 +259,7 @@ describe('asyncListener', function() {
   it('should set loading state if the model is loading when set on the component', function() {
     var model = new Model();
     model.fetch();
-    var obj = newComponent({model: model}, React.mixins.get('asyncListener')),
+    var obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -271,7 +271,7 @@ describe('asyncListener', function() {
 
   it('should set loading state if the model is loading after being set but before mounting', function() {
     var model = new Model(),
-        obj = newComponent({model: model}, React.mixins.get('asyncListener')),
+        obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
         spy = sinon.spy();
     obj.setState = spy;
     model.fetch();

@@ -62,12 +62,12 @@ Will force a render if the associated model has changed.  The "change" events ar
 * sort
 
 
-loadOn
+modelLoadOn
 --------------
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: ['loadOn']
+  mixins: ['modelLoadOn']
 });
 <MyComponent model: {myModel}, loadOn: "read"/>
 myModel.fetch();
@@ -76,12 +76,12 @@ myModel.fetch();
 Gives any comonent the ability to listen to a specific async event.  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
 
 
-asyncListener
+modelAsyncListener
 --------------
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: ['asyncListener']
+  mixins: ['modelAsyncListener']
 });
 <MyComponent model: {myModel}/>
 myModel.fetch();

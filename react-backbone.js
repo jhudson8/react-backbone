@@ -31,8 +31,7 @@
   } else {
     main(React, _);
   }
-})(
-function(React, _) {
+})(function(React, _) {
 
   /**
    * Internal model event binding handler
@@ -154,28 +153,11 @@ function(React, _) {
   // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
 
   /**
-   * Gives any comonent the ability to mark the "loading" attribute in the state as true
-   * when any async event of the given type (defined by the "key" property) occurs.
-   */
-  React.mixins.add('loadOn', {
-    getInitialState: function() {
-      var key = this.props.loadOn;
-      this.modelOn('async:' + key, function(events) {
-        this.setState({loading: true});
-        events.on('complete', function() {
-          this.setState({loading: false});
-        }, this);
-      });
-      return {};
-    }
-  }, 'modelEventBinder');
-
-  /**
    * If the model executes *any* asynchronous activity, the internal state "loading" attribute
    * will be set to true and, if an error occurs with loading, the "error" state attribute
    * will be set with the error contents
    */
-  React.mixins.add('asyncListener', {
+  React.mixins.add('modelAsyncListener', {
     getInitialState: function() {
       this.modelOn('async', function(eventName, events) {
         this.setState({loading: true});
@@ -215,5 +197,21 @@ function(React, _) {
       }
     }
   }, 'modelEventBinder');
-}
-);
+
+  /**
+   * Gives any comonent the ability to mark the "loading" attribute in the state as true
+   * when any async event of the given type (defined by the "key" property) occurs.
+   */
+  React.mixins.add('modelLoadOn', {
+    getInitialState: function() {
+      var key = this.props.loadOn;
+      this.modelOn('async:' + key, function(events) {
+        this.setState({loading: true});
+        events.on('complete', function() {
+          this.setState({loading: false});
+        }, this);
+      });
+      return {};
+    }
+  }, 'modelEventBinder');
+});
