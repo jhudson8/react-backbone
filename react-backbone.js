@@ -1,5 +1,5 @@
 /*!
- * react-mixin-dependencies v0.1.1
+ * react-mixin-dependencies v0.1.2
  * 
  * Copyright (c) 2014 Joe Hudson
  * 
