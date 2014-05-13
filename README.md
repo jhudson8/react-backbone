@@ -33,10 +33,24 @@ React.createClass({
 Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
 
 
-modelEventBinder
+modelValueAccessor
 --------------
 ```
 React.createClass({
+  mixins: ['modelValueAccessor']
+});
+...
+<MyClass ref="myClass" model={model} key="foo"/>
+...
+this.refs.myClass.setModelValue('some value');
+```
+Simple mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` property to get the model key;
+
+
+modelEventBinder
+--------------
+```
+var MyClass React.createClass({
   mixins: ['modelEventBinder']
 });
 ```

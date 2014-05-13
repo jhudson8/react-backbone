@@ -86,7 +86,17 @@ describe('modelAccessor', function() {
     obj.setModel(model2);
     expect(obj.getModel()).to.eql(model2);    
   });
+});
 
+describe('modelValueAccessor', function() {
+
+  it('should get and set the model value', function() {
+    var model = new Backbone.Model({foo: 'bar'}),
+        obj = newComponent({model: model, key: 'foo'}, React.mixins.get('modelValueAccessor'));
+    expect(obj.getModelValue()).to.eql('bar');
+    obj.setModelValue('baz');
+    expect(model.get('foo')).to.eql('baz');
+  });
 });
 
 describe('modelEventBinder', function() {

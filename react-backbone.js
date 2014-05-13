@@ -72,6 +72,31 @@
   });
 
   /**
+   * Simple overrideable mixin to get/set model values.  While this is trivial to do
+   * it allows 3rd party to work with stubs which this can override.  It was designed
+   * with https://github.com/jhudson8/react-semantic-ui in mind to be backbone model
+   * friendly without actually depending on backbone models.  The model key is set
+   * using the "key" property.
+   */  
+  React.mixins.add('modelValueAccessor', {
+    getModelValue: function() {
+      var key = this.props.key,
+          model = this.getModel();
+      if (model && key) {
+        return model.get(key);
+      }
+    },
+
+    setModelValue: function(value, options) {
+      var key = this.props.key,
+          model = this.getModel();
+      if (model && key) {
+        return model.set(key, value, options);
+      }
+    }
+  }, 'modelAccessor');
+
+  /**
    * Exposes model binding registration functions that will
    * be cleaned up when the component is unmounted and not actually registered
    * until the component is mounted.  The context will be "this" if not provided.
