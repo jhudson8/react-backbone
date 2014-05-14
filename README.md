@@ -1,7 +1,9 @@
 react-backbone
 ==============
+***Problem:*** [React](http://facebook.github.io/react/) components are unaware of [Backbone](http://backbonejs.org/) models by default which cause some to try to embed [React](http://facebook.github.io/react/) components inside a Backbone.View.
 
-backbone-aware mixins for react
+***Solution:*** [React](http://facebook.github.io/react/) components should completely replace Backbone.View.  By providing some simple mixins, [React](http://facebook.github.io/react/) components can become model-aware and provide as much or more integration expected with a Backbone.View.
+
 
 Installation
 ==============
