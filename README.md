@@ -56,9 +56,9 @@ var MyClass React.createClass({
 ```
 Exposes model event binding functions that will be cleaned up when the component is unmounted and not actually executed until the component
 is mounted.
-* modelOn(eventName, callback[, context]);  similar to model.on.  the "context" used if not provided is the React component.
-* modelOnce(eventName, callback[, context]);  similar to model.once.  the "context" used if not provided is the React component.
-* modelOff(eventName, callback[, context]);  similar to model.off.  the "context" used if not provided is the React component.
+* ```modelOn(eventName, callback[, context])```;  similar to model.on.  the "context" used if not provided is the React component.
+* ```modelOnce(eventName, callback[, context])```;  similar to model.once.  the "context" used if not provided is the React component.
+* ```modelOff(eventName, callback[, context])```;  similar to model.off.  the "context" used if not provided is the React component.
 
 
 modelChangeListener
