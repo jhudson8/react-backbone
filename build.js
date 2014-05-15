@@ -14,5 +14,5 @@ content = content.replace(versionMatcher, name + ' v' + version);
 fs.writeFileSync(file, content, {encoding: 'utf8'});
 
 var minimized = UglifyJS.minify(file);
-var minimizedHeader = '/*!\n * [' + name + '](' + repo + ') v' + version + ';  MIT license; Joe Hudson<joehud@gmail.com>\n */\n';
+var minimizedHeader = '/*!\n * [' + name + '](' + repo + ') v' + version + ';  MIT license; Joe Hudson<joehud_AT_gmail.com>\n */\n';
 fs.writeFileSync(minimizedFile, minimizedHeader + minimized.code, {encoding: 'utf8'});
