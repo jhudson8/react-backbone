@@ -85,7 +85,7 @@ modelLoadOn
 var MyComponent = React.createClass({
   mixins: ['modelLoadOn']
 });
-<MyComponent model: {myModel}, loadOn: "read"/>
+<MyComponent model={myModel}, loadOn: "read"/>
 myModel.fetch();
 // MyComponent.state.loading is now true
 ```
@@ -99,7 +99,7 @@ modelAsyncListener
 var MyComponent = React.createClass({
   mixins: ['modelAsyncListener']
 });
-<MyComponent model: {myModel}/>
+<MyComponent model={myModel}/>
 myModel.fetch();
 // MyComponent.state.loading is now true
 ```
