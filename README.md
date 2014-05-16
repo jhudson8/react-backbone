@@ -31,6 +31,11 @@ modelAccessor
 React.createClass({
   mixins: ['modelAccessor']
 });
+...
+<MyClass ref="myClass" model={model} key="foo"/>
+...
+var model = this.refs.myClass.getModel();
+```
 ```
 Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
 
@@ -53,7 +58,12 @@ modelEventBinder
 --------------
 ```
 var MyClass React.createClass({
-  mixins: ['modelEventBinder']
+  mixins: ['modelEventBinder'],
+  getInitialState: function() {
+    this.modelOn('change', this.onChange);
+    return null;
+  },
+  onChange: function() { ... }
 });
 ```
 Exposes model event binding functions that will be cleaned up when the component is unmounted and not actually executed until the component
@@ -62,6 +72,16 @@ is mounted.
 * ```modelOnce(eventName, callback[, context])```;  similar to model.once.  the "context" used if not provided is the React component.
 * ```modelOff(eventName, callback[, context])```;  similar to model.off.  the "context" used if not provided is the React component.
 
+By including [react-events](https://github.com/jhudson8/react-events) you can have cleaner bindings like the following:
+```
+React.createClass({
+  mixins: ['events'],
+  events: {
+    'model:change': 'onChange'
+  },
+  onChange: function() { ... }
+});
+```
 
 modelChangeListener
 --------------
