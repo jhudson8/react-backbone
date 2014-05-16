@@ -36,7 +36,6 @@ React.createClass({
 ...
 var model = this.refs.myClass.getModel();
 ```
-```
 Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
 
 
