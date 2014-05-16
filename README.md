@@ -16,6 +16,7 @@ Dependencies
 * [Backbone](http://backbonejs.org/)
 * [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
+* [react-events](https://github.com/jhudson8/react-events) (optional)
 
 
 Mixins
