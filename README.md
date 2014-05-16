@@ -74,7 +74,7 @@ is mounted.
 By including [react-events](https://github.com/jhudson8/react-events) you can have cleaner bindings like the following:
 ```
 React.createClass({
-  mixins: ['events'],
+  mixins: ['events', 'modelEventBinder'],
   events: {
     'model:change': 'onChange'
   },
