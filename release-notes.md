@@ -2,7 +2,20 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.1.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.2.0...master)
+
+## v0.2.0 - May 18th, 2014
+- integrate nicely with https://github.com/jhudson8/react-events add "events" handler for "model:eventName" - a2a5105
+- add modelUpdateOn mixing - 59f1c78
+- add modelIndexErrors mixin - bf689c3
+- add modelFieldValidator mixin - e40b239
+- allow the loadOn attribute (for modelLoadOn mixing) to be either a string or an array of strings - 5588e49
+- bug fix: only modify state if mounted - 717a8d1
+- required Backbone to be provided with commonJS - ce05ffd
+- fix author email address - 19f7a52
+- add modelValueAccessor mixin - 8a1c630
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.1.2...v0.2.0)
 
 ## v0.1.2 - May 10th, 2014
 - change mixin names to ensure all begin with "model" for consistency - 1e9b978

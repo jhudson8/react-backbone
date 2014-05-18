@@ -1,5 +1,5 @@
 /*!
- * react-backbone v0.1.2
+ * react-backbone v0.2.0
  * https://github.com/jhudson8/react-backbone
  * 
  * Copyright (c) 2014 Joe Hudson<joehud_AT_gmail.com>
