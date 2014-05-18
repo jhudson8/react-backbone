@@ -27,7 +27,7 @@ require('react-mixin-manager')(React);
 // initialize backbone-async-event
 require('backbone-async-event')(Backbone);
 // add react-backbone mixins
-require('../index')(React);
+require('../index')(React, Backbone);
 
 function newComponent(props, list) {
   var obj = {

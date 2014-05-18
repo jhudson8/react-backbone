@@ -24,15 +24,15 @@
  */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
-    define(['react', 'underscore'], main);
+    define(['react', 'backbone', 'underscore'], main);
   } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
-    module.exports = function(React) {
-      main(React, require('underscore'));
+    module.exports = function(React, Backbone) {
+      main(React, Backbone, require('underscore'));
     };
   } else {
-    main(React, _);
+    main(React, Backbone, _);
   }
-})(function(React, _) {
+})(function(React, Backbone, _) {
 
   /**
    * Internal model event binding handler
