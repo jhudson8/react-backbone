@@ -255,6 +255,28 @@
   }, 'modelEventBinder');
 
   /**
+   * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
+   * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
+   * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
+   */
+  React.mixins.add('modelFieldValidator', {
+    getInitialState: function() {
+      var key = this.props.key;
+      if (key) {
+        this.modelOn('invalid', function(model, errors) {
+          errors = this.modelIndexErrors(errors) || {};
+          var message = errors[key];
+          if (message) {
+            this.setState({
+              error: message
+            });
+          }
+        });
+      }
+      return null;
+    }
+  }, 'modelIndexErrors', 'modelEventBinder');
+
    * Gives any comonent the ability to mark the "loading" attribute in the state as true
    * when any async event of the given type (defined by the "key" property) occurs.
    */

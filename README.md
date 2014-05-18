@@ -83,6 +83,39 @@ React.createClass({
 });
 ```
 
+modelFieldValidator
+--------------
+```
+var MyClass React.createClass({
+  mixins: ['modelFieldValidator'],
+  render: function() {
+    var error = this.state && this.state.error;
+    if (error) {
+      return 'Error: ' + error;
+    } else {
+      return 'No error';
+    }
+  }
+});
+...
+<MyClass model={model} key="firstName"/>
+...
+// this would normally be triggered on validation - this is just for example purposes
+model.trigger('invalid', model, {fistName: 'Invalid first name'});
+```
+Using the ```key``` property, bind to the model and look for ```invalid``` events.  If an ```invalid``` event is triggered, set the ```error``` state to the field error message.  Replace the ```modelIndexErrors``` mixin to override the current error indexing behavior.
+
+The default error list format is expected to be
+```{ field1Key: errorMessage, field2Key: errorMessage, ... } ```
+or
+```[{ field1Key: errorMessage}, {field2Key: errorMessage}, ... ]```
+
+
+modelIndexErrors
+--------------
+Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
+
+
 modelChangeListener
 --------------
 ```
