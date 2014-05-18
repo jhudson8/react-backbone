@@ -34,6 +34,32 @@
   }
 })(function(React, Backbone, _) {
 
+  function eventParser(src) {
+    if (!src) {
+      return;
+    }
+    if (_.isArray(src)) {
+      return src;
+    }
+    return [src];
+  }
+
+
+  function modelEventHandler(identifier, context, eventFormat, callback) {
+    var keys = eventParser(context.props[identifier]),
+        key, eventName;
+    if (keys) {
+      // register the event handlers to watch for these events
+      for (var i=0; i<keys.length; i++) {
+        key = keys[i];
+        eventName = eventFormat.replace('{key}', key);
+        context.modelOn(eventName, _.bind(callback, context), this);
+      }
+      return keys;
+    }
+  }
+
+
   /**
    * Internal model event binding handler
    */
@@ -234,14 +260,37 @@
    */
   React.mixins.add('modelLoadOn', {
     getInitialState: function() {
-      var key = this.props.loadOn;
-      this.modelOn('async:' + key, function(events) {
+      var keys = modelEventHandler('loadOn', this, 'async:{key}', function(events) {
         this.setState({loading: true});
         events.on('complete', function() {
           this.setState({loading: false});
         }, this);
       });
-      return {};
+
+      // see if we are currently loading something
+      var model = this.getModel();
+      if (model) {
+        var currentLoads = model.isLoading(),
+            key;
+        if (currentLoads) {
+          for (var i=0; i<currentLoads.length; i++) {
+            var keyIndex = keys.indexOf(currentLoads[i].method);
+            if (keyIndex >= 0) {
+              // there is currently an async event for this key
+              key = keys[keyIndex];
+              currentLoads[i].on('complete', function() {
+                if (this.isMounted()) {
+                  this.setState({loading: false});
+                }
+              }, this);
+              return {loading: true};
+            }
+          }
+        }
+      }
+      return null;
+    }
+  }, 'modelEventBinder');
     }
   }, 'modelEventBinder');
 });
