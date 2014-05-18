@@ -277,6 +277,30 @@
     }
   }, 'modelIndexErrors', 'modelEventBinder');
 
+  /**
+   * Expose an indexModelErrors method which returns model validation errors in a standard format.
+   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
+   * 
+   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
+   */
+  React.mixins.add('modelIndexErrors', {
+    modelIndexErrors: function(errors) {
+      if (Array.isArray(errors)) {
+        var rtn = {};
+        _.each(errors, function(data) {
+          var key, message;
+          for (var name in data) {
+            rtn[name] = data[name];
+          }
+        });
+        return rtn;
+      } else {
+        return errors;
+      }
+    }
+  });
+
+  /**
    * Gives any comonent the ability to mark the "loading" attribute in the state as true
    * when any async event of the given type (defined by the "key" property) occurs.
    */
