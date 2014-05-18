@@ -348,4 +348,28 @@
       });
     }
   }, 'modelEventBinder');
+
+  // if [react-events](https://github.com/jhudson8/react-events) is included, set Backbone.Events as the default Events mixin
+  if (React.events) {
+    React.events.mixin = React.events.mixin || Backbone.Events;
+
+    /**
+     * Support the "model:{event name}" event, for example:
+     * events {
+     *   'model:something-happened': 'onSomethingHappened'
+     * }
+     * ...
+     * onSomethingHappened: function() { ... }
+     * 
+     * When using these model events, you *must* include the "modelEventBinder" mixin
+     */
+    React.events.handle('model', function(options, callback) {
+      return {
+        on: function() {
+          this.modelOn(options.path, callback);
+        },
+        off: function() { /* NOP, modelOn will clean up */ }
+      };
+    });
+  }
 });

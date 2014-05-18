@@ -8,15 +8,15 @@ react-backbone
 Installation
 ==============
 * Browser: include *react-backbone[.min].js* after the listed dependencies
-* CommonJS: ```require('react-backbone')(require('react'));```
+* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
 
 Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
-* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager)
+* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.3.0)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
-* [react-events](https://github.com/jhudson8/react-events) (optional)
+* [react-events](https://github.com/jhudson8/react-events) (>= 0.2.0 optional)
 
 
 Mixins
@@ -72,7 +72,7 @@ is mounted.
 * ```modelOnce(eventName, callback[, context])```;  similar to model.once.  the "context" used if not provided is the React component.
 * ```modelOff(eventName, callback[, context])```;  similar to model.off.  the "context" used if not provided is the React component.
 
-By including [react-events](https://github.com/jhudson8/react-events) you can have cleaner bindings like the following:
+***By including [react-events](https://github.com/jhudson8/react-events) you can use declarative bindings like the following:***
 ```
 React.createClass({
   mixins: ['events', 'modelEventBinder'],
@@ -155,7 +155,7 @@ var MyComponent = React.createClass({
 myModel.fetch();
 // MyComponent.state.loading is now true
 ```
-Gives any comonent the ability to listen to a specific async event.  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
+Gives any comonent the ability to listen to a specific async event (or array of events).  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
 
 
 modelAsyncListener
