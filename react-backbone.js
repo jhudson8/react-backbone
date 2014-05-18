@@ -190,10 +190,14 @@
 
         var model = this.getModel();
         events.on('success', function() {
-          this.setState({loading: !!model.isLoading()});
+          if (this.isMounted()) {
+            this.setState({loading: !!model.isLoading()});
+          }
         }, this);
         events.on('error', function(error) {
-          this.setState({loading: !!model.isLoading(), error: error});
+          if (this.isMounted()) {
+            this.setState({loading: !!model.isLoading(), error: error});
+          }
         }, this);
       });
 
