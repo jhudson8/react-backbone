@@ -22,16 +22,22 @@ var chai = require('chai'),
 chai.use(sinonChai);
 Backbone.$ = $;
 
-// intitialize mixin-dependencies
+// intitialize dependencies
 require('react-mixin-manager')(React);
-// initialize backbone-async-event
 require('backbone-async-event')(Backbone);
+require('react-events')(React);
 // add react-backbone mixins
 require('../index')(React, Backbone);
 
-function newComponent(props, list) {
+function newComponent(attributes, mixins) {
+
+  if (mixins) {
+    mixins = React.mixins.get(mixins);
+  } else {
+    mixins = [];
+  }
+
   var obj = {
-    props: props || {},
     mount: function() {
       this._mounted = true;
       this.trigger('componentWillMount');
@@ -46,22 +52,28 @@ function newComponent(props, list) {
     isMounted: function() { return this._mounted; },
     trigger: function(method) {
       var rtn = [];
-      for (var i=0; i<list.length; i++) {
-        var func = list[i][method];
+      for (var i=0; i<mixins.length; i++) {
+        var func = mixins[i][method];
         if (func) {
           rtn.push(func.apply(this, Array.prototype.slice.call(arguments, 1)));
         }
       }
       return rtn;
     }
-  }
-  var state, aggregateState;
-  for (var i=0; i<list.length; i++) {
-    var mixin = list[i];
-    for (var name in mixin) {
-      obj[name] = mixin[name];
+  };
+  if (attributes) {
+    for (var name in attributes) {
+      obj[name] = attributes[name];
     }
-    state = obj.getInitialState && obj.getInitialState();
+  }
+
+  var state, aggregateState;
+
+  for (var i=0; i<mixins.length; i++) {
+    var mixin = mixins[i];
+    _.defaults(obj, mixin);
+//    console.log('MIXIN INITIAL STATE: ' + mixin.getInitialState);
+    state = mixin.getInitialState && mixin.getInitialState.call(obj);
     if (state) {
       if (!aggregateState) aggregateState = {};
       _.defaults(aggregateState, state);
@@ -79,7 +91,7 @@ describe('modelAccessor', function() {
 
   it('should get and set the model', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelAccessor'));
+        obj = newComponent({props: {model: model}}, ['modelAccessor']);
     expect(obj.getModel()).to.eql(model);
 
     var model2 = new Backbone.Model();
@@ -92,7 +104,7 @@ describe('modelValueAccessor', function() {
 
   it('should get and set the model value', function() {
     var model = new Backbone.Model({foo: 'bar'}),
-        obj = newComponent({model: model, key: 'foo'}, React.mixins.get('modelValueAccessor'));
+        obj = newComponent({props: {model: model, key: 'foo'}}, ['modelValueAccessor']);
     expect(obj.getModelValue()).to.eql('bar');
     obj.setModelValue('baz');
     expect(model.get('foo')).to.eql('baz');
@@ -103,7 +115,7 @@ describe('modelEventBinder', function() {
 
   it('should not do event binding until node is mounted', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelEventBinder'));
+        obj = newComponent({props: {model: model}}, ['modelEventBinder']);
         spy = sinon.spy();
     obj.modelOn('foo', spy);
     model.trigger('foo');
@@ -130,7 +142,7 @@ describe('modelEventBinder', function() {
 
   it('should bind if model does not exist when registered', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelEventBinder')),
+        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
         spy = sinon.spy();
 
     // setting model before mounting
@@ -147,7 +159,7 @@ describe('modelEventBinder', function() {
 
   it('should bind if component has already been mounted when setting model', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelEventBinder')),
+        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
         spy = sinon.spy();
 
     obj.modelOn('foo', spy);
@@ -160,7 +172,7 @@ describe('modelEventBinder', function() {
   it('should unbind a previous model and rebind to a new model', function() {
     var model1 = new Backbone.Model(),
         model2 = new Backbone.Model(),
-        obj = newComponent({model: model1}, React.mixins.get('modelEventBinder')),
+        obj = newComponent({props: {model: model1}}, ['modelEventBinder']),
         spy = sinon.spy();
 
     obj.modelOn('foo', spy);
@@ -181,7 +193,7 @@ describe('modelChangeListener', function() {
 
   it('should listen to all events and force an update', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelChangeListener')),
+        obj = newComponent({props: {model: model}}, ['modelChangeListener']),
         spy = sinon.spy();
     obj.forceUpdate = spy;
     
@@ -207,7 +219,7 @@ describe('modelLoadOn', function() {
 
   it('should set loading state when an async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('modelLoadOn')),
+        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -221,7 +233,7 @@ describe('modelLoadOn', function() {
 
   it('should set loading state when an async event is triggered (error condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model, loadOn: 'foo'}, React.mixins.get('modelLoadOn')),
+        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -236,7 +248,7 @@ describe('modelLoadOn', function() {
   });
 
   it('should not error if no "loadOn" property is defined', function() {
-    newComponent({model: new Backbone.Model()}, React.mixins.get('modelLoadOn'));
+    newComponent({props: {model: new Backbone.Model()}}, ['modelLoadOn']);
     // we are just looking for an error thrown in getInitialState
   });
 });
@@ -245,7 +257,7 @@ describe('modelAsyncListener', function() {
 
   it('should set loading state when *any* async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
+        obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -269,7 +281,7 @@ describe('modelAsyncListener', function() {
   it('should set loading state if the model is loading when set on the component', function() {
     var model = new Model();
     model.fetch();
-    var obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
+    var obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -281,7 +293,7 @@ describe('modelAsyncListener', function() {
 
   it('should set loading state if the model is loading after being set but before mounting', function() {
     var model = new Model(),
-        obj = newComponent({model: model}, React.mixins.get('modelAsyncListener')),
+        obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
         spy = sinon.spy();
     obj.setState = spy;
     model.fetch();
@@ -293,5 +305,31 @@ describe('modelAsyncListener', function() {
     expect(spy.callCount).to.eql(2);
     expect(spy.getCall(1).args).to.eql([{loading: false}]);
   });
+});
 
+describe('react-events integration', function() {
+  it('should include events mixin *and* Backbone.Events for on/off/trigger mixin', function() {
+    var mixins = React.mixins.get('events');
+    expect(mixins.length).to.eql(2);
+  });
+  it('set React.events.mixin to Backbone.Events', function() {
+    expect(React.events.mixin).to.eql(Backbone.Events);
+    var obj = newComponent({}, ['events', 'modelEventBinder']);
+    expect(!!obj.on).to.eql(true);
+    expect(!!obj.off).to.eql(true);
+  });
+  it('should do model binding', function() {
+    var model = new Model(),
+        spy = sinon.spy(),
+        obj = newComponent({
+          props: {model: model},
+          events: {
+            'model:change': 'onChange'
+          },
+          onChange: spy
+        }, ['events', 'modelEventBinder']);
+    obj.mount();
+    model.set({foo: 'bar'});
+    expect(spy.callCount).to.eql(1);
+  });
 });

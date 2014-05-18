@@ -24,7 +24,8 @@
     "sinon": "*",
     "sinon-chai": "*",
     "uglify-js": "*",
-    "backbone-async-event": "*"
+    "backbone-async-event": "*",
+    "react-events": "*"
   },
   "license": "MIT"
 }
