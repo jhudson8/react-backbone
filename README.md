@@ -131,6 +131,19 @@ Will force a render if the associated model has changed.  The "change" events ar
 * sort
 
 
+modelUpdateOn
+--------------
+```
+var MyComponent = React.createClass({
+  mixins: ['modelUpdateOn']
+});
+<MyComponent model={myModel}, updateOn: "change:something"/>
+myModel.set({something: 'foo'})
+// MyComponent will be updated
+```
+Gives any comonent the ability to listen to a specific event (or array of events).  When this event is fired, the component will be force updated.
+
+
 modelLoadOn
 --------------
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*

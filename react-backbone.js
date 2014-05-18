@@ -337,6 +337,15 @@
       return null;
     }
   }, 'modelEventBinder');
+
+  /**
+   * Gives any comonent the ability to force an update when an event is fired
+   */
+  React.mixins.add('modelUpdateOn', {
+    getInitialState: function() {
+      var keys = modelEventHandler('updateOn', this, '{key}', function() {
+        this.forceUpdate();
+      });
     }
   }, 'modelEventBinder');
 });
