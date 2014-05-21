@@ -342,16 +342,17 @@
         var currentLoads = model.isLoading(),
             key;
         if (currentLoads) {
+          var clearLoading = function() {
+            if (this.isMounted()) {
+              this.setState({loading: false});
+            }
+          }
           for (var i=0; i<currentLoads.length; i++) {
             var keyIndex = keys.indexOf(currentLoads[i].method);
             if (keyIndex >= 0) {
               // there is currently an async event for this key
               key = keys[keyIndex];
-              currentLoads[i].on('complete', function() {
-                if (this.isMounted()) {
-                  this.setState({loading: false});
-                }
-              }, this);
+              currentLoads[i].on('complete', clearLoading, this);
               return {loading: true};
             }
           }
