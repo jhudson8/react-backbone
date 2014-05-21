@@ -365,6 +365,15 @@
       var keys = modelEventHandler('updateOn', this, '{key}', function() {
         this.forceUpdate();
       });
+    },
+
+    updateOnModelEvent: function(/* events */) {
+      function doUpdate() {
+        this.forceUpdate();
+      }
+      _.each(arguments, function(event) {
+        this.modelOn(event, doUpdate);
+      }, this);
     }
   }, 'modelEventBinder');
 
