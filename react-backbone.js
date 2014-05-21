@@ -65,10 +65,18 @@
    */
   function onEvent(type, eventName, callback, context) {
     context = context || this;
-    if (!this.__modelEvents) {
-      this.__modelEvents = {};
+    var modelEvents, eventsParent = this;
+    if (this.state) {
+      modelEvents = this.state.__modelEvents;
+      eventsParent = this.state;
+    } else {
+      modelEvents = this.__modelEvents;
     }
-    this.__modelEvents[eventName] = {type: type, callback: callback, context: context};
+    if (!modelEvents) {
+      // don't call setState because this should not trigger a render
+      modelEvents = eventsParent.__modelEvents = {};
+    }
+    modelEvents[eventName] = {type: type, callback: callback, context: context};
     if (this.isMounted()) {
       var model = this.getModel();
       if (model) {
@@ -140,13 +148,14 @@
     },
 
     modelOff: function (eventName, callback, context) {
-      if (this.__modelEvents) {
-        var data = this.__modelEvents[eventName],
+      var modelEvents = this.state.__modelEvents;
+      if (modelEvents) {
+        var data = modelEvents[eventName],
             model = this.getModel();
         if (model && data) {
           model.off(eventName, callback, context || this);
         } else if (data) {
-          delete this.__modelEvents[eventName];
+          delete modelEvents[eventName];
         }
       }
     },
@@ -165,15 +174,16 @@
 
     // unbind all registered events from the model
     _modelUnbindAll: function(keepRegisteredEvents) {
-      if (this.__modelEvents) {
+      var modelEvents = this.state.__modelEvents;
+      if (modelEvents) {
         var model = this.getModel();
         if (model) {
-          _.each(this.__modelEvents, function(data, eventName) {
+          _.each(modelEvents, function(data, eventName) {
             model.off(eventName, data.callback, data.context);
           });
         }
         if (!keepRegisteredEvents) {
-          delete this.__modelEvents;
+          delete this.state.__modelEvents;
         }
       }
     },
