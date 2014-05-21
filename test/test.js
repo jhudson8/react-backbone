@@ -1,3 +1,5 @@
+/* global, describe, it */
+
 var chai = require('chai'),
     sinon = require('sinon'),
     sinonChai = require('sinon-chai'),
@@ -38,6 +40,10 @@ function newComponent(attributes, mixins) {
   }
 
   var obj = {
+    setProps: function(props) {
+      this.props = this.props || {};
+      _.extend(this.props, props);
+    },
     mount: function() {
       this._mounted = true;
       this.trigger('componentWillMount');
@@ -72,10 +78,11 @@ function newComponent(attributes, mixins) {
   for (var i=0; i<mixins.length; i++) {
     var mixin = mixins[i];
     _.defaults(obj, mixin);
-//    console.log('MIXIN INITIAL STATE: ' + mixin.getInitialState);
     state = mixin.getInitialState && mixin.getInitialState.call(obj);
     if (state) {
-      if (!aggregateState) aggregateState = {};
+      if (!aggregateState) {
+        aggregateState = {};
+      }
       _.defaults(aggregateState, state);
     }
   }
@@ -115,7 +122,7 @@ describe('modelEventBinder', function() {
 
   it('should not do event binding until node is mounted', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelEventBinder']);
+        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
         spy = sinon.spy();
     obj.modelOn('foo', spy);
     model.trigger('foo');
