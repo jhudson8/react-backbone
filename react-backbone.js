@@ -91,14 +91,14 @@
    */  
   React.mixins.add('modelAccessor', {
     getModel: function() {
-      return this.model || this.props.model;
+      return this.props.model;
     },
 
     setModel: function(model) {
       if (this._modelUnbindAll) {
         this._modelUnbindAll(true);
       }
-      this.model = model;
+      this.setProps({model: model});
       if (this._modelBindAll && this.isMounted()) {
         // bind all events if using modelEventBinder
         this._modelBindAll();
