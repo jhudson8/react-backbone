@@ -89,7 +89,7 @@ modelFieldValidator
 var MyClass React.createClass({
   mixins: ['modelFieldValidator'],
   render: function() {
-    var error = this.state && this.state.error;
+    var error = this.state.error;
     if (error) {
       return 'Error: ' + error;
     } else {
@@ -143,13 +143,33 @@ myModel.set({something: 'foo'})
 ```
 Gives any comonent the ability to listen to a specific event (or array of events).  When this event is fired, the component will be force updated.
 
+It also exposes a ```updateOnModelEvent``` method which can be used if the events that should force an update should be determined internally within the component itself.
+```
+var MyComponent = React.createClass({
+  mixins: ['modelUpdateOn'],
+  getInitialState: function() {
+    this.updateOnModelEvent(['event1'[, 'event2', ...]);
+    return null;
+  }
+  ...
+  model.trigger('event1'); // the component will be rendered
+});
+```
+
 
 modelLoadOn
 --------------
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: ['modelLoadOn']
+  mixins: ['modelLoadOn'],
+  render: function() {
+    if (this.state.loading) {
+      // return something if we are loading
+    } else {
+      // return something if we are not loading
+    }
+  }
 });
 <MyComponent model={myModel}, loadOn: "read"/>
 myModel.fetch();
