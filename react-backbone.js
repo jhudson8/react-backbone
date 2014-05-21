@@ -162,10 +162,19 @@
 
     // bind all registered events to the model
     _modelBindAll: function() {
-      if (this.__modelEvents) {
+      var modelEvents = this.__modelEvents;
+      if (modelEvents) {
+        // if events were registered before this time, move the cache to state
+        delete this.__modelEvents;
+        // don't use setState because there is no need to trigger a render
+        this.state.__modelEvents = modelEvents;
+      }
+
+      modelEvents = this.state.__modelEvents;
+      if (modelEvents) {
         var model = this.getModel();
         if (model) {
-          _.each(this.__modelEvents, function(data, eventName) {
+          _.each(modelEvents, function(data, eventName) {
             model[data.type](eventName, data.callback, data.context);
           });
         }
