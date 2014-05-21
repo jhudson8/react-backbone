@@ -137,6 +137,10 @@
    * until the component is mounted.  The context will be "this" if not provided.
    */
   React.mixins.add('modelEventBinder', {
+    getInitialState: function() {
+      return {};
+    },
+
     // model.on
     modelOn: function (eventName, callback, context) {
       onEvent.call(this, 'on', eventName, callback, context);
@@ -292,7 +296,7 @@
           }
         });
       }
-      return null;
+      return {};
     }
   }, 'modelIndexErrors', 'modelEventBinder');
 
@@ -353,7 +357,7 @@
           }
         }
       }
-      return null;
+      return {};
     }
   }, 'modelEventBinder');
 
