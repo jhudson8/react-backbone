@@ -2,7 +2,19 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.2.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.3.0...master)
+
+## v0.3.0 - May 22nd, 2014
+- bug fix: only execute modelLoadOn mixin state change if we are still mounted - e860bc6
+- add collection reset note to README for modelChangeListener mixing - 62d1bf1
+- update README - 7c2df8f
+- jshint optimization - 992fadb
+- always provide a default initial state to any mixin that potentially modifies state - 91c6f51
+- add "updateOnModelEvent" method to the modelUpdateOn mixin - d427678
+- always use this.props.model when setting model (instead of just this.model) - 3843a44
+- move model event registration cache to "this.state" instead of just "this" - 83338dd, 6dc1164
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.2.0...v0.3.0)
 
 ## v0.2.0 - May 18th, 2014
 - integrate nicely with https://github.com/jhudson8/react-events add "events" handler for "model:eventName" - a2a5105
