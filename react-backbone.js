@@ -332,7 +332,9 @@
       var keys = modelEventHandler('loadOn', this, 'async:{key}', function(events) {
         this.setState({loading: true});
         events.on('complete', function() {
-          this.setState({loading: false});
+          if (this.isMounted()) {
+            this.setState({loading: false});
+          }
         }, this);
       });
 
