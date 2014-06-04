@@ -109,9 +109,17 @@ describe('modelAccessor', function() {
 
 describe('modelValueAccessor', function() {
 
-  it('should get and set the model value', function() {
+  it('should get and set the model value using "key"', function() {
     var model = new Backbone.Model({foo: 'bar'}),
         obj = newComponent({props: {model: model, key: 'foo'}}, ['modelValueAccessor']);
+    expect(obj.getModelValue()).to.eql('bar');
+    obj.setModelValue('baz');
+    expect(model.get('foo')).to.eql('baz');
+  });
+
+  it('should get and set the model value using "ref"', function() {
+    var model = new Backbone.Model({foo: 'bar'}),
+        obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelValueAccessor']);
     expect(obj.getModelValue()).to.eql('bar');
     obj.setModelValue('baz');
     expect(model.get('foo')).to.eql('baz');

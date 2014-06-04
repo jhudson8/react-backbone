@@ -44,6 +44,9 @@
     return [src];
   }
 
+  function getKey(context) {
+    return context.props.key || context.props.ref;
+  }
 
   function modelEventHandler(identifier, context, eventFormat, callback) {
     var keys = eventParser(context.props[identifier]),
@@ -111,11 +114,11 @@
    * it allows 3rd party to work with stubs which this can override.  It was designed
    * with https://github.com/jhudson8/react-semantic-ui in mind to be backbone model
    * friendly without actually depending on backbone models.  The model key is set
-   * using the "key" property.
+   * using the "key" or "ref" property.
    */  
   React.mixins.add('modelValueAccessor', {
     getModelValue: function() {
-      var key = this.props.key,
+      var key = getKey(this),
           model = this.getModel();
       if (model && key) {
         return model.get(key);
@@ -123,7 +126,7 @@
     },
 
     setModelValue: function(value, options) {
-      var key = this.props.key,
+      var key = getKey(this),
           model = this.getModel();
       if (model && key) {
         return model.set(key, value, options);
@@ -284,7 +287,7 @@
    */
   React.mixins.add('modelFieldValidator', {
     getInitialState: function() {
-      var key = this.props.key;
+      var key = getKey(this);
       if (key) {
         this.modelOn('invalid', function(model, errors) {
           errors = this.modelIndexErrors(errors) || {};

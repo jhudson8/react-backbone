@@ -51,7 +51,7 @@ React.createClass({
 ...
 this.refs.myClass.setModelValue('some value');
 ```
-Simple mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` property to get the model key;
+Simple mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` or ```ref``` property to get the model key;
 
 
 modelEventBinder
@@ -103,7 +103,7 @@ var MyClass React.createClass({
 // this would normally be triggered on validation - this is just for example purposes
 model.trigger('invalid', model, {fistName: 'Invalid first name'});
 ```
-Using the ```key``` property, bind to the model and look for ```invalid``` events.  If an ```invalid``` event is triggered, set the ```error``` state to the field error message.  Replace the ```modelIndexErrors``` mixin to override the current error indexing behavior.
+Using the ```key``` or ```ref``` property, bind to the model and watch for ```invalid``` events.  If an ```invalid``` event is triggered, set the ```error``` state to the field error message.  Replace the ```modelIndexErrors``` mixin to override the current error indexing behavior.
 
 The default error list format is expected to be
 ```{ field1Key: errorMessage, field2Key: errorMessage, ... } ```
@@ -113,7 +113,7 @@ or
 
 modelIndexErrors
 --------------
-Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
+Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelFieldValidator``` for details on the expected response format.
 
 
 modelChangeListener
