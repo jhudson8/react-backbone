@@ -126,6 +126,30 @@ describe('modelValueAccessor', function() {
   });
 });
 
+describe('modelValidator', function() {
+  var Model = Backbone.Model.extend({
+    validate: function(attributes, options) {
+      return options && options.rtn;
+    }
+  })
+
+  it('should return undefined if no model exists or the model does not implement "validate"', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model}}, ['modelValidator']);
+    expect(obj.modelValidate()).to.eql(undefined);
+  });
+  it('should return false if "validate" returns a falsy value', function() {
+    var model = new Model(),
+        obj = newComponent({props: {model: model}}, ['modelValidator']);
+    expect(obj.modelValidate()).to.eql(false);
+  });
+  it('should return the same value if "validate" returns a truthy value', function() {
+    var model = new Model(),
+        obj = newComponent({props: {model: model}}, ['modelValidator']);
+    expect(obj.modelValidate(undefined, {rtn: 'foo'})).to.eql('foo');
+  });
+});
+
 describe('modelEventBinder', function() {
 
   it('should not do event binding until node is mounted', function() {

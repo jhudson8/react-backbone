@@ -135,6 +135,20 @@
   }, 'modelAccessor');
 
   /**
+   * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
+   * against the provided attributes.  If invalid, a truthy value will be returned containing the 
+   * validation errors.
+   */  
+  React.mixins.add('modelValidator', {
+    modelValidate: function(attributes, options) {
+      var model = this.getModel();
+      if (model && model.validate) {
+        return this.modelIndexErrors(model.validate(attributes, options)) || false;
+      }
+    }
+  }, 'modelAccessor', 'modelIndexErrors');
+
+  /**
    * Exposes model binding registration functions that will
    * be cleaned up when the component is unmounted and not actually registered
    * until the component is mounted.  The context will be "this" if not provided.

@@ -88,6 +88,12 @@ modelIndexErrors
 Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelFieldValidator``` for details on the expected response format.
 
 
+modelValidator
+--------------
+Exposes a ```modelValidate(attributes, options)``` method which will call and return the model.validate method if it exists.
+If not, undefined will be returned.  If errors are found, the ```modelIndexErrors``` mixin will be used to organize the error response.
+
+
 modelInvalidBinder
 --------------
 ```
