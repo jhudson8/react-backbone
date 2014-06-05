@@ -285,7 +285,7 @@
    * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
    * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
    */
-  React.mixins.add('modelFieldValidator', {
+  React.mixins.add('modelInvalidBinder', {
     getInitialState: function() {
       var key = getKey(this);
       if (key) {

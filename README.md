@@ -83,7 +83,12 @@ React.createClass({
 });
 ```
 
-modelFieldValidator
+modelIndexErrors
+--------------
+Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelFieldValidator``` for details on the expected response format.
+
+
+modelInvalidBinder
 --------------
 ```
 var MyClass React.createClass({
@@ -109,11 +114,6 @@ The default error list format is expected to be
 ```{ field1Key: errorMessage, field2Key: errorMessage, ... } ```
 or
 ```[{ field1Key: errorMessage}, {field2Key: errorMessage}, ... ]```
-
-
-modelIndexErrors
---------------
-Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelFieldValidator``` for details on the expected response format.
 
 
 modelChangeListener
