@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.3.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.3.1...master)
+
+## v0.3.1 - June 4th, 2014
+- use key *or* ref attribute to obtain context model keys - 3aed887
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.3.0...v0.3.1)
 
 ## v0.3.0 - May 22nd, 2014
 - bug fix: only execute modelLoadOn mixin state change if we are still mounted - e860bc6
