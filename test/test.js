@@ -94,11 +94,11 @@ var Model = Backbone.Model.extend({
   url: 'foo'
 });
 
-describe('modelAccessor', function() {
+describe('modelAware', function() {
 
   it('should get and set the model', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelAccessor']);
+        obj = newComponent({props: {model: model}}, ['modelAware']);
     expect(obj.getModel()).to.eql(model);
 
     var model2 = new Backbone.Model();
@@ -107,11 +107,11 @@ describe('modelAccessor', function() {
   });
 });
 
-describe('modelValueAccessor', function() {
+describe('modelValueAware', function() {
 
   it('should get and set the model value using "key"', function() {
     var model = new Backbone.Model({foo: 'bar'}),
-        obj = newComponent({props: {model: model, key: 'foo'}}, ['modelValueAccessor']);
+        obj = newComponent({props: {model: model, key: 'foo'}}, ['modelValueAware']);
     expect(obj.getModelValue()).to.eql('bar');
     obj.setModelValue('baz');
     expect(model.get('foo')).to.eql('baz');
@@ -119,7 +119,7 @@ describe('modelValueAccessor', function() {
 
   it('should get and set the model value using "ref"', function() {
     var model = new Backbone.Model({foo: 'bar'}),
-        obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelValueAccessor']);
+        obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelValueAware']);
     expect(obj.getModelValue()).to.eql('bar');
     obj.setModelValue('baz');
     expect(model.get('foo')).to.eql('baz');
@@ -150,11 +150,11 @@ describe('modelValidator', function() {
   });
 });
 
-describe('modelEventBinder', function() {
+describe('modelEventAware', function() {
 
   it('should not do event binding until node is mounted', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
+        obj = newComponent({props: {model: model}}, ['modelEventAware']),
         spy = sinon.spy();
     obj.modelOn('foo', spy);
     model.trigger('foo');
@@ -181,7 +181,7 @@ describe('modelEventBinder', function() {
 
   it('should bind if model does not exist when registered', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
+        obj = newComponent({props: {model: model}}, ['modelEventAware']),
         spy = sinon.spy();
 
     // setting model before mounting
@@ -198,7 +198,7 @@ describe('modelEventBinder', function() {
 
   it('should bind if component has already been mounted when setting model', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelEventBinder']),
+        obj = newComponent({props: {model: model}}, ['modelEventAware']),
         spy = sinon.spy();
 
     obj.modelOn('foo', spy);
@@ -211,7 +211,7 @@ describe('modelEventBinder', function() {
   it('should unbind a previous model and rebind to a new model', function() {
     var model1 = new Backbone.Model(),
         model2 = new Backbone.Model(),
-        obj = newComponent({props: {model: model1}}, ['modelEventBinder']),
+        obj = newComponent({props: {model: model1}}, ['modelEventAware']),
         spy = sinon.spy();
 
     obj.modelOn('foo', spy);
@@ -228,11 +228,11 @@ describe('modelEventBinder', function() {
   });
 });
 
-describe('modelChangeListener', function() {
+describe('modelChangeAware', function() {
 
   it('should listen to all events and force an update', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelChangeListener']),
+        obj = newComponent({props: {model: model}}, ['modelChangeAware']),
         spy = sinon.spy();
     obj.forceUpdate = spy;
     
@@ -292,11 +292,11 @@ describe('modelLoadOn', function() {
   });
 });
 
-describe('modelAsyncListener', function() {
+describe('modelAsyncAware', function() {
 
   it('should set loading state when *any* async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
+        obj = newComponent({props: {model: model}}, ['modelAsyncAware']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -320,7 +320,7 @@ describe('modelAsyncListener', function() {
   it('should set loading state if the model is loading when set on the component', function() {
     var model = new Model();
     model.fetch();
-    var obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
+    var obj = newComponent({props: {model: model}}, ['modelAsyncAware']),
         spy = sinon.spy();
     obj.setState = spy;
     obj.mount();
@@ -332,7 +332,7 @@ describe('modelAsyncListener', function() {
 
   it('should set loading state if the model is loading after being set but before mounting', function() {
     var model = new Model(),
-        obj = newComponent({props: {model: model}}, ['modelAsyncListener']),
+        obj = newComponent({props: {model: model}}, ['modelAsyncAware']),
         spy = sinon.spy();
     obj.setState = spy;
     model.fetch();
@@ -353,7 +353,7 @@ describe('react-events integration', function() {
   });
   it('set React.events.mixin to Backbone.Events', function() {
     expect(React.events.mixin).to.eql(Backbone.Events);
-    var obj = newComponent({}, ['events', 'modelEventBinder']);
+    var obj = newComponent({}, ['events', 'modelEventAware']);
     expect(!!obj.on).to.eql(true);
     expect(!!obj.off).to.eql(true);
   });
@@ -366,7 +366,7 @@ describe('react-events integration', function() {
             'model:change': 'onChange'
           },
           onChange: spy
-        }, ['events', 'modelEventBinder']);
+        }, ['events', 'modelEventAware']);
     obj.mount();
     model.set({foo: 'bar'});
     expect(spy.callCount).to.eql(1);

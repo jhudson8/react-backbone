@@ -26,11 +26,11 @@ The named mixins exists by including [react-mixin-manager](https://github.com/jh
 See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
 
 
-modelAccessor
+modelAware
 --------------
 ```
 React.createClass({
-  mixins: ['modelAccessor']
+  mixins: ['modelAware']
 });
 ...
 <MyClass ref="myClass" model={model} key="foo"/>
@@ -40,11 +40,11 @@ var model = this.refs.myClass.getModel();
 Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
 
 
-modelValueAccessor
+modelValueAware
 --------------
 ```
 React.createClass({
-  mixins: ['modelValueAccessor']
+  mixins: ['modelValueAware']
 });
 ...
 <MyClass ref="myClass" model={model} key="foo"/>
@@ -54,11 +54,11 @@ this.refs.myClass.setModelValue('some value');
 Simple mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` or ```ref``` property to get the model key;
 
 
-modelEventBinder
+modelEventAware
 --------------
 ```
 var MyClass React.createClass({
-  mixins: ['modelEventBinder'],
+  mixins: ['modelEventAware'],
   getInitialState: function() {
     this.modelOn('change', this.onChange);
     return null;
@@ -75,7 +75,7 @@ is mounted.
 ***By including [react-events](https://github.com/jhudson8/react-events) you can use declarative bindings like the following:***
 ```
 React.createClass({
-  mixins: ['events', 'modelEventBinder'],
+  mixins: ['events', 'modelEventAware'],
   events: {
     'model:change': 'onChange'
   },
@@ -85,7 +85,7 @@ React.createClass({
 
 modelIndexErrors
 --------------
-Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelFieldValidator``` for details on the expected response format.
+Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelInvalidAware``` for details on the expected response format.
 
 
 modelValidator
@@ -94,11 +94,11 @@ Exposes a ```modelValidate(attributes, options)``` method which will call and re
 If not, undefined will be returned.  If errors are found, the ```modelIndexErrors``` mixin will be used to organize the error response.
 
 
-modelInvalidBinder
+modelInvalidAware
 --------------
 ```
 var MyClass React.createClass({
-  mixins: ['modelFieldValidator'],
+  mixins: ['modelInvalidAware'],
   render: function() {
     var error = this.state.error;
     if (error) {
@@ -122,11 +122,11 @@ or
 ```[{ field1Key: errorMessage}, {field2Key: errorMessage}, ... ]```
 
 
-modelChangeListener
+modelChangeAware
 --------------
 ```
 React.createClass({
-  mixins: ['modelChangeListener']
+  mixins: ['modelChangeAware']
 });
 ```
 Will force a render if the associated model has changed.  The "change" events are for models or collections and include
@@ -194,12 +194,12 @@ myModel.fetch();
 Gives any comonent the ability to listen to a specific async event (or array of events).  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
 
 
-modelAsyncListener
+modelAsyncAware
 --------------
 *this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 ```
 var MyComponent = React.createClass({
-  mixins: ['modelAsyncListener']
+  mixins: ['modelAsyncAware']
 });
 <MyComponent model={myModel}/>
 myModel.fetch();

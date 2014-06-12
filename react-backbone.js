@@ -92,7 +92,7 @@
    * Simple overrideable mixin to get/set models.  Model can
    * be set on props or by calling setModel
    */  
-  React.mixins.add('modelAccessor', {
+  React.mixins.add('modelAware', {
     getModel: function() {
       return this.props.model;
     },
@@ -103,7 +103,7 @@
       }
       this.setProps({model: model});
       if (this._modelBindAll && this.isMounted()) {
-        // bind all events if using modelEventBinder
+        // bind all events if using modelEventAware
         this._modelBindAll();
       }
     }
@@ -116,7 +116,7 @@
    * friendly without actually depending on backbone models.  The model key is set
    * using the "key" or "ref" property.
    */  
-  React.mixins.add('modelValueAccessor', {
+  React.mixins.add('modelValueAware', {
     getModelValue: function() {
       var key = getKey(this),
           model = this.getModel();
@@ -132,7 +132,7 @@
         return model.set(key, value, options);
       }
     }
-  }, 'modelAccessor');
+  }, 'modelAware');
 
   /**
    * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
@@ -146,14 +146,14 @@
         return this.modelIndexErrors(model.validate(attributes, options)) || false;
       }
     }
-  }, 'modelAccessor', 'modelIndexErrors');
+  }, 'modelAware', 'modelIndexErrors');
 
   /**
    * Exposes model binding registration functions that will
    * be cleaned up when the component is unmounted and not actually registered
    * until the component is mounted.  The context will be "this" if not provided.
    */
-  React.mixins.add('modelEventBinder', {
+  React.mixins.add('modelEventAware', {
     getInitialState: function() {
       return {};
     },
@@ -227,19 +227,19 @@
     componentWillUnmount: function() {
       this._modelUnbindAll(true);
     }
-  }, 'modelAccessor');
+  }, 'modelAware');
 
   /**
    * Mixin used to force render any time the model has changed
    */
-  React.mixins.add('modelChangeListener', {
+  React.mixins.add('modelChangeAware', {
     getInitialState: function() {
       _.each(['change', 'reset', 'add', 'remove', 'sort'], function(type) {
         this.modelOn(type, function() { this.forceUpdate(); });
       }, this);
       return null;
     }
-  }, 'modelEventBinder');
+  }, 'modelEventAware');
 
 
   // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
@@ -249,7 +249,7 @@
    * will be set to true and, if an error occurs with loading, the "error" state attribute
    * will be set with the error contents
    */
-  React.mixins.add('modelAsyncListener', {
+  React.mixins.add('modelAsyncAware', {
     getInitialState: function() {
       this.modelOn('async', function(eventName, events) {
         this.setState({loading: true});
@@ -292,14 +292,14 @@
         }
       }
     }
-  }, 'modelEventBinder');
+  }, 'modelEventAware');
 
   /**
    * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
    * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
    * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
    */
-  React.mixins.add('modelInvalidBinder', {
+  React.mixins.add('modelInvalidAware', {
     getInitialState: function() {
       var key = getKey(this);
       if (key) {
@@ -315,7 +315,7 @@
       }
       return {};
     }
-  }, 'modelIndexErrors', 'modelEventBinder');
+  }, 'modelIndexErrors', 'modelEventAware');
 
   /**
    * Expose an indexModelErrors method which returns model validation errors in a standard format.
@@ -379,7 +379,7 @@
       }
       return {};
     }
-  }, 'modelEventBinder');
+  }, 'modelEventAware');
 
   /**
    * Gives any comonent the ability to force an update when an event is fired
@@ -399,10 +399,12 @@
         this.modelOn(event, doUpdate);
       }, this);
     }
-  }, 'modelEventBinder');
+  }, 'modelEventAware');
 
-  // if [react-events](https://github.com/jhudson8/react-events) is included, set Backbone.Events as the default Events mixin
+
+  // if [react-events](https://github.com/jhudson8/react-events) is included, provide some nice integration
   if (React.events) {
+    // set Backbone.Events as the default Events mixin
     React.events.mixin = React.events.mixin || Backbone.Events;
 
     /**
@@ -413,7 +415,7 @@
      * ...
      * onSomethingHappened: function() { ... }
      * 
-     * When using these model events, you *must* include the "modelEventBinder" mixin
+     * When using these model events, you *must* include the "modelEventAware" mixin
      */
     React.events.handle('model', function(options, callback) {
       return {
