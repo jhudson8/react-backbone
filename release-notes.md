@@ -2,7 +2,18 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.4.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.5.0...master)
+
+## v0.5.0 - June 12th, 2014
+- standardize mixin names  - 4d18967
+    modelAccessor -> modelAware
+    modelValueAccessor -> modelValueAware 
+    modelEventBinder -> modelEventAware 
+    modelInvalidBinder -> modelInvalidAware 
+    modelChangeListener -> modelChangeAware 
+    modelAsyncListener -> modelAsyncAware
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.4.1...v0.5.0)
 
 ## v0.4.1 - June 12th, 2014
 - add react-events specials implentations (memoize, delay, defer, throttle, debounce, once) - fe4be7a
