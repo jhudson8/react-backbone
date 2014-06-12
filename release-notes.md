@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.4.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.4.1...master)
+
+## v0.4.1 - June 12th, 2014
+- add react-events specials implentations (memoize, delay, defer, throttle, debounce, once) - fe4be7a
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.4.0...v0.4.1)
 
 ## v0.4.0 - June 4th, 2014
 - add the "modelValidator" mixin - 7da404a
