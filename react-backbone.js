@@ -423,5 +423,34 @@
         off: function() { /* NOP, modelOn will clean up */ }
       };
     });
+
+    if (React.events.specials) {
+      // add underscore wrapped special event handlers
+      function parseArgs(args) {
+        var arg;
+        for (var i=0; i<args.length; i++) {
+          arg = args[i];
+          if (arg === 'true') {
+            arg = true;
+          } else if (arg === 'false') {
+            arg = false;
+          } else if (arg.match(/^[0-9]+$/)) {
+            arg = parseInt(arg);
+          } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
+            arg = parseFloat(arg);
+          }
+          args[i] = arg;
+        }
+        return args;
+      }
+      var reactEventSpecials = ['memoize', 'delay', 'defer','throttle', 'debounce', 'once'];
+      _.each(reactEventSpecials, function(name) {
+        React.events.specials[name] = React.events.specials[name] || function(callback, args) {
+          args = parseArgs(args);
+          args.splice(0, 0, callback);
+          return _[name].apply(_, args);
+        };
+      });
+    }
   }
 });
