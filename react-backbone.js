@@ -111,10 +111,12 @@
 
   /**
    * Simple overrideable mixin to get/set model values.  While this is trivial to do
-   * it allows 3rd party to work with stubs which this can override.  It was designed
-   * with https://github.com/jhudson8/react-semantic-ui in mind to be backbone model
-   * friendly without actually depending on backbone models.  The model key is set
-   * using the "key" or "ref" property.
+   * it allows 3rd party to work with stubs which this can override.  This is basically
+   * an interface which allows the "modelPopulator" mixin to retrieve values from components
+   * that should be set on a model.
+   *
+   * This allows model value oriented components to work with models without setting the updated
+   * values directly on the models until the user performs some specific action (like clicking a save button).
    */  
   React.mixins.add('modelValueAware', {
     getModelValue: function() {
@@ -133,6 +135,44 @@
       }
     }
   }, 'modelAware');
+
+  /**
+   * Iterate through the provided list of components (or use this.refs if components were not provided) and
+   * return a set of attributes.  If a callback is provided as the 2nd parameter and this component includes
+   * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
+   */
+  React.mixins.add('modelPopulate', {
+    modelPopulate: function(components, callback, options) {
+      if (_.isFunction(components)) {
+        // allow callback to be provided as first function if using refs
+        options = callback;
+        callback = components;
+        components = undefined;
+      }
+      var attributes = {};
+      if (!components) {
+        // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
+        components = _.map(this.refs, function(value) {return value;});
+      }
+      _.each(components, function(component) {
+        // the component *must* have a getModelValue
+        if (component.getModelValue) {
+          var key = getKey(component),
+              value = component.getModelValue();
+          attributes[key] = value;
+        }
+      });
+      if (callback && this.getModel) {
+        var model = this.getModel();
+        if (model) {
+          if (model.set(attributes, options || {validate: true})) {
+            callback(model);
+          }
+        }
+      }
+      return attributes;
+    }
+  });
 
   /**
    * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation

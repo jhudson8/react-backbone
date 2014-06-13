@@ -107,6 +107,89 @@ describe('modelAware', function() {
   });
 });
 
+describe('modelPopulate', function() {
+
+  it('should iterate components and call getModelValue to set attributes', function() {
+    var obj = newComponent({}, ['modelPopulate']);
+    var components = [
+      {
+        props: {
+          ref: 'foo'
+        },
+        getModelValue: function() {
+          return 'bar';
+        }
+      }
+    ];
+    var attributes = obj.modelPopulate(components);
+    expect(attributes).to.eql({foo: 'bar'});
+  });
+
+  it('should iterate components and call getModelValue to set attributes using refs', function() {
+    var obj = newComponent({}, ['modelPopulate']);
+    var component = {
+      props: {
+        ref: 'foo'
+      },
+      getModelValue: function() {
+        return 'bar';
+      }
+    };
+    obj.refs = {
+      foo: component
+    };
+    var attributes = obj.modelPopulate();
+    expect(attributes).to.eql({foo: 'bar'});
+  });
+
+  it('should set values on model if a callback is provided', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model}}, ['modelAware', 'modelPopulate']);
+    var component = {
+      props: {
+        ref: 'foo'
+      },
+      getModelValue: function() {
+        return 'bar';
+      }
+    };
+    obj.refs = {
+      foo: component
+    };
+    var spy = sinon.spy(),
+        attributes = obj.modelPopulate(spy);
+    expect(spy).to.have.been.called;
+    expect(attributes).to.eql({foo: 'bar'});
+  });
+
+  it('should not execute the callback if the validation fails', function() {
+    var Model = Backbone.Model.extend({
+      validate: sinon.spy(function() {
+        // just return something so it looks like validation failed
+        return 'fail';
+      })
+    })
+    var model = new Model(),
+        obj = newComponent({props: {model: model}}, ['modelAware', 'modelPopulate']);
+    var component = {
+      props: {
+        ref: 'foo'
+      },
+      getModelValue: function() {
+        return 'bar';
+      }
+    };
+    obj.refs = {
+      foo: component
+    };
+    var spy = sinon.spy(),
+        attributes = obj.modelPopulate(spy);
+    expect(spy).to.not.have.been.called;
+    expect(attributes).to.eql({foo: 'bar'});
+    expect(Model.prototype.validate).to.have.been.calledWith({foo: 'bar'});
+  });
+});
+
 describe('modelValueAware', function() {
 
   it('should get and set the model value using "key"', function() {

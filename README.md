@@ -37,7 +37,7 @@ React.createClass({
 ...
 var model = this.refs.myClass.getModel();
 ```
-Simple mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
+Mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
 
 
 modelValueAware
@@ -47,11 +47,51 @@ React.createClass({
   mixins: ['modelValueAware']
 });
 ...
-<MyClass ref="myClass" model={model} key="foo"/>
+<MyInputField ref="firstName" model={model}/>
 ...
-this.refs.myClass.setModelValue('some value');
+this.refs.firstName.setModelValue('John Doe');
 ```
-Simple mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` or ```ref``` property to get the model key;
+Mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` or ```ref``` property to get the model key.  While the example is not useful (as you should set the model directly), it is more useful for other mixins which would treat the component with only an awareness of the ```modelValueAware``` mixin (for example, the ```modelPopulate``` mixin).
+
+
+modelPopulate
+-------------
+```
+React.createClass({
+  mixins: ['modelAware', 'modelPopulate'],
+  render: function() {
+    var model = this.getModel();
+
+    // "Input" is some example component that uses the "modelValueAware" mixin to return the DOM value that is appropriate for the model
+    return (
+      <div>
+        First Name: <Input ref="firstName" model={model}/>
+        <br/>
+        Last Name: <Input ref="lastName" model={model}/>
+      </div>
+    );
+  },
+  onSave: function() {
+    // wiring for this method is not shown here
+
+    // use this.refs automatically to get the components that will populate the model
+    this.modelPopulate(function(model) {
+      // assuming the model validation passed, this callback will be executed
+    });
+
+    // or for more control
+    var attributes = this.modelPopulate();
+
+    // or for even more control
+    var attributes = this.modelPopulate(specificComponentsToCheck);
+  }
+});
+```
+Mixin that exposes a ```modelPopulate``` method which will iterate through a set of components and call ```setModelValue``` for each compoent and return the populated attributes hash.  The components are expected to be including the ```modelValueAware``` mixin.  In addition, a callback function can be provided (if the parent component includes the ```modelAware``` mixin) which will cause the attributes to be automatically set on the model and the callback function to be executed only if the validation passed on the model.
+
+```modelPopulate(componentArray[, callback, setOptions])```
+or
+```modelPopulate(callback[, setOptions])```
 
 
 modelEventAware
