@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.5.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.0...master)
+
+## v0.6.0 - June 13th, 2014
+- add the "modelPopulate" mixin - 9cd2ae7
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.5.0...v0.6.0)
 
 ## v0.5.0 - June 12th, 2014
 - standardize mixin names  - 4d18967
