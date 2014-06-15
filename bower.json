@@ -1,0 +1,30 @@
+{
+  "name": "react-backbone",
+  "main": "react-backbone.js",
+  "version": "0.6.1",
+  "homepage": "https://github.com/jhudson8/react-backbone",
+  "authors": [
+    "Joe Hudson <joehud@gmail.com>"
+  ],
+  "description": "backbone-aware mixins for react",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "react",
+    "mixin",
+    "backbone"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react-mixin-manager: ">=0.5.0"
+  }
+}
