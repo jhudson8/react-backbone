@@ -2,7 +2,15 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.1...master)
+
+## v0.6.1 - June 14th, 2014
+- use deferUpdate (react-mixin-manager >= 0.5.0) instead of forceUpdate This allows for a reset which will fire an add event for every model in a collection and then a reset event (all will call deferUpdate) but will only execute a forceUpdate 1 time. - 22522e1
+
+Compatibility notes:
+This requires an update of react-mixin-manager to >= 0.5.0.  It really shouldn't be a patch release but I just made a release yesterday and I do not think it has been downloaded.
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.0...v0.6.1)
 
 ## v0.6.0 - June 13th, 2014
 - add the "modelPopulate" mixin - 9cd2ae7
