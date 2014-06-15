@@ -14,7 +14,7 @@ Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
-* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.3.0)
+* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.5.0)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
 * [react-events](https://github.com/jhudson8/react-events) (>= 0.2.0 optional)
 
@@ -175,16 +175,6 @@ Will force a render if the associated model has changed.  The "change" events ar
 * add
 * remove
 * sort
-
-*Note: when using this mixin, it makes sense to default to ```reset``` when fetching collections unless your application specifically needs otherwise.  This will prevent the ```add``` from being fired for every model in the collection (and triggering a render n+1 times).*
-```
-var _fetch = Backbone.Collection.prototype.fetch;
-Backbone.Collection.prototype.fetch = function(options) {
-  options = options || {};
-  options.reset = _.isUndefined(options.reset) || options.reset;
-  return _fetch.call(this, options);
-}
-```
 
 
 modelUpdateOn

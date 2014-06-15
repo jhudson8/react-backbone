@@ -275,11 +275,11 @@
   React.mixins.add('modelChangeAware', {
     getInitialState: function() {
       _.each(['change', 'reset', 'add', 'remove', 'sort'], function(type) {
-        this.modelOn(type, function() { this.forceUpdate(); });
+        this.modelOn(type, function() { this.deferUpdate(); });
       }, this);
       return null;
     }
-  }, 'modelEventAware');
+  }, 'modelEventAware', 'deferUpdate');
 
 
   // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
@@ -427,19 +427,19 @@
   React.mixins.add('modelUpdateOn', {
     getInitialState: function() {
       var keys = modelEventHandler('updateOn', this, '{key}', function() {
-        this.forceUpdate();
+        this.deferUpdate();
       });
     },
 
     updateOnModelEvent: function(/* events */) {
       function doUpdate() {
-        this.forceUpdate();
+        this.deferUpdate();
       }
       _.each(arguments, function(event) {
         this.modelOn(event, doUpdate);
       }, this);
     }
-  }, 'modelEventAware');
+  }, 'modelEventAware', 'deferUpdate');
 
 
   // if [react-events](https://github.com/jhudson8/react-events) is included, provide some nice integration
