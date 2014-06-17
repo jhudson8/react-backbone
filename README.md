@@ -117,7 +117,8 @@ is mounted.
 React.createClass({
   mixins: ['events', 'modelEventAware'],
   events: {
-    'model:change': 'onChange'
+    'model:change': 'onChange',
+    'model[foo]:change': 'onChange' // will bind to a specific model set as "foo" on this.props or this.refs
   },
   onChange: function() { ... }
 });
