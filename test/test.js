@@ -40,6 +40,7 @@ function newComponent(attributes, mixins) {
   }
 
   var obj = {
+    setState: sinon.spy(),
     setProps: function(props) {
       this.props = this.props || {};
       _.extend(this.props, props);
@@ -312,6 +313,13 @@ describe('modelEventAware', function() {
 });
 
 describe('modelChangeAware', function() {
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
 
   it('should listen to all events and force an update', function() {
     var model = new Backbone.Model(),
@@ -322,14 +330,19 @@ describe('modelChangeAware', function() {
     obj.mount();
     expect(spy.callCount).to.eql(0);
     model.trigger('change');
+    clock.tick(1);
     expect(spy.callCount).to.eql(1);
     model.trigger('reset');
+    clock.tick(1);
     expect(spy.callCount).to.eql(2);
     model.trigger('add');
+    clock.tick(1);
     expect(spy.callCount).to.eql(3);
     model.trigger('remove');
+    clock.tick(1);
     expect(spy.callCount).to.eql(4);
     model.trigger('sort');
+    clock.tick(1);
     expect(spy.callCount).to.eql(5);
   });
 });
@@ -377,7 +390,7 @@ describe('modelLoadOn', function() {
 
 describe('modelAsyncAware', function() {
 
-  it('should set loading state when *any* async event is triggered (success condition)', function() {
+  it('moch (success condition)', function() {
     var model = new Backbone.Model(),
         obj = newComponent({props: {model: model}}, ['modelAsyncAware']),
         spy = sinon.spy();
@@ -447,6 +460,21 @@ describe('react-events integration', function() {
           props: {model: model},
           events: {
             'model:change': 'onChange'
+          },
+          onChange: spy
+        }, ['events', 'modelEventAware']);
+    obj.mount();
+    model.set({foo: 'bar'});
+    expect(spy.callCount).to.eql(1);
+  });
+  it('should do ref/prop model binding', function() {
+    var model = new Model(),
+        spy = sinon.spy(),
+        obj = newComponent({
+          props: {foo: model},
+          refs: {},
+          events: {
+            'model[foo]:change': 'onChange'
           },
           onChange: spy
         }, ['events', 'modelEventAware']);

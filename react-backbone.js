@@ -34,6 +34,19 @@
   }
 })(function(React, Backbone, _) {
 
+  function getModelByPropkey(key, context, useGetModel) {
+    var model;
+    if (key) {
+      model = context.props[key];
+      if (!model) {
+        throw new Error('No model found for "' + key + '"');
+      }
+    } else if (useGetModel) {
+      model = context.getModel();
+    }
+    return model;
+  }
+
   function eventParser(src) {
     if (!src) {
       return;
@@ -65,10 +78,12 @@
 
   /**
    * Internal model event binding handler
+   * (type(on|once|off), {event, callback, context, model})
    */
-  function onEvent(type, eventName, callback, context) {
-    context = context || this;
-    var modelEvents, eventsParent = this;
+  function onEvent(type, data) {
+    var eventsParent = this,
+        modelEvents;
+    data = _.extend({type: type}, data);
     if (this.state) {
       modelEvents = this.state.__modelEvents;
       eventsParent = this.state;
@@ -77,16 +92,20 @@
     }
     if (!modelEvents) {
       // don't call setState because this should not trigger a render
-      modelEvents = eventsParent.__modelEvents = {};
+      modelEvents = eventsParent.__modelEvents = [];
     }
-    modelEvents[eventName] = {type: type, callback: callback, context: context};
+    data.context = data.context || this;
+    modelEvents.push(data);
+
+    // bind now if we are already mounted (as the mount function won't be called)
     if (this.isMounted()) {
-      var model = this.getModel();
+      var model = data.model || this.getModel();
       if (model) {
-        model[type](eventName, callback, context);
+        model[data.type](data.event, data.callback, data.context);
       }
     }
   }
+
 
   /**
    * Simple overrideable mixin to get/set models.  Model can
@@ -108,6 +127,7 @@
       }
     }
   });
+
 
   /**
    * Simple overrideable mixin to get/set model values.  While this is trivial to do
@@ -135,6 +155,7 @@
       }
     }
   }, 'modelAware');
+
 
   /**
    * Iterate through the provided list of components (or use this.refs if components were not provided) and
@@ -174,6 +195,7 @@
     }
   });
 
+
   /**
    * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
    * against the provided attributes.  If invalid, a truthy value will be returned containing the 
@@ -188,6 +210,7 @@
     }
   }, 'modelAware', 'modelIndexErrors');
 
+
   /**
    * Exposes model binding registration functions that will
    * be cleaned up when the component is unmounted and not actually registered
@@ -199,24 +222,33 @@
     },
 
     // model.on
-    modelOn: function (eventName, callback, context) {
-      onEvent.call(this, 'on', eventName, callback, context);
+    // ({event, model, callback, context}) or event, callback
+    modelOn: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event;
+      onEvent.call(this, 'on', data);
     },
 
     // model.once
-    modelOnce: function (eventName, callback, context) {
-      onEvent.call(this, 'once', eventName, callback, context);
+    modelOnce: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event;
+      onEvent.call(this, 'once', data);
     },
 
-    modelOff: function (eventName, callback, context) {
-      var modelEvents = this.state.__modelEvents;
+    modelOff: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event,
+          modelEvents = this.state.__modelEvents;
       if (modelEvents) {
-        var data = modelEvents[eventName],
-            model = this.getModel();
-        if (model && data) {
-          model.off(eventName, callback, context || this);
-        } else if (data) {
-          delete modelEvents[eventName];
+        // find the existing binding
+        var _event;
+        for (var i=0; i<modelEvents.length; i++) {
+          _event = modelEvents[i];
+          if (_event.event === data.event && _event.model === data.model && _event.callback === data.callback) {
+            var model = data.model || this.getModel();
+            if (model) {
+              model.off(data.event, data.callback, data.context || this);
+            }
+            modelEvents.splice(i, 1);
+          }
         }
       }
     },
@@ -233,27 +265,29 @@
 
       modelEvents = this.state.__modelEvents;
       if (modelEvents) {
-        var model = this.getModel();
-        if (model) {
-          _.each(modelEvents, function(data, eventName) {
-            model[data.type](eventName, data.callback, data.context);
-          });
-        }
+        var thisModel = this.getModel();
+        _.each(modelEvents, function(data) {
+          var model = data.model || thisModel;
+          if (model) {
+            model[data.type](data.event, data.callback, data.context);
+          }
+        });
       }
     },
 
     // unbind all registered events from the model
     _modelUnbindAll: function(keepRegisteredEvents) {
-      var modelEvents = this.state.__modelEvents;
+      var modelEvents = this.state.__modelEvents,
+          thisModel = this.getModel();
       if (modelEvents) {
-        var model = this.getModel();
-        if (model) {
-          _.each(modelEvents, function(data, eventName) {
-            model.off(eventName, data.callback, data.context);
-          });
-        }
+        _.each(modelEvents, function(data) {
+          var model = data.model || thisModel;
+          if (model) {
+            model.off(data.event, data.callback, data.context);
+          }
+        });
         if (!keepRegisteredEvents) {
-          delete this.state.__modelEvents;
+          this.state.__modelEvents = [];
         }
       }
     },
@@ -268,6 +302,7 @@
       this._modelUnbindAll(true);
     }
   }, 'modelAware');
+
 
   /**
    * Mixin used to force render any time the model has changed
@@ -334,6 +369,7 @@
     }
   }, 'modelEventAware');
 
+
   /**
    * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
    * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
@@ -357,6 +393,7 @@
     }
   }, 'modelIndexErrors', 'modelEventAware');
 
+
   /**
    * Expose an indexModelErrors method which returns model validation errors in a standard format.
    * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
@@ -379,6 +416,7 @@
       }
     }
   });
+
 
   /**
    * Gives any comonent the ability to mark the "loading" attribute in the state as true
@@ -421,6 +459,7 @@
     }
   }, 'modelEventAware');
 
+
   /**
    * Gives any comonent the ability to force an update when an event is fired
    */
@@ -457,16 +496,29 @@
      * 
      * When using these model events, you *must* include the "modelEventAware" mixin
      */
-    React.events.handle('model', function(options, callback) {
+    var _modelPattern = /^model(\[.+\])?$/;
+    React.events.handle(_modelPattern, function(options, callback) {
+      var match = options.key.match(_modelPattern),
+          modelKey = match[1] && match[1].substring(1, match[1].length-1),
+          model = modelKey && (this.props[modelKey] || this.refs[modelKey]);
+      if (!model && modelKey) {
+        throw new Error('no model found with "' + modelKey + '"');
+      }
+      var data = {
+        model: model,
+        event: options.path,
+        callback: callback
+      };
       return {
         on: function() {
-          this.modelOn(options.path, callback);
+          this.modelOn(data);
         },
         off: function() { /* NOP, modelOn will clean up */ }
       };
     });
 
-    if (React.events.specials) {
+    var specials = React.events.specials;
+    if (specials) {
       // add underscore wrapped special event handlers
       function parseArgs(args) {
         var arg;
@@ -487,7 +539,7 @@
       }
       var reactEventSpecials = ['memoize', 'delay', 'defer','throttle', 'debounce', 'once'];
       _.each(reactEventSpecials, function(name) {
-        React.events.specials[name] = React.events.specials[name] || function(callback, args) {
+        specials[name] = specials[name] || function(callback, args) {
           args = parseArgs(args);
           args.splice(0, 0, callback);
           return _[name].apply(_, args);
