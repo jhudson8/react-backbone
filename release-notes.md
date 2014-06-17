@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.3...master)
+
+## v0.6.3 - June 17th, 2014
+- fix bower.json - 8320142
+- update dependencies docs - 5c9a6c1
+- update docs - 618afca
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.2...v0.6.3)
 
 ## v0.6.2 - June 16th, 2014
 - add non-default mode support for declarative event bindings (with react-events) but standard behavior still works
