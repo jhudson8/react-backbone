@@ -14,9 +14,9 @@ Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
-* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.5.0)
+* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.5.2)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
-* [react-events](https://github.com/jhudson8/react-events) (>= 0.2.0 optional)
+* [react-events](https://github.com/jhudson8/react-events) (>= 0.4.1 optional)
 
 
 Mixins
