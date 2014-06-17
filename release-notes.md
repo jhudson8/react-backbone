@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.2...master)
+
+## v0.6.2 - June 16th, 2014
+- add non-default mode support for declarative event bindings (with react-events) but standard behavior still works
+    you can now provide prop/ref key name with "model[keyName]:eventName": "handlerMethod" - 81844a1
+- add bower.json - 5442f8e
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.1...v0.6.2)
 
 ## v0.6.1 - June 14th, 2014
 - use deferUpdate (react-mixin-manager >= 0.5.0) instead of forceUpdate This allows for a reset which will fire an add event for every model in a collection and then a reset event (all will call deferUpdate) but will only execute a forceUpdate 1 time. - 22522e1
