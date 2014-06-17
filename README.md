@@ -4,6 +4,7 @@ react-backbone
 
 ***Solution:*** [React](http://facebook.github.io/react/) components should completely replace Backbone.View.  By including some simple mixins, [React](http://facebook.github.io/react/) components can become model-aware and provide as much or more integration expected with a Backbone.View.
 
+***To see an example app using this (and other react plugins working together), [check this out](https://github.com/jhudson8/react-plugins-united-example)***
 
 Installation
 ==============
