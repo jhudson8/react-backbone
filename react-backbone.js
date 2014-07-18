@@ -255,39 +255,43 @@
 
     // bind all registered events to the model
     _modelBindAll: function() {
-      var modelEvents = this.__modelEvents;
-      if (modelEvents) {
-        // if events were registered before this time, move the cache to state
-        delete this.__modelEvents;
-        // don't use setState because there is no need to trigger a render
-        this.state.__modelEvents = modelEvents;
-      }
+      if (this.state) {
+        var modelEvents = this.__modelEvents;
+        if (modelEvents) {
+          // if events were registered before this time, move the cache to state
+          delete this.__modelEvents;
+          // don't use setState because there is no need to trigger a render
+          this.state.__modelEvents = modelEvents;
+        }
 
-      modelEvents = this.state.__modelEvents;
-      if (modelEvents) {
-        var thisModel = this.getModel();
-        _.each(modelEvents, function(data) {
-          var model = data.model || thisModel;
-          if (model) {
-            model[data.type](data.event, data.callback, data.context);
-          }
-        });
+        modelEvents = this.state.__modelEvents;
+        if (modelEvents) {
+          var thisModel = this.getModel();
+          _.each(modelEvents, function(data) {
+            var model = data.model || thisModel;
+            if (model) {
+              model[data.type](data.event, data.callback, data.context);
+            }
+          });
+        }
       }
     },
 
     // unbind all registered events from the model
     _modelUnbindAll: function(keepRegisteredEvents) {
-      var modelEvents = this.state.__modelEvents,
-          thisModel = this.getModel();
-      if (modelEvents) {
-        _.each(modelEvents, function(data) {
-          var model = data.model || thisModel;
-          if (model) {
-            model.off(data.event, data.callback, data.context);
+      if (this.state) {
+        var modelEvents = this.state.__modelEvents,
+            thisModel = this.getModel();
+        if (modelEvents) {
+          _.each(modelEvents, function(data) {
+            var model = data.model || thisModel;
+            if (model) {
+              model.off(data.event, data.callback, data.context);
+            }
+          });
+          if (!keepRegisteredEvents) {
+            this.state.__modelEvents = [];
           }
-        });
-        if (!keepRegisteredEvents) {
-          this.state.__modelEvents = [];
         }
       }
     },

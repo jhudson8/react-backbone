@@ -110,14 +110,14 @@ describe('modelAware', function() {
 
 describe('modelPopulate', function() {
 
-  it('should iterate components and call getModelValue to set attributes', function() {
+  it('should iterate components and call getUIValue to set attributes', function() {
     var obj = newComponent({}, ['modelPopulate']);
     var components = [
       {
         props: {
           ref: 'foo'
         },
-        getModelValue: function() {
+        getUIValue: function() {
           return 'bar';
         }
       }
@@ -132,7 +132,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getModelValue: function() {
+      getUIValue: function() {
         return 'bar';
       }
     };
@@ -150,7 +150,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getModelValue: function() {
+      getUIValue: function() {
         return 'bar';
       }
     };
@@ -176,7 +176,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getModelValue: function() {
+      getUIValue: function() {
         return 'bar';
       }
     };
