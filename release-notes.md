@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.0...master)
+
+## v0.7.0 - July 18th, 2014
+- bind "this" as context for modelPopulate callback - 505baa8
+- modelPopulate queries component values using getUIValue rather than getModelValue - 2d88c99
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.6.3...v0.7.0)
 
 ## v0.6.3 - June 17th, 2014
 - fix bower.json - 8320142
