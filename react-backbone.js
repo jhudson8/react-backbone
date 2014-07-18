@@ -187,7 +187,7 @@
         var model = this.getModel();
         if (model) {
           if (model.set(attributes, options || {validate: true})) {
-            callback(model);
+            callback.call(this, model);
           }
         }
       }
