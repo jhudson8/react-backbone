@@ -7,6 +7,12 @@ Connect [React](http://facebook.github.io/react/) to [React](http://facebook.git
 ***Solution:*** [React](http://facebook.github.io/react/) components should completely replace Backbone.View.  By including some simple mixins, [React](http://facebook.github.io/react/) components can become model-aware and provide as much or more integration expected with a Backbone.View.
 
 
+Docs
+-------------
+Instead of reading this README file, you can [view it in fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) for a better experience.
+
+
+
 Installation
 --------------
 * Browser: include *react-backbone[.min].js* after the listed dependencies
