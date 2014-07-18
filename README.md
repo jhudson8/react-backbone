@@ -95,6 +95,7 @@ Utility mixin used to iterate child components and have their associated model v
 *returns the attribute values*
 
 Iterate child (or provided) components and have each component set it's ***UI*** input value on the model attributes.
+Components will only participate in model population if they implement getUIValue to return the value that should be set on the model.
 
 ```
 // use this.refs automatically to get the components that will populate the model
