@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.1...master)
+
+## v0.7.1 - July 18th, 2014
+- ensure this.state exists before binding/undinding model events - 6e41527
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.0...v0.7.1)
 
 ## v0.7.0 - July 18th, 2014
 - bind "this" as context for modelPopulate callback - 505baa8
