@@ -1,15 +1,17 @@
 react-backbone
 ==============
+Connect [React](http://facebook.github.io/react/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
+
 ***Problem:*** [React](http://facebook.github.io/react/) components are unaware of [Backbone](http://backbonejs.org/) models by default which cause some to try to embed [React](http://facebook.github.io/react/) components inside a Backbone.View.
 
 ***Solution:*** [React](http://facebook.github.io/react/) components should completely replace Backbone.View.  By including some simple mixins, [React](http://facebook.github.io/react/) components can become model-aware and provide as much or more integration expected with a Backbone.View.
 
-***To see an example app using this (and other react plugins working together), [check this out](https://github.com/jhudson8/react-plugins-united-example)***
 
 Installation
-==============
+--------------
 * Browser: include *react-backbone[.min].js* after the listed dependencies
 * CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
+
 
 Dependencies
 --------------
@@ -20,15 +22,22 @@ Dependencies
 * [react-events](https://github.com/jhudson8/react-events) (>= 0.4.1 optional)
 
 
-Mixins
-==============
+API: Mixins
+--------------
 The named mixins exists by including [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
 
 See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
 
 
-modelAware
---------------
+### modelAware
+
+Utility methods which allows other mixins to depend on ```getModel``` and ```setModel``` methods.  This provides an single overridable mixin should you have non-standard model population requirements.
+
+#### getModel()
+*return the model associated with the current React component.*
+
+The model can be set using the ```model``` property or by explicitely calling ```setModel```.
+
 ```
 React.createClass({
   mixins: ['modelAware']
@@ -38,65 +47,68 @@ React.createClass({
 ...
 var model = this.refs.myClass.getModel();
 ```
-Mixin that exposes getModel/setModel on the component.  The model can also be set by using the ```model``` property when constructing the component.
+
+#### setModel(model)
+* ***model***: the Backbone model to set
+
+Associate the model with the current React component which can be retrieved using ```getModel```
 
 
-modelValueAware
---------------
+### modelValueAware
+*depends on modelAware*
+
+Utility methods to get and set the model value for a specific attribute key.  This can be used by input components for example so the model attribute key can be abstracted away.
+
+The ```key``` or ```ref``` attribute are used to specify the model key.
+
+Consumers can override this mixin to change model key retrieval strategies.  
+
+#### getModelValue()
+
+*returns the value from the model bound to the current React component using the ```key``` or ```ref``` property as the model attribute.*
+
+
+#### setModelValue(value)
+* ***value***: the model value to set
+
+*returns true if the model was set successfully and false otherwise*
+
+Set the value on the model bound to the current React component using the ```key``` or ```ref``` property as the model attribute.
+
+
+### modelPopulate
+*depends on modelAware*
+
+Utility mixin used to iterate child components and have their associated model value be set on the parent component model.
+
+#### modelPopulate (componentArray[, callback, options]) (callback[, options])
+* componentArray: the array of components to iterate.  If falsy, all child components that contain a ```ref``` attribute will be used
+* callback: the callback that will be executed ***only if*** the model passed validation when the attributes were set.  If provided, the model will be set automatically.
+* options: the model set options (Backbone.Model.set options parameter)
+
+*returns the attribute values*
+
+Iterate child (or provided) components and have each component set it's ***UI*** input value on the model attributes.
+
 ```
-React.createClass({
-  mixins: ['modelValueAware']
+// use this.refs automatically to get the components that will populate the model
+this.modelPopulate(function(model) {
+  // assuming the model validation passed, this callback will be executed
 });
-...
-<MyInputField ref="firstName" model={model}/>
-...
-this.refs.firstName.setModelValue('John Doe');
+
+// or for more control
+var attributes = this.modelPopulate();
+
+// or for even more control
+var attributes = this.modelPopulate(specificComponentsToCheck);
 ```
-Mixin that exposes getModelValue/setModelValue on the component.  By default it uses the ```key``` or ```ref``` property to get the model key.  While the example is not useful (as you should set the model directly), it is more useful for other mixins which would treat the component with only an awareness of the ```modelValueAware``` mixin (for example, the ```modelPopulate``` mixin).
 
 
-modelPopulate
--------------
-```
-React.createClass({
-  mixins: ['modelAware', 'modelPopulate'],
-  render: function() {
-    var model = this.getModel();
+### modelEventAware
+*depends on modelAware*
 
-    // "Input" is some example component that uses the "modelValueAware" mixin to return the DOM value that is appropriate for the model
-    return (
-      <div>
-        First Name: <Input ref="firstName" model={model}/>
-        <br/>
-        Last Name: <Input ref="lastName" model={model}/>
-      </div>
-    );
-  },
-  onSave: function() {
-    // wiring for this method is not shown here
+Utility mixin to expose managed model binding functions which are cleaned up when the component is unmounted.
 
-    // use this.refs automatically to get the components that will populate the model
-    this.modelPopulate(function(model) {
-      // assuming the model validation passed, this callback will be executed
-    });
-
-    // or for more control
-    var attributes = this.modelPopulate();
-
-    // or for even more control
-    var attributes = this.modelPopulate(specificComponentsToCheck);
-  }
-});
-```
-Mixin that exposes a ```modelPopulate``` method which will iterate through a set of components and call ```setModelValue``` for each compoent and return the populated attributes hash.  The components are expected to be including the ```modelValueAware``` mixin.  In addition, a callback function can be provided (if the parent component includes the ```modelAware``` mixin) which will cause the attributes to be automatically set on the model and the callback function to be executed only if the validation passed on the model.
-
-```modelPopulate(componentArray[, callback, setOptions])```
-or
-```modelPopulate(callback[, setOptions])```
-
-
-modelEventAware
---------------
 ```
 var MyClass React.createClass({
   mixins: ['modelEventAware'],
@@ -107,37 +119,61 @@ var MyClass React.createClass({
   onChange: function() { ... }
 });
 ```
-Exposes model event binding functions that will be cleaned up when the component is unmounted and not actually executed until the component
-is mounted.
-* ```modelOn(eventName, callback[, context])```;  similar to model.on.  the "context" used if not provided is the React component.
-* ```modelOnce(eventName, callback[, context])```;  similar to model.once.  the "context" used if not provided is the React component.
-* ```modelOff(eventName, callback[, context])```;  similar to model.off.  the "context" used if not provided is the React component.
 
-***By including [react-events](https://github.com/jhudson8/react-events) you can use declarative bindings like the following:***
-```
-React.createClass({
-  mixins: ['events', 'modelEventAware'],
-  events: {
-    'model:change': 'onChange',
-    'model[foo]:change': 'onChange' // will bind to a specific model set as "foo" on this.props or this.refs
-  },
-  onChange: function() { ... }
-});
-```
+#### modelOn(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
 
-modelIndexErrors
---------------
-Mixin that exposes a ```modelIndexErrors``` method which returns model validation errors in a standard format.  This is meant to be overridden if a different format is desired.  to do so, use the mixin ```replace``` method using [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).  See ```modelInvalidAware``` for details on the expected response format.
+Equivalent to Backbone.Events.on
 
 
-modelValidator
---------------
-Exposes a ```modelValidate(attributes, options)``` method which will call and return the model.validate method if it exists.
-If not, undefined will be returned.  If errors are found, the ```modelIndexErrors``` mixin will be used to organize the error response.
+#### modelOnce(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.once
 
 
-modelInvalidAware
---------------
+#### modelOff(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.off
+
+
+### modelIndexErrors
+Utility mixin to allow components to handle model validation error responses (used by the ```modelValidator``` mixin)
+
+#### modelIndexErrors(errors)
+* ***errors***: errors returned from the Backbone.Model.set ```invalid``` event
+
+*return errors in the format of ```{ field1Key: errorMessage, field2Key: errorMessage, ... }```*
+
+The expected input of the error object is ```[{field1Key: message}, {field2Key: message}, ...]```
+
+
+### modelValidator
+*depends on modelAware*
+
+#### modelValidate(attributes, options)
+* ***attributes***: the model attributes
+* ***options***: the set options
+
+*return the response from the model's validate method*
+
+Call the associated model's validate method
+
+
+### modelInvalidAware
+*depends on modelEventAware, modelIndexErrors*
+
+Allow components to be aware of field specific validation errors.
+
+Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using the ```modelIndexErrors``` method from the ```modelIndexErrors``` mixin and set the components ```error``` state attribute with the normalized error value.
+
 ```
 var MyClass React.createClass({
   mixins: ['modelInvalidAware'],
@@ -150,28 +186,14 @@ var MyClass React.createClass({
     }
   }
 });
-...
-<MyClass model={model} key="firstName"/>
-...
-// this would normally be triggered on validation - this is just for example purposes
-model.trigger('invalid', model, {fistName: 'Invalid first name'});
 ```
-Using the ```key``` or ```ref``` property, bind to the model and watch for ```invalid``` events.  If an ```invalid``` event is triggered, set the ```error``` state to the field error message.  Replace the ```modelIndexErrors``` mixin to override the current error indexing behavior.
-
-The default error list format is expected to be
-```{ field1Key: errorMessage, field2Key: errorMessage, ... } ```
-or
-```[{ field1Key: errorMessage}, {field2Key: errorMessage}, ... ]```
 
 
-modelChangeAware
---------------
-```
-React.createClass({
-  mixins: ['modelChangeAware']
-});
-```
+### modelChangeAware
+*depends on modelEventAware*
+
 Will force a render if the associated model has changed.  The "change" events are for models or collections and include
+
 * change
 * reset
 * add
@@ -179,62 +201,104 @@ Will force a render if the associated model has changed.  The "change" events ar
 * sort
 
 
-modelUpdateOn
---------------
-```
-var MyComponent = React.createClass({
-  mixins: ['modelUpdateOn']
-});
-<MyComponent model={myModel}, updateOn: "change:something"/>
-myModel.set({something: 'foo'})
-// MyComponent will be updated
-```
-Gives any comonent the ability to listen to a specific event (or array of events).  When this event is fired, the component will be force updated.
+### modelUpdateOn
+*depends on modelEventAware*
 
-It also exposes a ```updateOnModelEvent``` method which can be used if the events that should force an update should be determined internally within the component itself.
+Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.
+
+#### updateOnModelEvent(events)
+* ***events***: (string or array) event(s) to listen for to force a render
+
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelUpdateOn'],
-  getInitialState: function() {
-    this.updateOnModelEvent(['event1'[, 'event2', ...]);
-    return null;
+getInitialState: function() {
+  this.updateOnModelEvent(['event1');
+  return null;
+}
+```
+
+
+### modelLoadOn
+*depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
+
+Gives any comonent the ability to listen to a specific async event (or array of events).
+
+See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) for more details on the async events.
+
+When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
+
+Use the ```loadOn``` property to define the specific async event to bind to.
+
+```
+render: function() {
+  if (this.state.loading) {
+    // return something if we are loading
+  } else {
+    // return something if we are not loading
   }
+}
+```
+
+
+### modelAsyncAware
+*depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
+
+Gives any comonent the ability to listen to ***all*** async events.
+
+See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) for more details on the async events.
+
+When ***any*** async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
+
+```
+render: function() {
+  if (this.state.loading) {
+    // return something if we are loading
+  } else {
+    // return something if we are not loading
+  }
+}
+```
+
+
+Sections
+--------
+
+### Declaritive Model Event
+In addition to providing mixins which give Backbone awareness to React components, declaritive model events are made available similar to the ```events``` hash in Backbone.View.
+
+Model events can be defined using the ```model:``` prefix.
+
+For example, by including the ```events``` mixin, you can do this:
+
+```
+React.createClass({
+  mixins: ['events'],
+  events: {
+    'model:some-event': 'onSomeEvent',
+    // will bind to a specific model set as "foo" on this.props or this.refs
+    'model[foo]:some-event': 'onFooSomeEvent'
+  },
   ...
-  model.trigger('event1'); // the component will be rendered
 });
 ```
+In addition, Backbone.Events methods can be used on your component so your component allowing it to trigger events.
+
+This requires [react-events](https://github.com/jhudson8/react-events) to be included.
 
 
-modelLoadOn
---------------
-*this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
-```
-var MyComponent = React.createClass({
-  mixins: ['modelLoadOn'],
-  render: function() {
-    if (this.state.loading) {
-      // return something if we are loading
-    } else {
-      // return something if we are not loading
-    }
-  }
-});
-<MyComponent model={myModel}, loadOn: "read"/>
-myModel.fetch();
-// MyComponent.state.loading is now true
-```
-Gives any comonent the ability to listen to a specific async event (or array of events).  When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.  The specific async event to listen for is defined by the ```loadOn``` property value.
+### Event Callback Wrappers
+The following event callback wrappers are implemented (see [react-events](https://github.com/jhudson8/react-events)  for more details)
 
+* memoize
+* delay
+* defer
+* throttle
+* debounce
+* once
 
-modelAsyncAware
---------------
-*this mixin requires the inclusion of [backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
+For example
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelAsyncAware']
-});
-<MyComponent model={myModel}/>
-myModel.fetch();
-// MyComponent.state.loading is now true
+events: {
+  '*throttle(300):window:resize': 'forceUpdate'
+}
 ```
-Gives any comonent the ability to listen to ***all*** async events.  When any async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
+
