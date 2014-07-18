@@ -176,10 +176,10 @@
         components = _.map(this.refs, function(value) {return value;});
       }
       _.each(components, function(component) {
-        // the component *must* have a getModelValue
-        if (component.getModelValue) {
+        // the component *must* implement getUIValue
+        if (component.getUIValue) {
           var key = getKey(component),
-              value = component.getModelValue();
+              value = component.getUIValue();
           attributes[key] = value;
         }
       });
