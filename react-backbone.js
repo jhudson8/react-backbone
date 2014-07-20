@@ -470,21 +470,15 @@
   /**
    * Gives any comonent the ability to force an update when an event is fired
    */
-  React.mixins.add('modelUpdateOn', {
-    getInitialState: function() {
-      var keys = modelEventHandler('updateOn', this, '{key}', function() {
-        this.deferUpdate();
-      });
-    },
-
-    updateOnModelEvent: function(/* events */) {
-      function doUpdate() {
-        this.deferUpdate();
+  React.mixins.add('modelUpdateOn', function() {
+    var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+    return {
+      getInitialState: function() {
+        modelEventHandler(keys || 'updateOn', this, '{key}', function() {
+          this.deferUpdate();
+        });
       }
-      _.each(arguments, function(event) {
-        this.modelOn(event, doUpdate);
-      }, this);
-    }
+    };
   }, 'modelEventAware', 'deferUpdate');
 
 
