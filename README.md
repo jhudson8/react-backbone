@@ -247,16 +247,34 @@ See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/back
 
 When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
 
-Use the ```loadOn``` property to define the specific async event to bind to.
+Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
 
+##### Examples
+
+*parent component provides the event names as the ```modelLoadOn``` parameter*
 ```
-render: function() {
-  if (this.state.loading) {
-    // return something if we are loading
-  } else {
-    // return something if we are not loading
+var MyComponent = React.createClass({
+  mixins: ['modelLoadOn'],
+  render: function() {
+    if (this.state.loading) {
+      ...
+    } else {
+      ...
+    }
   }
-}
+});
+...
+new MyComponent({loadOn: 'read'});
+// or
+new MyComponent({updateOn: ['read', 'update']});
+```
+
+*declaring component provides the event names as mixin parameters*
+```
+var MyComponent = React.createClass({
+  mixins: ['modelUpdateOn("read", "update")'],
+  ...
+});
 ```
 
 

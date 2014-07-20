@@ -439,6 +439,20 @@ describe('modelLoadOn', function() {
     newComponent({props: {model: new Backbone.Model()}}, ['modelLoadOn']);
     // we are just looking for an error thrown in getInitialState
   });
+
+  it('should support mixin parameters instead of the "loadOn" property', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model}}, ['modelLoadOn("foo"))']),
+        spy = sinon.spy();
+    obj.setState = spy;
+    obj.mount();
+
+    Backbone.sync('foo', model, {url: 'foo'});
+    expect(spy).to.have.been.calledWith({loading: true});
+    $.success();
+    expect(spy).to.have.been.calledWith({loading: false});
+    expect(spy.callCount).to.eql(2);
+  });
 });
 
 describe('modelAsyncAware', function() {

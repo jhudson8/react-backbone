@@ -426,40 +426,43 @@
    * Gives any comonent the ability to mark the "loading" attribute in the state as true
    * when any async event of the given type (defined by the "key" property) occurs.
    */
-  React.mixins.add('modelLoadOn', {
-    getInitialState: function() {
-      var keys = modelEventHandler('loadOn', this, 'async:{key}', function(events) {
-        this.setState({loading: true});
-        events.on('complete', function() {
-          if (this.isMounted()) {
-            this.setState({loading: false});
-          }
-        }, this);
-      });
-
-      // see if we are currently loading something
-      var model = this.getModel();
-      if (model) {
-        var currentLoads = model.isLoading(),
-            key;
-        if (currentLoads) {
-          var clearLoading = function() {
+  React.mixins.add('modelLoadOn', function() {
+    var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+    return {
+      getInitialState: function() {
+        keys = modelEventHandler(keys || 'loadOn', this, 'async:{key}', function(events) {
+          this.setState({loading: true});
+          events.on('complete', function() {
             if (this.isMounted()) {
               this.setState({loading: false});
             }
-          }
-          for (var i=0; i<currentLoads.length; i++) {
-            var keyIndex = keys.indexOf(currentLoads[i].method);
-            if (keyIndex >= 0) {
-              // there is currently an async event for this key
-              key = keys[keyIndex];
-              currentLoads[i].on('complete', clearLoading, this);
-              return {loading: true};
+          }, this);
+        });
+
+        // see if we are currently loading something
+        var model = this.getModel();
+        if (model) {
+          var currentLoads = model.isLoading(),
+              key;
+          if (currentLoads) {
+            var clearLoading = function() {
+              if (this.isMounted()) {
+                this.setState({loading: false});
+              }
+            }
+            for (var i=0; i<currentLoads.length; i++) {
+              var keyIndex = keys.indexOf(currentLoads[i].method);
+              if (keyIndex >= 0) {
+                // there is currently an async event for this key
+                key = keys[keyIndex];
+                currentLoads[i].on('complete', clearLoading, this);
+                return {loading: true};
+              }
             }
           }
         }
+        return {};
       }
-      return {};
     }
   }, 'modelEventAware');
 
