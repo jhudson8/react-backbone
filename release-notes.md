@@ -2,6 +2,11 @@
 
 ## Development
 
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.9.0...master)
+
+## v0.9.0 - July 20th, 2014
+- add low level backbone aware input components (Text, TextArea, CheckBox, Select, RadioGroup) - 6da1970
+
 ## v0.8.0 - July 19th, 2014
 - support mixin parameters for "modelValueAware" - efea304
 - support mixin parameters for "modelLoadOn" in addition to the "loadOn" property - 0db26d6
