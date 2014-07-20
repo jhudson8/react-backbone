@@ -65,13 +65,31 @@ Associate the model with the current React component which can be retrieved usin
 
 Utility methods to get and set the model value for a specific attribute key.  This can be used by input components for example so the model attribute key can be abstracted away.
 
-The ```key``` or ```ref``` attribute are used to specify the model key.
+The ```key``` or ```ref``` attribute are used to specify the model key.  In addition, the component using this mixin can supply the key (see examples).
 
-Consumers can override this mixin to change model key retrieval strategies.  
+##### Examples
+
+*allow the parent to set the "key" or "ref" model key attribute using the *key* or *ref* property
+```
+var MyComponent = React.createClass({
+  mixins: ['modelValueAware']
+});
+...
+new MyComponent({ref: 'foo'});
+
+```
+
+*allow the component to provide the model key attribute*
+```
+var MyComponent = React.createClass({
+  mixins: ['modelValueAware("foo")']
+});
+
+```
 
 #### getModelValue()
 
-*returns the value from the model bound to the current React component using the ```key``` or ```ref``` property as the model attribute.*
+*returns the value from the model bound to the current React component (see ```modelAware```) using the appropriate attribute key (see ```modelValueAware```).*
 
 
 #### setModelValue(value)

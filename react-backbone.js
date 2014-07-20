@@ -138,20 +138,23 @@
    * This allows model value oriented components to work with models without setting the updated
    * values directly on the models until the user performs some specific action (like clicking a save button).
    */  
-  React.mixins.add('modelValueAware', {
-    getModelValue: function() {
-      var key = getKey(this),
-          model = this.getModel();
-      if (model && key) {
-        return model.get(key);
-      }
-    },
+  React.mixins.add('modelValueAware', function(key) {
+    return {
+      getModelValue: function() {
+        key = key || getKey(this);
+        var model = this.getModel();
+        if (model && key) {
+          return model.get(key);
+        }
+      },
 
-    setModelValue: function(value, options) {
-      var key = getKey(this),
-          model = this.getModel();
-      if (model && key) {
-        return model.set(key, value, options);
+      setModelValue: function(value, options) {
+        key = key || getKey(this);
+        var model = this.getModel();
+            model = this.getModel();
+        if (model && key) {
+          return model.set(key, value, options);
+        }
       }
     }
   }, 'modelAware');
