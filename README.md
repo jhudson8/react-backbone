@@ -207,20 +207,34 @@ Will force a render if the associated model has changed.  The "change" events ar
 * remove
 * sort
 
+If you want to force a render only on specific model events, see *modelUpdateOn*.
+
 
 ### modelUpdateOn
 *depends on modelEventAware*
 
-Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.
+Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
-#### updateOnModelEvent(events)
-* ***events***: (string or array) event(s) to listen for to force a render
+##### Examples
 
+*parent component provides the event names as the ```updateOn``` parameter*
 ```
-getInitialState: function() {
-  this.updateOnModelEvent(['event1');
-  return null;
-}
+var MyComponent = React.createClass({
+  mixins: ['modelUpdateOn'],
+  ...
+});
+...
+new MyComponent({updateOn: 'foo'});
+// or
+new MyComponent({updateOn: ['foo', 'bar']});
+```
+
+*declaring component provides the event names as mixin parameters*
+```
+var MyComponent = React.createClass({
+  mixins: ['modelUpdateOn("foo", "bar")'],
+  ...
+});
 ```
 
 

@@ -62,7 +62,7 @@
   }
 
   function modelEventHandler(identifier, context, eventFormat, callback) {
-    var keys = eventParser(context.props[identifier]),
+    var keys = Array.isArray(identifier) ? identifier : eventParser(context.props[identifier]),
         key, eventName;
     if (keys) {
       // register the event handlers to watch for these events

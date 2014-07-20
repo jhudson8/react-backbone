@@ -347,6 +347,61 @@ describe('modelChangeAware', function() {
   });
 });
 
+describe('modelUpdateOn', function() {
+  var clock;
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
+  afterEach(function() {
+    clock.restore();
+  });
+
+  it('should listen to provided events and force an update', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model, updateOn: 'foo'}}, ['modelUpdateOn']),
+        spy = sinon.spy();
+    obj.forceUpdate = spy;
+    
+    obj.mount();
+    expect(spy.callCount).to.eql(0);
+    model.trigger('foo');
+    clock.tick(1);
+    expect(spy.callCount).to.eql(1);
+  });
+
+  it('should listen to provided events (as array) and force an update', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model, updateOn: ['foo', 'bar']}}, ['modelUpdateOn']),
+        spy = sinon.spy();
+    obj.forceUpdate = spy;
+    
+    obj.mount();
+    expect(spy.callCount).to.eql(0);
+    model.trigger('foo');
+    clock.tick(1);
+    expect(spy.callCount).to.eql(1);
+    model.trigger('bar');
+    clock.tick(1);
+    expect(spy.callCount).to.eql(2);
+  });
+
+  it('should listen to declaring component provided events and force an update', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model}}, ['modelUpdateOn("foo", "bar")']),
+        spy = sinon.spy();
+    obj.forceUpdate = spy;
+    
+    obj.mount();
+    expect(spy.callCount).to.eql(0);
+    model.trigger('foo');
+    clock.tick(1);
+    expect(spy.callCount).to.eql(1);
+    model.trigger('bar');
+    clock.tick(1);
+    expect(spy.callCount).to.eql(2);
+  });
+});
+
 
 // THE FOLLING TESTS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
 
