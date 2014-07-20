@@ -8,7 +8,9 @@
 - support mixin parameters for "modelUpdateOn" and remove the updateOnModelEvent method - d8b246b, 36c2dfc
 
 Compatibility notes:
-note that the updateOnModelEvent method has been removed in favor of mixin parameters for "modelLoadOn"
+* note that the updateOnModelEvent method has been removed in favor of mixin parameters for "modelLoadOn"
+* note that the react-mixin-manager dependency version has changed
+
 
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.1...v0.8.0)
 
