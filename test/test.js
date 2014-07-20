@@ -1,4 +1,4 @@
-/* global, describe, it */
+/* global, describe, it, beforeEach, afterEach, React, Backbone, _ */
 
 var chai = require('chai'),
     sinon = require('sinon'),
@@ -426,8 +426,6 @@ describe('modelLoadOn', function() {
         obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']),
         spy = sinon.spy();
     obj.setState = spy;
-    obj.mount();
-
     obj.mount();
 
     Backbone.sync('foo', model, {url: 'foo'});
