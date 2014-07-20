@@ -28,6 +28,140 @@ Dependencies
 * [react-events](https://github.com/jhudson8/react-events) (>= 0.4.1 optional)
 
 
+API: Input Components
+-------------
+Low level backbone model aware input components are provided.  These will
+
+* set the appropriate value if the model and (ref or key) property are defined
+* work with modelPopulate mixin to populate the attributes with the correct UI value
+
+This simple example shows how to use these components to get and set the model appropriately
+
+```
+var Text = Backbone.input.Text;
+var TextArea = Backbone.input.TextArea;
+var Select = Backbone.input.Select;
+var CheckBox = Backbone.input.CheckBox;
+var RadioGroup = Backbone.input.RadioGroup;
+
+module.exports = React.createClass({
+  mixins: ['modelPopulate'],
+
+  getDefaultProps: function() {
+    var model = new Backbone.Model({
+      isBoy: true,
+      firstName: 'John',
+      lastName: 'Doe',
+      hairColor: 'blonde',
+      eyeColor: 'brown'
+    });
+    return {
+      model: model
+    };
+  },
+
+  render: function() {
+    var model = this.getModel();
+    return (
+      <form onSubmit={this.onSubmit}>
+        FirstName: <Text ref="firstName" model={model}/>
+        <br/>
+        LastName: <TextArea ref="lastName" model={model}/>
+        <br/>
+        Is a Boy?: <CheckBox ref="isBoy" model={model}/>
+        <br/>
+        Hair Color: <Select ref="hairColor" model={model}>
+                  <option value="black">black</option>
+                  <option value="blonde">blonde</option>
+                  <option value="brown">brown</option>
+                </Select>
+        <br/>
+        Eye Color: <RadioGroup ref="eyeColor" model={model}>
+                      <input type="radio" name="eyeColor" value="blue"/> blue
+                      <input type="radio" name="eyeColor" value="brown"/> brown
+                      <input type="radio" name="eyeColor" value="green"/> green
+                    </RadioGroup>
+        <br/>
+        <button>Submit</button>
+      </form>
+    );
+  },
+
+  onSubmit: function(event) {
+    event.preventDefault();
+    var model = this.getModel();
+    this.modelPopulate(function(model) {
+      console.log(model);
+    });
+  }
+});
+```
+
+### Backbone.input.Text
+A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
+
+##### Example
+
+```
+var Text = Backbone.input.Text;
+...
+// assuming a model attribute "age" exists
+<Text type="number" ref="age" model={model}/>
+```
+
+### Backbone.input.TextArea
+A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
+
+##### Example
+```
+var TextArea = Backbone.input.TextArea;
+...
+// assuming a model attribute "description" exists
+<TextArea type="number" ref="description" model={model}/>
+```
+
+### Backbone.input.CheckBox
+A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
+
+##### Example
+```
+var CheckBox = Backbone.input.CheckBox;
+...
+// assuming a model attribute "acceptTermsOfService" exists
+<CheckBox ref="acceptTermsOfService" model={model}/>
+```
+
+### Backbone.input.Select
+A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
+
+##### Example
+```
+var Select = Backbone.input.Select;
+...
+// assuming a model attribute "eyeColor" exists
+<Select ref="eyeColor" model={model}>
+  <option value="blue">blue</option>
+  <option value="green">green</option>
+  <option value="brown">brown</option>
+</Select>
+```
+
+### Backbone.input.RadioGroup
+A model-aware component that should contain one or *React.DOM.input* (type=radio).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
+
+##### Example
+```
+var RadioGroup = Backbone.input.RadioGroup;
+...
+// assuming a model attribute "eyeColor" exists
+<RadioGroup ref="eyeColor" model={model}>
+  <input type="radio" value="blue"/> blue
+  <input type="radio" value="green"> green
+  <input type="radio" value="brown"> brown
+</RadioGroup>
+```
+
+
 API: Mixins
 --------------
 The named mixins exists by including [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
@@ -115,7 +249,7 @@ Utility mixin used to iterate child components and have their associated model v
 *returns the attribute values*
 
 Iterate child (or provided) components and have each component set it's ***UI*** input value on the model attributes.
-Components will only participate in model population if they implement getUIValue to return the value that should be set on the model.
+Components will only participate in model population if they implement getUIModelValue to return the value that should be set on the model.
 
 ```
 // use this.refs automatically to get the components that will populate the model
@@ -322,6 +456,7 @@ Sections
 --------
 
 ### Declaritive Model Event
+
 In addition to providing mixins which give Backbone awareness to React components, declaritive model events are made available similar to the ```events``` hash in Backbone.View.
 
 Model events can be defined using the ```model:``` prefix.
@@ -345,6 +480,7 @@ This requires [react-events](https://github.com/jhudson8/react-events) to be inc
 
 
 ### Event Callback Wrappers
+
 The following event callback wrappers are implemented (see [react-events](https://github.com/jhudson8/react-events)  for more details)
 
 * memoize

@@ -179,10 +179,10 @@
         components = _.map(this.refs, function(value) {return value;});
       }
       _.each(components, function(component) {
-        // the component *must* implement getUIValue
-        if (component.getUIValue) {
+        // the component *must* implement getValue
+        if (component.getUIModelValue) {
           var key = getKey(component),
-              value = component.getUIValue();
+              value = component.getUIModelValue();
           attributes[key] = value;
         }
       });
@@ -196,7 +196,7 @@
       }
       return attributes;
     }
-  });
+  }, 'modelAware');
 
 
   /**
@@ -551,4 +551,68 @@
       });
     }
   }
+
+  // Standard input components that implement react-backbone model awareness
+  var _inputClass = function(type, attributes, isCheckable, classAttributes) {
+    return React.createClass(_.extend({
+        mixins: ['modelValueAware'],
+        render: function() {
+          var props = {};
+          var defaultValue = this.getModelValue();
+          if (isCheckable) {
+            props.defaultChecked = defaultValue;
+          } else {
+            props.defaultValue = defaultValue;
+          }
+          return React.DOM[type](_.extend(props, attributes, this.props), this.props.children);
+        },
+        getUIModelValue: function() {
+          if (this.isMounted()) {
+            if (isCheckable) {
+              var el = this.getDOMNode();
+              if (el.checked) {
+                return el.value || true;
+              }
+            } else {
+              return $(this.getDOMNode()).val();
+            }
+          }
+        }
+      }, classAttributes));
+  };
+
+  Backbone.input = Backbone.input || {};
+  _.defaults(Backbone.input, {
+    Text: _inputClass('input', {type: 'text'}),
+    TextArea: _inputClass('textarea'),
+    Select: _inputClass('select', undefined, undefined),
+    CheckBox: _inputClass('input', {type: 'checkbox'}, true),
+    RadioGroup: React.createClass({
+      mixins: ['modelValueAware'],
+      render: function() {
+        var props = this.props;
+        return React.DOM[props.tag || 'span'](props, props.children);
+      },
+      componentDidMount: function() {
+        // select the appropriate radio button
+        var value = this.getModelValue();
+        if (value) {
+          var selector = 'input[value="' + value.replace('"', '\\"') + '"]';
+          var el = $(this.getDOMNode()).find(selector);
+          el.attr('checked', 'checked');
+        }
+      },
+      getUIModelValue: function() {
+        if (this.isMounted()) {
+          var selector = 'input[type="radio"]';
+          var els = $(this.getDOMNode()).find(selector);
+          for (var i=0; i<els.length; i++) {
+            if (els[i].checked) {
+              return els[i].value;
+            }
+          }
+        }
+      }
+    })
+  });
 });
