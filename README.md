@@ -23,7 +23,7 @@ Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
-* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.5.2)
+* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.6.0)
 * [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
 * [react-events](https://github.com/jhudson8/react-events) (>= 0.4.1 optional)
 
@@ -43,6 +43,8 @@ Utility methods which allows other mixins to depend on ```getModel``` and ```set
 *return the model associated with the current React component.*
 
 The model can be set using the ```model``` property or by explicitely calling ```setModel```.
+
+##### Examples
 
 ```
 React.createClass({
@@ -97,7 +99,7 @@ var MyComponent = React.createClass({
 
 *returns true if the model was set successfully and false otherwise*
 
-Set the value on the model bound to the current React component using the ```key``` or ```ref``` property as the model attribute.
+Set the value on the model bound to the current React component (see ```modelAware```) using the appropriate attribute key (see ```modelValueAware```).
 
 
 ### modelPopulate
