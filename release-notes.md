@@ -2,7 +2,15 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.1...master)
+## v0.8.0 - July 19th, 2014
+- support mixin parameters for "modelValueAware" - efea304
+- support mixin parameters for "modelLoadOn" in addition to the "loadOn" property - 0db26d6
+- support mixin parameters for "modelUpdateOn" and remove the updateOnModelEvent method - d8b246b, 36c2dfc
+
+Compatibility notes:
+note that the updateOnModelEvent method has been removed in favor of mixin parameters for "modelLoadOn"
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.7.1...v0.8.0)
 
 ## v0.7.1 - July 18th, 2014
 - ensure this.state exists before binding/undinding model events - 6e41527
