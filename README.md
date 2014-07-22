@@ -38,80 +38,80 @@ Low level backbone model-aware input components are provided.  These will
 This simple example shows how to use these components to get and set the model appropriately
 
 ```
-var Text = Backbone.input.Text;
-var TextArea = Backbone.input.TextArea;
-var Select = Backbone.input.Select;
-var CheckBox = Backbone.input.CheckBox;
-var RadioGroup = Backbone.input.RadioGroup;
+    var Text = Backbone.input.Text;
+    var TextArea = Backbone.input.TextArea;
+    var Select = Backbone.input.Select;
+    var CheckBox = Backbone.input.CheckBox;
+    var RadioGroup = Backbone.input.RadioGroup;
 
-module.exports = React.createClass({
-  mixins: ['modelPopulate'],
+    module.exports = React.createClass({
+      mixins: ['modelPopulate'],
 
-  getDefaultProps: function() {
-    var model = new Backbone.Model({
-      isBoy: true,
-      firstName: 'John',
-      lastName: 'Doe',
-      hairColor: 'blonde',
-      eyeColor: 'brown'
+      getDefaultProps: function() {
+        var model = new Backbone.Model({
+          isBoy: true,
+          firstName: 'John',
+          lastName: 'Doe',
+          hairColor: 'blonde',
+          eyeColor: 'brown'
+        });
+        return {
+          model: model
+        };
+      },
+
+      render: function() {
+
+        // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
+        var model = this.getModel();
+
+        return (
+          <form onSubmit={this.onSubmit}>
+            Name:
+            <Text ref="name" model={model}/>
+            <br/>
+
+            Summary:
+            <TextArea ref="summary" model={model}/>
+            <br/>
+
+            Accept Terms and Conditions?:
+            <CheckBox ref="acceptTOC" model={model}/>
+            <br/>
+
+            Hair Color:
+            <Select ref="hairColor" model={model}>
+              <option value="black">black</option>
+              <option value="blonde">blonde</option>
+              <option value="brown">brown</option>
+            </Select>
+            <br/>
+
+            Eye Color:
+            <RadioGroup ref="eyeColor" model={model}>
+              <input type="radio" name="eyeColor" value="blue"/> blue
+              <input type="radio" name="eyeColor" value="brown"/> brown
+              <input type="radio" name="eyeColor" value="green"/> green
+            </RadioGroup>
+            <br/>
+
+            <button>Submit</button>
+          </form>
+        );
+      },
+
+      onSubmit: function(event) {
+        event.preventDefault();
+        var model = this.getModel();
+
+        // the "modelPopulate" method exists because we included the "modelPopulate" mixin
+        this.modelPopulate(function(model) {
+          // if this callback fires, all inputs (identified with a ref) set the appropriate values on the model,
+          // and the model validation passed
+          console.log(model);
+        });
+      }
     });
-    return {
-      model: model
-    };
-  },
-
-  render: function() {
-
-    // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
-    var model = this.getModel();
-
-    return (
-      <form onSubmit={this.onSubmit}>
-        Name:
-        <Text ref="name" model={model}/>
-        <br/>
-
-        Summary:
-        <TextArea ref="summary" model={model}/>
-        <br/>
-
-        Accept Terms and Conditions?:
-        <CheckBox ref="acceptTOC" model={model}/>
-        <br/>
-
-        Hair Color:
-        <Select ref="hairColor" model={model}>
-          <option value="black">black</option>
-          <option value="blonde">blonde</option>
-          <option value="brown">brown</option>
-        </Select>
-        <br/>
-
-        Eye Color:
-        <RadioGroup ref="eyeColor" model={model}>
-          <input type="radio" name="eyeColor" value="blue"/> blue
-          <input type="radio" name="eyeColor" value="brown"/> brown
-          <input type="radio" name="eyeColor" value="green"/> green
-        </RadioGroup>
-        <br/>
-
-        <button>Submit</button>
-      </form>
-    );
-  },
-
-  onSubmit: function(event) {
-    event.preventDefault();
-    var model = this.getModel();
-
-    // the "modelPopulate" method exists because we included the "modelPopulate" mixin
-    this.modelPopulate(function(model) {
-      // if this callback fires, all inputs (identified with a ref) set the appropriate values on the model,
-      // and the model validation passed
-      console.log(model);
-    });
-  }
-});
 ```
 
 *note: these components can still be set (will override model values) just like their wrapped components (```value``` and ```defaultValue```) and all other properties will be pushed through as well```
@@ -124,10 +124,10 @@ Nested content is N/A.
 ##### Example
 
 ```
-var Text = Backbone.input.Text;
-...
-// assuming a model attribute "age" exists
-<Text type="number" ref="age" model={model}/>
+    var Text = Backbone.input.Text;
+    ...
+    // assuming a model attribute "age" exists
+    <Text type="number" ref="age" model={model}/>
 ```
 
 ### Backbone.input.TextArea
@@ -135,10 +135,10 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
 
 ##### Example
 ```
-var TextArea = Backbone.input.TextArea;
-...
-// assuming a model attribute "description" exists
-<TextArea type="number" ref="description" model={model}/>
+    var TextArea = Backbone.input.TextArea;
+    ...
+    // assuming a model attribute "description" exists
+    <TextArea type="number" ref="description" model={model}/>
 ```
 
 ### Backbone.input.CheckBox
@@ -146,10 +146,10 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
 
 ##### Example
 ```
-var CheckBox = Backbone.input.CheckBox;
-...
-// assuming a model attribute "acceptTermsOfService" exists
-<CheckBox ref="acceptTermsOfService" model={model}/>
+    var CheckBox = Backbone.input.CheckBox;
+    ...
+    // assuming a model attribute "acceptTermsOfService" exists
+    <CheckBox ref="acceptTermsOfService" model={model}/>
 ```
 
 ### Backbone.input.Select
@@ -157,14 +157,14 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
 
 ##### Example
 ```
-var Select = Backbone.input.Select;
-...
-// assuming a model attribute "eyeColor" exists
-<Select ref="eyeColor" model={model}>
-  <option value="blue">blue</option>
-  <option value="green">green</option>
-  <option value="brown">brown</option>
-</Select>
+    var Select = Backbone.input.Select;
+    ...
+    // assuming a model attribute "eyeColor" exists
+    <Select ref="eyeColor" model={model}>
+      <option value="blue">blue</option>
+      <option value="green">green</option>
+      <option value="brown">brown</option>
+    </Select>
 ```
 
 ### Backbone.input.RadioGroup
@@ -174,14 +174,14 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
 
 ##### Example
 ```
-var RadioGroup = Backbone.input.RadioGroup;
-...
-// assuming a model attribute "eyeColor" exists
-<RadioGroup ref="eyeColor" model={model}>
-  <input type="radio" value="blue"/> blue
-  <input type="radio" value="green"> green
-  <input type="radio" value="brown"> brown
-</RadioGroup>
+    var RadioGroup = Backbone.input.RadioGroup;
+    ...
+    // assuming a model attribute "eyeColor" exists
+    <RadioGroup ref="eyeColor" model={model}>
+      <input type="radio" value="blue"/> blue
+      <input type="radio" value="green"> green
+      <input type="radio" value="brown"> brown
+    </RadioGroup>
 ```
 
 
@@ -202,13 +202,13 @@ The model can be set using the ```model``` property or by explicitely calling ``
 ##### Examples
 
 ```
-React.createClass({
-  mixins: ['modelAware']
-});
-...
-<MyClass ref="myClass" model={model} key="foo"/>
-...
-var model = this.refs.myClass.getModel();
+    React.createClass({
+      mixins: ['modelAware']
+    });
+    ...
+    <MyClass ref="myClass" model={model} key="foo"/>
+    ...
+    var model = this.refs.myClass.getModel();
 ```
 
 #### setModel(model)
@@ -228,20 +228,19 @@ The ```key``` or ```ref``` attribute are used to specify the model key.  In addi
 
 *allow the parent to set the "key" or "ref" model key attribute using the *key* or *ref* property
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelValueAware']
-});
-...
-new MyComponent({ref: 'foo'});
+    var MyComponent = React.createClass({
+      mixins: ['modelValueAware']
+    });
+    ...
+    new MyComponent({ref: 'foo'});
 
 ```
 
 *allow the component to provide the model key attribute*
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelValueAware("foo")']
-});
-
+    var MyComponent = React.createClass({
+      mixins: ['modelValueAware("foo")']
+    });
 ```
 
 #### getModelValue()
@@ -280,16 +279,16 @@ The difference between ***getModelValue*** and ***getUIModelValue*** is
 ##### Examples
 
 ```
-// use this.refs automatically to get the components that will populate the model
-this.modelPopulate(function(model) {
-  // assuming the model validation passed, this callback will be executed
-});
+    // use this.refs automatically to get the components that will populate the model
+    this.modelPopulate(function(model) {
+      // assuming the model validation passed, this callback will be executed
+    });
 
-// or for more control
-var attributes = this.modelPopulate();
+    // or for more control
+    var attributes = this.modelPopulate();
 
-// or for even more control
-var attributes = this.modelPopulate(specificComponentsToCheck);
+    // or for even more control
+    var attributes = this.modelPopulate(specificComponentsToCheck);
 ```
 
 
@@ -302,14 +301,14 @@ This can also be achieved using declarative events with [jhudson8/react-events](
 
 ##### Example
 ```
-var MyClass React.createClass({
-  mixins: ['modelEventAware'],
-  getInitialState: function() {
-    this.modelOn('change', this.onChange);
-    return null;
-  },
-  onChange: function() { ... }
-});
+    var MyClass React.createClass({
+      mixins: ['modelEventAware'],
+      getInitialState: function() {
+        this.modelOn('change', this.onChange);
+        return null;
+      },
+      onChange: function() { ... }
+    });
 ```
 
 #### modelOn(eventName, callback[, context])
@@ -318,7 +317,6 @@ var MyClass React.createClass({
 * ***context***: the callback context
 
 Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.
-
 
 
 #### modelOnce(eventName, callback[, context])
@@ -370,17 +368,17 @@ Listen for attribute specific model ```invalid``` events.  When these occur, nor
 ##### Example
 
 ```
-var MyClass React.createClass({
-  mixins: ['modelInvalidAware'],
-  render: function() {
-    var error = this.state.error;
-    if (error) {
-      return 'Error: ' + error;
-    } else {
-      return 'No error';
-    }
-  }
-});
+    var MyClass React.createClass({
+      mixins: ['modelInvalidAware'],
+      render: function() {
+        var error = this.state.error;
+        if (error) {
+          return 'Error: ' + error;
+        } else {
+          return 'No error';
+        }
+      }
+    });
 ```
 
 
@@ -407,22 +405,22 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelUpdateOn'],
-  ...
-});
-...
-new MyComponent({updateOn: 'foo'});
-// or
-new MyComponent({updateOn: ['foo', 'bar']});
+    var MyComponent = React.createClass({
+      mixins: ['modelUpdateOn'],
+      ...
+    });
+    ...
+    new MyComponent({updateOn: 'foo'});
+    // or
+    new MyComponent({updateOn: ['foo', 'bar']});
 ```
 
 * when the child/declaring component provides the event name(s) as mixin parameters*
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelUpdateOn("foo", "bar")'],
-  ...
-});
+    var MyComponent = React.createClass({
+      mixins: ['modelUpdateOn("foo", "bar")'],
+      ...
+    });
 ```
 
 
@@ -441,28 +439,28 @@ Use the ```loadOn``` property to define the specific async event name to bind to
 
 *when a parent component provides the event names as the ```modelLoadOn``` parameter*
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelLoadOn'],
-  render: function() {
-    if (this.state.loading) {
-      ...
-    } else {
-      ...
-    }
-  }
-});
-...
-new MyComponent({loadOn: 'read'});
-// or
-new MyComponent({updateOn: ['read', 'update']});
+    var MyComponent = React.createClass({
+      mixins: ['modelLoadOn'],
+      render: function() {
+        if (this.state.loading) {
+          ...
+        } else {
+          ...
+        }
+      }
+    });
+    ...
+    new MyComponent({loadOn: 'read'});
+    // or
+    new MyComponent({updateOn: ['read', 'update']});
 ```
 
 *when a child/declaring component provides the event names as mixin parameters*
 ```
-var MyComponent = React.createClass({
-  mixins: ['modelUpdateOn("read", "update")'],
-  ...
-});
+    var MyComponent = React.createClass({
+      mixins: ['modelUpdateOn("read", "update")'],
+      ...
+    });
 ```
 
 
@@ -476,13 +474,13 @@ See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/back
 When ***any*** async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
 
 ```
-render: function() {
-  if (this.state.loading) {
-    // return something if we are loading
-  } else {
-    // return something if we are not loading
-  }
-}
+    render: function() {
+      if (this.state.loading) {
+        // return something if we are loading
+      } else {
+        // return something if we are not loading
+      }
+    }
 ```
 
 
@@ -503,15 +501,15 @@ Model events can be defined using the ```model:``` prefix.
 For example, by including the ```events``` mixin, you can do this:
 
 ```
-React.createClass({
-  mixins: ['events'],
-  events: {
-    'model:some-event': 'onSomeEvent',
-    // will bind to a specific model set as "foo" on this.props or this.refs
-    'model[foo]:some-event': 'onFooSomeEvent'
-  },
-  ...
-});
+    React.createClass({
+      mixins: ['events'],
+      events: {
+        'model:some-event': 'onSomeEvent',
+        // will bind to a specific model set as "foo" on this.props or this.refs
+        'model[foo]:some-event': 'onFooSomeEvent'
+      },
+      ...
+    });
 ```
 In addition, Backbone.Events methods can be used on your component so your component allowing it to trigger events.
 
@@ -531,8 +529,8 @@ The following event callback wrappers are implemented (see [react-events](https:
 
 For example
 ```
-events: {
-  '*throttle(300):window:resize': 'forceUpdate'
-}
+    events: {
+      '*throttle(300):window:resize': 'forceUpdate'
+    }
 ```
 
