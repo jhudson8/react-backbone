@@ -2,35 +2,35 @@ react-backbone
 ==============
 Connect [React](http://facebook.github.io/react/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
 
-***Problem:*** [React](http://facebook.github.io/react/) components are unaware of [Backbone](http://backbonejs.org/) models by default which cause some to try to embed [React](http://facebook.github.io/react/) components inside a Backbone.View.
+React mixins have the ability to add very tight integration between Backbone.Views with React components.
 
-***Solution:*** [React](http://facebook.github.io/react/) components should completely replace Backbone.View.  By including some simple mixins, [React](http://facebook.github.io/react/) components can become model-aware and provide as much or more integration expected with a Backbone.View.
+Most other projects of this nature just provide a single mixin which caused the React component to refresh if the associated model or collection has changed.  This project goes *much* further by isolating many different functions into unique plugins giving the developer the ability to include only the appropriate behaviors to their components.
 
+A set of low level input components which are model-aware are included as well.  These components allow you so simply supply a ```ref``` and ```model``` property to show the correct value.
 
-Docs
--------------
-Instead of reading this README file, you can [view it in fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) for a better experience.
+Since this project uses [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager), a few or all of these mixins can be grouped together so they can be treated as a single mixin.  In addition, they can be easily referenced using their alias:
 
+```
+React.createClass({
+  mixins: ['modelChangeAware']
+})
+```
 
-
-Installation
---------------
-* Browser: include *react-backbone[.min].js* after the listed dependencies
-* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
+[View the fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
 
 
 Dependencies
 --------------
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
-* [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.6.0)
-* [backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
-* [react-events](https://github.com/jhudson8/react-events) (>= 0.4.1 optional)
+* [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.6.0, optional)
+* [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
+* [jhudson8/react-events](https://github.com/jhudson8/react-events) (>= 0.4.1, optional)
 
 
 API: Input Components
 -------------
-Low level backbone model aware input components are provided.  These will
+Low level backbone model-aware input components are provided.  These will
 
 * set the appropriate value if the model and (ref or key) property are defined
 * work with modelPopulate mixin to populate the attributes with the correct UI value
@@ -61,27 +61,40 @@ module.exports = React.createClass({
   },
 
   render: function() {
+
+    // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
     var model = this.getModel();
+
     return (
       <form onSubmit={this.onSubmit}>
-        FirstName: <Text ref="firstName" model={model}/>
+        Name:
+        <Text ref="name" model={model}/>
         <br/>
-        LastName: <TextArea ref="lastName" model={model}/>
+
+        Summary:
+        <TextArea ref="summary" model={model}/>
         <br/>
-        Is a Boy?: <CheckBox ref="isBoy" model={model}/>
+
+        Accept Terms and Conditions?:
+        <CheckBox ref="acceptTOC" model={model}/>
         <br/>
-        Hair Color: <Select ref="hairColor" model={model}>
-                  <option value="black">black</option>
-                  <option value="blonde">blonde</option>
-                  <option value="brown">brown</option>
-                </Select>
+
+        Hair Color:
+        <Select ref="hairColor" model={model}>
+          <option value="black">black</option>
+          <option value="blonde">blonde</option>
+          <option value="brown">brown</option>
+        </Select>
         <br/>
-        Eye Color: <RadioGroup ref="eyeColor" model={model}>
-                      <input type="radio" name="eyeColor" value="blue"/> blue
-                      <input type="radio" name="eyeColor" value="brown"/> brown
-                      <input type="radio" name="eyeColor" value="green"/> green
-                    </RadioGroup>
+
+        Eye Color:
+        <RadioGroup ref="eyeColor" model={model}>
+          <input type="radio" name="eyeColor" value="blue"/> blue
+          <input type="radio" name="eyeColor" value="brown"/> brown
+          <input type="radio" name="eyeColor" value="green"/> green
+        </RadioGroup>
         <br/>
+
         <button>Submit</button>
       </form>
     );
@@ -90,15 +103,23 @@ module.exports = React.createClass({
   onSubmit: function(event) {
     event.preventDefault();
     var model = this.getModel();
+
+    // the "modelPopulate" method exists because we included the "modelPopulate" mixin
     this.modelPopulate(function(model) {
+      // if this callback fires, all inputs (identified with a ref) set the appropriate values on the model,
+      // and the model validation passed
       console.log(model);
     });
   }
 });
 ```
 
+*note: these components can still be set (will override model values) just like their wrapped components (```value``` and ```defaultValue```) and all other properties will be pushed through as well```
+
 ### Backbone.input.Text
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
+
+Nested content is N/A.
 
 ##### Example
 
@@ -149,6 +170,8 @@ var Select = Backbone.input.Select;
 ### Backbone.input.RadioGroup
 A model-aware component that should contain one or *React.DOM.input* (type=radio).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
+*note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
+
 ##### Example
 ```
 var RadioGroup = Backbone.input.RadioGroup;
@@ -164,9 +187,7 @@ var RadioGroup = Backbone.input.RadioGroup;
 
 API: Mixins
 --------------
-The named mixins exists by including [react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
-
-See [examples](https://github.com/jhudson8/react-backbone/blob/master/test/test.js#L78)
+These mixins can be referenced by their alias (see mixin examples) because they are registered using [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager).
 
 
 ### modelAware
@@ -249,7 +270,14 @@ Utility mixin used to iterate child components and have their associated model v
 *returns the attribute values*
 
 Iterate child (or provided) components and have each component set it's ***UI*** input value on the model attributes.
-Components will only participate in model population if they implement getUIModelValue to return the value that should be set on the model.
+Components will only participate in model population if they implement ***getUIModelValue*** to return the value that should be set on the model.
+
+The difference between ***getModelValue*** and ***getUIModelValue*** is
+
+* ***getModelValue*** is an abstraction so a component can get it's own model value without knowning how it is retrieved
+* ***getUIModelValue*** is a method used by external components to see what value has been set in the UI exposed by the component
+
+##### Examples
 
 ```
 // use this.refs automatically to get the components that will populate the model
@@ -270,6 +298,9 @@ var attributes = this.modelPopulate(specificComponentsToCheck);
 
 Utility mixin to expose managed model binding functions which are cleaned up when the component is unmounted.
 
+This can also be achieved using declarative events with [jhudson8/react-events](https://github.com/jhudson8/react-events)
+
+##### Example
 ```
 var MyClass React.createClass({
   mixins: ['modelEventAware'],
@@ -286,7 +317,8 @@ var MyClass React.createClass({
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.on
+Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.
+
 
 
 #### modelOnce(eventName, callback[, context])
@@ -294,7 +326,7 @@ Equivalent to Backbone.Events.on
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.once
+Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.
 
 
 #### modelOff(eventName, callback[, context])
@@ -302,7 +334,7 @@ Equivalent to Backbone.Events.once
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.off
+Equivalent to Backbone.Events.off for events registered using this mixin.
 
 
 ### modelIndexErrors
@@ -334,6 +366,8 @@ Call the associated model's validate method
 Allow components to be aware of field specific validation errors.
 
 Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using the ```modelIndexErrors``` method from the ```modelIndexErrors``` mixin and set the components ```error``` state attribute with the normalized error value.
+
+##### Example
 
 ```
 var MyClass React.createClass({
@@ -371,7 +405,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 
 ##### Examples
 
-*parent component provides the event names as the ```updateOn``` parameter*
+*when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
 var MyComponent = React.createClass({
   mixins: ['modelUpdateOn'],
@@ -383,7 +417,7 @@ new MyComponent({updateOn: 'foo'});
 new MyComponent({updateOn: ['foo', 'bar']});
 ```
 
-*declaring component provides the event names as mixin parameters*
+* when the child/declaring component provides the event name(s) as mixin parameters*
 ```
 var MyComponent = React.createClass({
   mixins: ['modelUpdateOn("foo", "bar")'],
@@ -395,7 +429,7 @@ var MyComponent = React.createClass({
 ### modelLoadOn
 *depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
 
-Gives any comonent the ability to listen to a specific async event (or array of events).
+Gives any comonent the ability to listen to a specific async event(s).
 
 See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) for more details on the async events.
 
@@ -405,7 +439,7 @@ Use the ```loadOn``` property to define the specific async event name to bind to
 
 ##### Examples
 
-*parent component provides the event names as the ```modelLoadOn``` parameter*
+*when a parent component provides the event names as the ```modelLoadOn``` parameter*
 ```
 var MyComponent = React.createClass({
   mixins: ['modelLoadOn'],
@@ -423,7 +457,7 @@ new MyComponent({loadOn: 'read'});
 new MyComponent({updateOn: ['read', 'update']});
 ```
 
-*declaring component provides the event names as mixin parameters*
+*when a child/declaring component provides the event names as mixin parameters*
 ```
 var MyComponent = React.createClass({
   mixins: ['modelUpdateOn("read", "update")'],
@@ -454,6 +488,11 @@ render: function() {
 
 Sections
 --------
+
+### Installation
+* Browser: include *react-backbone[.min].js* after the listed dependencies
+* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
+
 
 ### Declaritive Model Event
 
