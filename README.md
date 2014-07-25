@@ -116,7 +116,9 @@ This simple example shows how to use these components to get and set the model a
 
 *note: these components can still be set (will override model values) just like their wrapped components (```value``` and ```defaultValue```) and all other properties will be pushed through as well```
 
-### Backbone.input.Text
+### Backbone.input
+
+#### Text ()
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 Nested content is N/A.
@@ -130,7 +132,7 @@ Nested content is N/A.
     <Text type="number" ref="age" model={model}/>
 ```
 
-### Backbone.input.TextArea
+#### TextArea
 A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 ##### Example
@@ -141,7 +143,7 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
     <TextArea type="number" ref="description" model={model}/>
 ```
 
-### Backbone.input.CheckBox
+#### CheckBox
 A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
 
 ##### Example
@@ -152,7 +154,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
     <CheckBox ref="acceptTermsOfService" model={model}/>
 ```
 
-### Backbone.input.Select
+#### Select
 A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 ##### Example
@@ -167,7 +169,7 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
     </Select>
 ```
 
-### Backbone.input.RadioGroup
+#### RadioGroup
 A model-aware component that should contain one or *React.DOM.input* (type=radio).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 *note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
