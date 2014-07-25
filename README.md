@@ -1,6 +1,6 @@
 react-backbone
 ==============
-Connect [React](http://facebook.github.io/react/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
+Connect [Backbone](http://backbonejs.org/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
 
 React mixins have the ability to add very tight integration between Backbone.Views with React components.
 
