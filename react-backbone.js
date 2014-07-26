@@ -465,6 +465,28 @@
           }
         }
         return {};
+      },
+
+      /**
+       * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
+       * the state once the callback has completed
+       */
+      loadWhile: function(options) {
+        options = options || {};
+        var self = this;
+        function wrap(type) {
+          var _callback = options[type];
+          options[type] = function() {
+            self.setState({loading: false});
+            if (_callback) {
+              _callback.apply(this, arguments);
+            }
+          }
+        }
+        wrap('error');
+        wrap('success');
+        this.setState({loading: true});
+        return options;
       }
     }
   }, 'modelEventAware');

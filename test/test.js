@@ -110,14 +110,14 @@ describe('modelAware', function() {
 
 describe('modelPopulate', function() {
 
-  it('should iterate components and call getUIValue to set attributes', function() {
+  it('should iterate components and call getUIModelValue to set attributes', function() {
     var obj = newComponent({}, ['modelPopulate']);
     var components = [
       {
         props: {
           ref: 'foo'
         },
-        getUIValue: function() {
+        getUIModelValue: function() {
           return 'bar';
         }
       }
@@ -132,7 +132,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getUIValue: function() {
+      getUIModelValue: function() {
         return 'bar';
       }
     };
@@ -150,7 +150,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getUIValue: function() {
+      getUIModelValue: function() {
         return 'bar';
       }
     };
@@ -176,7 +176,7 @@ describe('modelPopulate', function() {
       props: {
         ref: 'foo'
       },
-      getUIValue: function() {
+      getUIModelValue: function() {
         return 'bar';
       }
     };
@@ -452,6 +452,48 @@ describe('modelLoadOn', function() {
     $.success();
     expect(spy).to.have.been.calledWith({loading: false});
     expect(spy.callCount).to.eql(2);
+  });
+
+  describe('loadWhile', function() {
+    it('should provide a return callback if none is supplied', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['modelLoadOn']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      var options = obj.loadWhile();
+      expect(spy).to.have.been.calledWith({loading: true});
+      expect(!!options.success).to.eql(true);
+      expect(!!options.error).to.eql(true);
+      options.success();
+      expect(spy).to.have.been.calledWith({loading: false});
+      options.error();
+      expect(spy.callCount).to.eql(3);
+      expect(spy).to.have.been.calledWith({loading: false});
+    });
+    it('should wrap callback functions if they are supplied', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['modelLoadOn']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      var _success = sinon.spy();
+      var _error = sinon.spy();
+      var options = obj.loadWhile({
+        success: _success,
+        error: _error
+      });
+      expect(spy).to.have.been.calledWith({loading: true});
+      options.success('foo');
+      expect(spy).to.have.been.calledWith({loading: false});
+      expect(_success).to.have.been.calledWith('foo')
+      options.error('bar');
+      expect(_error).to.have.been.calledWith('bar')
+      expect(spy.callCount).to.eql(3);
+      expect(spy).to.have.been.calledWith({loading: false});
+    });
   });
 });
 

@@ -465,6 +465,24 @@ Use the ```loadOn``` property to define the specific async event name to bind to
     });
 ```
 
+#### loadWhile () or (options)
+* ***options***: the Backbone options
+
+*returns the options or a new options object if none was provided*
+
+Set the state of the component with ```{loading: true}``` when this method is executed.  And wrap the ***success*** and ***error*** callbacks so that when ano one of them are called, the loading state will be set to false again.
+
+##### Example
+```
+    this.getModel().save(attributes, this.loadWhile());
+    // or
+    this.getModel().save(attributes, this.loadWhile({
+      success: ...,
+      error: ...,
+      ...
+    }));
+```
+
 
 ### modelAsyncAware
 *depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
