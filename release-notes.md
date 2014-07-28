@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.9.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.0...master)
+
+## v0.10.0 - July 27th, 2014
+- add the "loadWhile" method to the "modelLoadOn" mixin - dfe7d7e
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.9.0...v0.10.0)
 
 ## v0.9.0 - July 20th, 2014
 - add low level backbone aware input components (Text, TextArea, CheckBox, Select, RadioGroup) - 6da1970
