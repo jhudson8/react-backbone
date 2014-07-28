@@ -281,16 +281,24 @@ The difference between ***getModelValue*** and ***getUIModelValue*** is
 ##### Examples
 
 ```
-    // use this.refs automatically to get the components that will populate the model
-    this.modelPopulate(function(model) {
-      // assuming the model validation passed, this callback will be executed
+    React.create.Class({
+      mixins: ['modelPopulate'],
+      render: function() {
+        // return a form with react-backbone input fields
+      },
+      onFormSubmit: function() {
+        // use this.refs automatically to get the components that will populate the model
+        this.modelPopulate(function(model) {
+          // assuming the model validation passed, this callback will be executed
+        });
+
+        // or for more control
+        var attributes = this.modelPopulate();
+
+        // or for even more control
+        var attributes = this.modelPopulate(specificComponentsToCheck);
+      }
     });
-
-    // or for more control
-    var attributes = this.modelPopulate();
-
-    // or for even more control
-    var attributes = this.modelPopulate(specificComponentsToCheck);
 ```
 
 
@@ -312,6 +320,7 @@ This can also be achieved using declarative events with [jhudson8/react-events](
       onChange: function() { ... }
     });
 ```
+
 
 #### modelOn(eventName, callback[, context])
 * ***eventName***: the event name
@@ -345,7 +354,9 @@ Utility mixin to allow components to handle model validation error responses (us
 
 *return errors in the format of ```{ field1Key: errorMessage, field2Key: errorMessage, ... }```*
 
-The expected input of the error object is ```[{field1Key: message}, {field2Key: message}, ...]```
+The expected input of the error object is ```[{field1Key: message}, {field2Key: message}, ...]```.
+
+This mixin only exists to override core functionality if the error structure returned by the Backbone.Model validate method is non-standard.
 
 
 ### modelValidator
@@ -494,13 +505,16 @@ See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/back
 When ***any*** async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
 
 ```
-    render: function() {
-      if (this.state.loading) {
-        // return something if we are loading
-      } else {
-        // return something if we are not loading
+    React.createClass({
+      mixins: ['modelAsyncAware'],
+      render: function() {
+        if (this.state.loading) {
+          // return something if we are loading
+        } else {
+          // return something if we are not loading
+        }
       }
-    }
+    });
 ```
 
 
