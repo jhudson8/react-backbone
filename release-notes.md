@@ -2,7 +2,12 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.1...master)
+
+## v0.10.1 - September 7th, 2014
+- add "react-component" keyword - 3cabfa1
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.0...v0.10.1)
 
 ## v0.10.0 - July 27th, 2014
 - add the "loadWhile" method to the "modelLoadOn" mixin - dfe7d7e
