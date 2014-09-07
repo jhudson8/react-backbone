@@ -10,7 +10,8 @@
   "keywords": [
     "react",
     "mixin",
-    "backbone"
+    "backbone",
+    "react-component"
   ],
   "dependencies": {
     "underscore": "*"
