@@ -138,14 +138,15 @@
     },
 
     getModel: function() {
-      return this.props.model || this.props.collection;
+      return getState('model', this) || getState('collection', this)
+          || this.props.model || this.props.collection;
     },
 
     setModel: function(model) {
       if (this._modelUnbindAll) {
         this._modelUnbindAll(true);
       }
-      this.setProps({model: model});
+      setState({model: model}, this);
       if (this._modelBindAll && this.isMounted()) {
         // bind all events if using modelEventAware
         this._modelBindAll();
