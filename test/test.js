@@ -40,7 +40,9 @@ function newComponent(attributes, mixins) {
   }
 
   var obj = {
-    setState: sinon.spy(),
+    setState: sinon.spy(function(state) {
+      this.state = _.extend(this.state || {}, state);
+    }),
     setProps: function(props) {
       this.props = this.props || {};
       _.extend(this.props, props);
@@ -305,10 +307,11 @@ describe('modelEventAware', function() {
 
     // set another model and ensure the first was unbound
     obj.setModel(model2);
-    model1.trigger('foo');
-    expect(spy.callCount).to.eql(1); // ensure the previous trigger *did not* call the handler
     model2.trigger('foo');
     expect(spy.callCount).to.eql(2);
+
+    model1.trigger('foo');
+    expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
   });
 });
 
@@ -407,32 +410,47 @@ describe('modelUpdateOn', function() {
 
 describe('modelLoadOn', function() {
 
+  it('should not call setState if the component is not mounted (but still set the loading state attribute)', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
+
+    // initialize the plugins
+    obj.mount();
+
+    // make it look like we aren't mounted
+    obj._mounted = false;
+    Backbone.sync('foo', model, {url: 'foo'});
+    expect(obj.setState).to.not.have.been.called;
+    expect(obj.state.loading).to.eql(true);
+
+    obj._mounted = true;
+    $.success();
+    expect(obj.setState).to.have.been.calledWith({loading: false}); 
+    expect(obj.setState.callCount).to.eql(1);
+  });
+
   it('should set loading state when an async event is triggered (success condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']),
-        spy = sinon.spy();
-    obj.setState = spy;
+        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
     obj.mount();
 
     Backbone.sync('foo', model, {url: 'foo'});
-    expect(spy).to.have.been.calledWith({loading: true});
+    expect(obj.setState).to.have.been.calledWith({loading: true});
     $.success();
-    expect(spy).to.have.been.calledWith({loading: false});
-    expect(spy.callCount).to.eql(2);
+    expect(obj.setState).to.have.been.calledWith({loading: false});
+    expect(obj.setState.callCount).to.eql(2);
   });
 
   it('should set loading state when an async event is triggered (error condition)', function() {
     var model = new Backbone.Model(),
-        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']),
-        spy = sinon.spy();
-    obj.setState = spy;
+        obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
     obj.mount();
 
     Backbone.sync('foo', model, {url: 'foo'});
-    expect(spy).to.have.been.calledWith({loading: true});
+    expect(obj.setState).to.have.been.calledWith({loading: true});
     $.error();
-    expect(spy).to.have.been.calledWith({loading: false});
-    expect(spy.callCount).to.eql(2);
+    expect(obj.setState).to.have.been.calledWith({loading: false});
+    expect(obj.setState.callCount).to.eql(2);
   });
 
   it('should not error if no "loadOn" property is defined', function() {
