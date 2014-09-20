@@ -2,6 +2,13 @@
 
 ## Development
 
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.2...master)
+
+## v0.10.2 - September 20th, 2014
+- bug fix: setModel to set model in state rather than props - 5b2e91c
+- getModel to use props.model or props.collection - c24093e
+- gracefully handle state mutation for an unmounted component - 8af8d71
+
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.1...master)
 
 ## v0.10.1 - September 7th, 2014
