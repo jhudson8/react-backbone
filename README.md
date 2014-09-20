@@ -199,7 +199,7 @@ Utility methods which allows other mixins to depend on ```getModel``` and ```set
 #### getModel()
 *return the model associated with the current React component.*
 
-The model can be set using the ```model``` property or by explicitely calling ```setModel```.
+The model can be set using the ```model``` or ```collection``` property or by explicitely calling ```setModel```.
 
 ##### Examples
 
