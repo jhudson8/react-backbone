@@ -138,7 +138,7 @@
     },
 
     getModel: function() {
-      return this.props.model;
+      return this.props.model || this.props.collection;
     },
 
     setModel: function(model) {

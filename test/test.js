@@ -99,7 +99,19 @@ var Model = Backbone.Model.extend({
 
 describe('modelAware', function() {
 
-  it('should get and set the model', function() {
+  it('should get the model using props.model', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {model: model}}, ['modelAware']);
+    expect(obj.getModel()).to.eql(model);  
+  });
+
+  it('should get the model using props.collection', function() {
+    var model = new Backbone.Model(),
+        obj = newComponent({props: {collection: model}}, ['modelAware']);
+    expect(obj.getModel()).to.eql(model);  
+  });
+
+  it('should set the model', function() {
     var model = new Backbone.Model(),
         obj = newComponent({props: {model: model}}, ['modelAware']);
     expect(obj.getModel()).to.eql(model);
