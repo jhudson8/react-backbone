@@ -438,11 +438,11 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 
 
 ### modelLoadOn
-*depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
 
 Gives any comonent the ability to listen to a specific async event(s).
 
-See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) for more details on the async events.
+See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) for more details on the async events.
 
 When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
 
@@ -495,14 +495,14 @@ Set the state of the component with ```{loading: true}``` when this method is ex
 ```
 
 
-### modelAsyncAware
-*depends on [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event)*
+### modelXHRAware
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
 
 Gives any comonent the ability to listen to ***all*** async events.
 
-See the docs in [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) for more details on the async events.
+See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) for more details on the async events.
 
-When ***any*** async event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
+When ***any*** XHR event is fired, the state attribute ```loading``` will be set to a truthy value.  state.loading will be set to a falsy value when the XHR activity is complete.
 
 ```
     React.createClass({
@@ -567,4 +567,3 @@ For example
       '*throttle(300):window:resize': 'forceUpdate'
     }
 ```
-

@@ -1,19 +1,19 @@
 /*!
  * react-backbone v0.10.2
  * https://github.com/jhudson8/react-backbone
- * 
+ *
  * Copyright (c) 2014 Joe Hudson<joehud_AT_gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,6 +33,10 @@
     main(React, Backbone, _);
   }
 })(function(React, Backbone, _) {
+
+  var xhrEventName = Backbone.xhrEventName;
+  var xhrCompleteEventName = Backbone.xhrCompleteEventName;
+  var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
 
   function getModelByPropkey(key, context, useGetModel) {
     var model;
@@ -123,7 +127,7 @@
   /**
    * Simple overrideable mixin to get/set models.  Model can
    * be set on props or by calling setModel
-   */  
+   */
   React.mixins.add('modelAware', {
     componentWillMount: function() {
       // not directly related to this mixin but all of these mixins have this as a dependency
@@ -163,7 +167,7 @@
    *
    * This allows model value oriented components to work with models without setting the updated
    * values directly on the models until the user performs some specific action (like clicking a save button).
-   */  
+   */
   React.mixins.add('modelValueAware', function(key) {
     return {
       getModelValue: function() {
@@ -227,9 +231,9 @@
 
   /**
    * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
-   * against the provided attributes.  If invalid, a truthy value will be returned containing the 
+   * against the provided attributes.  If invalid, a truthy value will be returned containing the
    * validation errors.
-   */  
+   */
   React.mixins.add('modelValidator', {
     modelValidate: function(attributes, options) {
       var model = this.getModel();
@@ -338,32 +342,29 @@
   }, 'modelEventAware', 'deferUpdate');
 
 
-  // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-async-event](https://github.com/jhudson8/backbone-async-event)
+  // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
   /**
-   * If the model executes *any* asynchronous activity, the internal state "loading" attribute
+   * If the model executes *any* XHR activity, the internal state "loading" attribute
    * will be set to true and, if an error occurs with loading, the "error" state attribute
    * will be set with the error contents
    */
-  React.mixins.add('modelAsyncAware', {
+  React.mixins.add('modelXHRAware', {
     getInitialState: function() {
-      this.modelOn('async', function(eventName, events) {
+      this.modelOn(xhrEventName, function(eventName, events) {
         setState({loading: true}, this);
 
         var model = this.getModel();
         events.on('success', function() {
-          setState({loading: !!model.isLoading()}, this);
+          setState({loading: model[xhrModelLoadingAttribute]}, this);
         }, this);
         events.on('error', function(error) {
-          setState({loading: !!model.isLoading(), error: error}, this);
+          setState({loading: model[xhrModelLoadingAttribute], error: error}, this);
         }, this);
       });
 
       var model = this.getModel();
-      if (model && model.isLoading()) {
-        return {loading: true};
-      }
-      return {};
+      return {loading: model && model[xhrModelLoadingAttribute]};
     },
 
     componentDidMount: function() {
@@ -371,9 +372,10 @@
       var state = this.state,
           model = this.getModel();
       if (model) {
-        if (model.isLoading()) {
+        var loading = model[xhrModelLoadingAttribute];
+        if (loading) {
           // we're still loading yet but we haven't yet bound to this event
-          this.modelOnce('async:load-complete', function() {
+          this.modelOnce(xhrCompleteEventName, function() {
             setState({loading: false}, this);
           });
           if (!state.loading) {
@@ -400,7 +402,7 @@
           errors = this.modelIndexErrors(errors) || {};
           var message = errors[key];
           if (message) {
-            setState({error: message}, this);
+            setState({invalid: message}, this);
           }
         });
       }
@@ -412,7 +414,7 @@
   /**
    * Expose an indexModelErrors method which returns model validation errors in a standard format.
    * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
-   * 
+   *
    * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
    */
   React.mixins.add('modelIndexErrors', {
@@ -441,8 +443,9 @@
     var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
     return {
       getInitialState: function() {
-        keys = modelEventHandler(keys || 'loadOn', this, 'async:{key}', function(events) {
-          setState({loading: true}, this);
+        keys = modelEventHandler(keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
+          var model = this.getModel();
+          setState({loading: model[xhrModelLoadingAttribute]}, this);
           events.on('complete', function() {
             setState({loading: false}, this);
           }, this);
@@ -451,7 +454,7 @@
         // see if we are currently loading something
         var model = this.getModel();
         if (model) {
-          var currentLoads = model.isLoading(),
+          var currentLoads = model.loading,
               key;
           if (currentLoads) {
             var clearLoading = function() {
@@ -463,7 +466,7 @@
                 // there is currently an async event for this key
                 key = keys[keyIndex];
                 currentLoads[i].on('complete', clearLoading, this);
-                return {loading: true};
+                return {loading: model[xhrModelLoadingAttribute]};
               }
             }
           }
@@ -523,7 +526,7 @@
      * }
      * ...
      * onSomethingHappened: function() { ... }
-     * 
+     *
      * When using these model events, you *must* include the "modelEventAware" mixin
      */
     var _modelPattern = /^model(\[.+\])?$/;
