@@ -118,12 +118,10 @@ This simple example shows how to use these components to get and set the model a
 
 ### Backbone.input
 
-#### Text ()
+#### Text
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 Nested content is N/A.
-
-##### Example
 
 ```
     var Text = Backbone.input.Text;
@@ -135,7 +133,6 @@ Nested content is N/A.
 #### TextArea
 A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
-##### Example
 ```
     var TextArea = Backbone.input.TextArea;
     ...
@@ -146,7 +143,6 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
 #### CheckBox
 A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
 
-##### Example
 ```
     var CheckBox = Backbone.input.CheckBox;
     ...
@@ -157,7 +153,6 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
 #### Select
 A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
-##### Example
 ```
     var Select = Backbone.input.Select;
     ...
@@ -174,7 +169,6 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
 
 *note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
 
-##### Example
 ```
     var RadioGroup = Backbone.input.RadioGroup;
     ...
@@ -201,7 +195,6 @@ Utility methods which allows other mixins to depend on ```getModel``` and ```set
 
 The model can be set using the ```model``` or ```collection``` property or by explicitely calling ```setModel```.
 
-##### Examples
 
 ```
     React.createClass({
@@ -226,7 +219,6 @@ Utility methods to get and set the model value for a specific attribute key.  Th
 
 The ```key``` or ```ref``` attribute are used to specify the model key.  In addition, the component using this mixin can supply the key (see examples).
 
-##### Examples
 
 *allow the parent to set the "key" or "ref" model key attribute using the *key* or *ref* property
 ```
@@ -278,8 +270,6 @@ The difference between ***getModelValue*** and ***getUIModelValue*** is
 * ***getModelValue*** is an abstraction so a component can get it's own model value without knowning how it is retrieved
 * ***getUIModelValue*** is a method used by external components to see what value has been set in the UI exposed by the component
 
-##### Examples
-
 ```
     React.create.Class({
       mixins: ['modelPopulate'],
@@ -309,7 +299,6 @@ Utility mixin to expose managed model binding functions which are cleaned up whe
 
 This can also be achieved using declarative events with [jhudson8/react-events](https://github.com/jhudson8/react-events)
 
-##### Example
 ```
     var MyClass React.createClass({
       mixins: ['modelEventAware'],
@@ -378,7 +367,6 @@ Allow components to be aware of field specific validation errors.
 
 Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using the ```modelIndexErrors``` method from the ```modelIndexErrors``` mixin and set the components ```error``` state attribute with the normalized error value.
 
-##### Example
 
 ```
     var MyClass React.createClass({
@@ -414,8 +402,6 @@ If you want to force a render only on specific model events, see *modelUpdateOn*
 
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
-##### Examples
-
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
     var MyComponent = React.createClass({
@@ -447,8 +433,6 @@ See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backb
 When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
 
 Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
-
-##### Examples
 
 *when a parent component provides the event names as the ```modelLoadOn``` parameter*
 ```
@@ -483,7 +467,6 @@ Use the ```loadOn``` property to define the specific async event name to bind to
 
 Set the state of the component with ```{loading: true}``` when this method is executed.  And wrap the ***success*** and ***error*** callbacks so that when ano one of them are called, the loading state will be set to false again.
 
-##### Example
 ```
     this.getModel().save(attributes, this.loadWhile());
     // or
