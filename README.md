@@ -16,7 +16,7 @@ React.createClass({
 })
 ```
 
-[View react-backbone fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) (courtesy of https://github.com/jhudson8/fancydocs)
+[View fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
 
 
 Dependencies
