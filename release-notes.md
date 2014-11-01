@@ -2,7 +2,15 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.0...master)
+
+## v0.11.0 - November 1st, 2014
+- reference new backbone-xhr-events project instead of backbone-async-event
+- change modelAsyncAware mixin name to modelXHRAware - 5825464
+
+see new backbone-xhr-events project at https://github.com/jhudson8/backbone-xhr-events
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.10.2...v0.11.0)
 
 ## v0.10.2 - September 20th, 2014
 - bug fix: setModel to set model in state rather than props - 5b2e91c
