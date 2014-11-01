@@ -24,7 +24,7 @@ Dependencies
 * [React](http://facebook.github.io/react/)
 * [Backbone](http://backbonejs.org/)
 * [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.6.0, optional)
-* [jhudson8/backbone-async-event](https://github.com/jhudson8/backbone-async-event) (optional)
+* [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) (optional)
 * [jhudson8/react-events](https://github.com/jhudson8/react-events) (>= 0.4.1, optional)
 
 
