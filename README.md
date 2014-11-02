@@ -8,15 +8,16 @@ Most other projects of this nature just provide a single mixin which caused the 
 
 A set of low level input components which are model-aware are included as well.  These components allow you so simply supply a ```ref``` and ```model``` property to show the correct value.
 
-Since this project uses [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager), a few or all of these mixins can be grouped together so they can be treated as a single mixin.  In addition, they can be easily referenced using their alias:
+This project uses [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) so mixins are referenced their string alias, for example:
 
 ```
 React.createClass({
+  // force update if the model/collection changes
   mixins: ['modelChangeAware']
-})
+});
 ```
 
-[View fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
+[View the fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) or checkout [backbone-reaction](https://github.com/jhudson8/backbone-reaction), a project containing *react-backbone* and several other React and Backbone enhancements.
 
 
 Dependencies
