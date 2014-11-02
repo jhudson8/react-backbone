@@ -14,7 +14,9 @@
   "keywords": [
     "react",
     "mixin",
-    "backbone"
+    "backbone",
+    "react-component",
+    "react-mixin-manager"
   ],
   "license": "MIT",
   "ignore": [
