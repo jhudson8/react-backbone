@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.1...master)
+
+## v0.11.1 - November 2nd, 2014
+- add react-mixin-manager package keyword - 15f3f2e
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.0...v0.11.1)
 
 ## v0.11.0 - November 1st, 2014
 - reference new backbone-xhr-events project instead of backbone-async-event
