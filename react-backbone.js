@@ -171,19 +171,19 @@
   React.mixins.add('modelValueAware', function(key) {
     return {
       getModelValue: function() {
-        key = key || getKey(this);
+        var _key = key || getKey(this);
         var model = this.getModel();
-        if (model && key) {
-          return model.get(key);
+        if (model && _key) {
+          return model.get(_key);
         }
       },
 
       setModelValue: function(value, options) {
-        key = key || getKey(this);
+        var _key = key || getKey(this);
         var model = this.getModel();
             model = this.getModel();
-        if (model && key) {
-          return model.set(key, value, options);
+        if (model && _key) {
+          return model.set(_key, value, options);
         }
       }
     }
@@ -399,8 +399,8 @@
       var key = getKey(this);
       if (key) {
         this.modelOn('invalid', function(model, errors) {
-          errors = this.modelIndexErrors(errors) || {};
-          var message = errors[key];
+          var _errors = this.modelIndexErrors(errors) || {};
+          var message = _errors && _errors[key];
           if (message) {
             setState({invalid: message}, this);
           }
