@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.2...master)
+
+## v0.11.2 - November 11th, 2014
+- scoping bug fixes - f770b47
+- check this.key and this.ref to support React 0.12 - 1295da8
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.1...v0.11.2)
 
 ## v0.11.1 - November 2nd, 2014
 - add react-mixin-manager package keyword - 15f3f2e
