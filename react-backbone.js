@@ -81,7 +81,7 @@
   }
 
   function getKey(context) {
-    return context.props.key || context.props.ref;
+    return context.key || context.ref || context.props.key || context.props.ref;
   }
 
   function modelEventHandler(identifier, context, eventFormat, callback) {
