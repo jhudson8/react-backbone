@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.3...master)
+
+## v0.11.3 - November 11th, 2014
+- add "listenTo" mixin - 3d2969c
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.2...v0.11.3)
 
 ## v0.11.2 - November 11th, 2014
 - scoping bug fixes - f770b47
