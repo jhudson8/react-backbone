@@ -101,24 +101,24 @@
 
   /**
    * Internal model event binding handler
-   * (type(on|once|off), {event, callback, context, model})
+   * (type(on|once|off), {event, callback, context, target})
    */
-  function onEvent(type, data) {
+  function manageEvent(type, data) {
     var eventsParent = this;
     data = _.extend({type: type}, data);
-    var modelEvents = getState('__modelEvents', this);
-    if (!modelEvents) {
-      modelEvents = [];
-      setState({__modelEvents: modelEvents}, this);
+    var watchedEvents = getState('__watchedEvents', this);
+    if (!watchedEvents) {
+      watchedEvents = [];
+      setState({__watchedEvents: watchedEvents}, this);
     }
     data.context = data.context || this;
-    modelEvents.push(data);
+    watchedEvents.push(data);
 
     // bind now if we are already mounted (as the mount function won't be called)
     if (this.isMounted()) {
-      var model = data.model || this.getModel();
-      if (model) {
-        model[data.type](data.event, data.callback, data.context);
+      var target = data.target || data.model || this.getModel();
+      if (target) {
+        target[data.type](data.event, data.callback, data.context);
       }
     }
   }
@@ -147,13 +147,13 @@
     },
 
     setModel: function(model) {
-      if (this._modelUnbindAll) {
-        this._modelUnbindAll(true);
+      if (this._watchedEventsUnbindAll) {
+        this._watchedEventsUnbindAll(true);
       }
       setState({model: model}, this);
-      if (this._modelBindAll && this.isMounted()) {
+      if (this._watchedEventsBindAll && this.isMounted()) {
         // bind all events if using modelEventAware
-        this._modelBindAll();
+        this._watchedEventsBindAll();
       }
     }
   });
@@ -245,88 +245,127 @@
 
 
   /**
-   * Exposes model binding registration functions that will
-   * be cleaned up when the component is unmounted and not actually registered
-   * until the component is mounted.  The context will be "this" if not provided.
+   * Core event watcher mixin that won't be documented
    */
-  React.mixins.add('modelEventAware', {
-    getInitialState: function() {
-      return {};
-    },
-
-    // model.on
-    // ({event, model, callback, context}) or event, callback
-    modelOn: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event;
-      onEvent.call(this, 'on', data);
-    },
-
-    // model.once
-    modelOnce: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event;
-      onEvent.call(this, 'once', data);
-    },
-
-    modelOff: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event,
-          modelEvents = this.state.__modelEvents;
-      if (modelEvents) {
-        // find the existing binding
-        var _event;
-        for (var i=0; i<modelEvents.length; i++) {
-          _event = modelEvents[i];
-          if (_event.event === data.event && _event.model === data.model && _event.callback === data.callback) {
-            var model = data.model || this.getModel();
-            if (model) {
-              model.off(data.event, data.callback, data.context || this);
-            }
-            modelEvents.splice(i, 1);
-          }
-        }
-      }
-    },
-
+  React.mixins.add('_eventWatcher', {
     // bind all registered events to the model
-    _modelBindAll: function() {
-      var modelEvents = getState('__modelEvents', this);
-      if (modelEvents) {
-        var thisModel = this.getModel();
-        _.each(modelEvents, function(data) {
-          var model = data.model || thisModel;
-          if (model) {
-            model[data.type](data.event, data.callback, data.context);
+    _watchedEventsBindAll: function() {
+      var watchedEvents = getState('__watchedEvents', this);
+      if (watchedEvents) {
+        var thisModel = this.getModel && this.getModel();
+        _.each(watchedEvents, function(data) {
+          var target = data.target || thisModel;
+          if (target) {
+            target[data.type](data.event, data.callback, data.context);
           }
         });
       }
     },
 
     // unbind all registered events from the model
-    _modelUnbindAll: function(keepRegisteredEvents) {
-      var modelEvents = getState('__modelEvents', this);
-      if (modelEvents) {
-        var thisModel = this.getModel();
-        _.each(modelEvents, function(data) {
-          var model = data.model || thisModel;
-          if (model) {
-            model.off(data.event, data.callback, data.context);
+    _watchedEventsUnbindAll: function(keepRegisteredEvents, thisModelOverride) {
+      var watchedEvents = getState('__watchedEvents', this);
+      if (watchedEvents) {
+        var thisModel = this.getModel && this.getModel();
+        _.each(watchedEvents, function(data) {
+          var target = data.target || thisModelOverride || thisModel;
+          if (target) {
+            target.off(data.event, data.callback, data.context);
           }
         });
         if (!keepRegisteredEvents) {
-          setState({__modelEvents: []}, this);
+          setState({__watchedEvents: []}, this);
         }
       }
     },
 
     componentDidMount: function() {
       // sanity check to prevent duplicate binding
-      this._modelUnbindAll(true);
-      this._modelBindAll(true);
+      this._watchedEventsUnbindAll(true);
+      this._watchedEventsBindAll(true);
     },
 
     componentWillUnmount: function() {
-      this._modelUnbindAll(true);
+      this._watchedEventsUnbindAll(true);
     }
-  }, 'modelAware');
+  });
+
+
+  /**
+   * Allow for managed bindings to any object which supports on/off.
+   */
+  React.mixins.add('listenTo', {
+    // {event, callback, context, model}
+    listenTo: function(target, event, callback, context) {
+      var data = {event: event, callback: callback, target: target, context: context};
+      manageEvent.call(this, 'on', data);
+    },
+
+    stopListening: function(target, event, callback, context) {
+      var data = {event: event, callback: callback, target: target, context: context};
+      manageEvent.call(this, 'off', data);
+    }
+  }, '_eventWatcher');
+
+
+  /**
+   * Exposes model binding registration functions that will
+   * be cleaned up when the component is unmounted and not actually registered
+   * until the component is mounted.  The context will be "this" if not provided.
+   *
+   * This is similar to the "listenTo" mixin but model event bindings here will
+   * be transferred to another model if a new one is set on the props.
+   */
+  React.mixins.add('modelEventAware', {
+    getInitialState: function() {
+      return {};
+    },
+
+    componentWillReceiveProps: function(props) {
+      var preModel = this.getModel();
+      var self = this;
+      _.defer(function() {
+        var postModel = self.getModel();
+        if (preModel !== postModel) {
+          // we need to clear out the previously bound model events
+          self._watchedEventsUnbindAll(true, preModel);
+          self._watchedEventsBindAll();
+        }
+      });
+    },
+
+    // model.on
+    // ({event, model, callback, context}) or event, callback
+    modelOn: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event;
+      manageEvent.call(this, 'on', data);
+    },
+
+    // model.once
+    modelOnce: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event;
+      manageEvent.call(this, 'once', data);
+    },
+
+    modelOff: function (event, callback) {
+      var data = callback ? {event: event, callback: callback} : event,
+          watchedEvents = this.state.__watchedEvents;
+      if (watchedEvents) {
+        // find the existing binding
+        var _event;
+        for (var i=0; i<watchedEvents.length; i++) {
+          _event = watchedEvents[i];
+          if (_event.event === data.event && _event.model === data.model && _event.callback === data.callback) {
+            var target = data.target || this.getModel();
+            if (target) {
+              target.off(data.event, data.callback, data.context || this);
+            }
+            watchedEvents.splice(i, 1);
+          }
+        }
+      }
+    }
+  }, 'modelAware', '_eventWatcher');
 
 
   /**
@@ -644,4 +683,5 @@
       }
     })
   });
+
 });

@@ -293,10 +293,47 @@ The difference between ***getModelValue*** and ***getUIModelValue*** is
 ```
 
 
+### listenTo
+
+Utility mixin to expose managed Backbone.Events binding functions which are cleaned up when the component is unmounted.
+This is similar to the "modelEventAware" mixin but is not model specific.
+
+```
+    var MyClass React.createClass({
+      mixins: ['listenTo'],
+      getInitialState: function() {
+        this.listenTo(this.props.someObject, 'change', this.onChange);
+        return null;
+      },
+      onChange: function() { ... }
+    });
+```
+
+
+#### listenTo(target, eventName, callback[, context])
+* ***target***: the source object to bind to
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.
+
+
+#### stopListening(eventName, callback[, context])
+* ***target***: the source object to bind to
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.off for events registered using this mixin.
+
+
 ### modelEventAware
 *depends on modelAware*
 
 Utility mixin to expose managed model binding functions which are cleaned up when the component is unmounted.
+
+This is similar to the "listenTo" mixin but will auto rebind if the model is changed by updating the props.
 
 This can also be achieved using declarative events with [jhudson8/react-events](https://github.com/jhudson8/react-events)
 

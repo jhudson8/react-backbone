@@ -44,6 +44,7 @@ function newComponent(attributes, mixins) {
       this.state = _.extend(this.state || {}, state);
     }),
     setProps: function(props) {
+      this.trigger('componentWillReceiveProps', props);
       this.props = this.props || {};
       _.extend(this.props, props);
     },
@@ -249,7 +250,59 @@ describe('react-backbone', function() {
     });
   });
 
+
+  describe('listenTo', function() {
+    it('should start listening to a target', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['listenTo']),
+          spy = sinon.spy();
+      obj.listenTo(model, 'foo', spy);
+      model.trigger('foo');
+      // we shouldn't bind yet because we aren't mounted
+      expect(spy.callCount).to.eql(0);
+
+      obj.mount();
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // we shouldn't bind now because we will be unmounted
+      obj.unmount();
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // mount again and ensure that we rebind
+      obj.mount();
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+      obj.unmount();
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+    });
+
+    it('should stop listening to a target', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['listenTo']),
+          spy = sinon.spy();
+      obj.listenTo(model, 'foo', spy);
+      obj.mount();
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      obj.stopListening(model, 'foo', spy);
+      model.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+    });
+  });
+
+
   describe('modelEventAware', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
 
     it('should not do event binding until node is mounted', function() {
       var model = new Backbone.Model(),
@@ -320,6 +373,28 @@ describe('react-backbone', function() {
 
       // set another model and ensure the first was unbound
       obj.setModel(model2);
+      model2.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+
+      model1.trigger('foo');
+      expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
+    });
+
+    it('should transfer bindings if a new model property is provided', function() {
+      var model1 = new Backbone.Model(),
+          model2 = new Backbone.Model(),
+          obj = newComponent({props: {model: model1}}, ['modelEventAware']),
+          spy = sinon.spy();
+// joe
+      obj.modelOn('foo', spy);
+      obj.mount();
+      model1.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // set another model and ensure the first was unbound
+      obj.setProps({model: model2});
+      clock.tick(1);
+
       model2.trigger('foo');
       expect(spy.callCount).to.eql(2);
 
@@ -618,6 +693,7 @@ describe('react-backbone', function() {
             },
             onChange: spy
           }, ['events', 'modelEventAware']);
+      debugger;
       obj.mount();
       model.set({foo: 'bar'});
       expect(spy.callCount).to.eql(1);
