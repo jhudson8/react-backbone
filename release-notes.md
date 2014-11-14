@@ -2,7 +2,22 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.0...master)
+
+## v0.12.0 - November 14th, 2014
+- add additional method signatures for modelPopulate - e6c1c6c
+- for modelPopulate, change getModelValue to just getValue and getUIModelValue to getDOMValue - e36d774
+- remove "modelValueAware" mixin to use Backbone.input.getModel and Backbone.input.setModel instead - 906ac23
+
+Compatibility notes:
+this is *not* backwards compatible if you were using the "modelValueAware" mixin or referencing the "getModelValue" or "setModelValue" methos.
+component.getModelValue is now referenced as Backbone.input.getModelValue(component) and the same with setModelValue
+note: these methods are used to set a value that is on the model which is bound to a component
+
+modelPopulate now references the "getValue" method to get the value which should be set on the model.  This used to be "getModelValue"
+the Backbone.input components also now support getDOMValue which returns the actual form input value.  Usually "getValue" and "getDOMValue" are the same but they can be different in the case of a checkbox.
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.11.3...v0.12.0)
 
 ## v0.11.3 - November 11th, 2014
 - add "listenTo" mixin - 3d2969c
