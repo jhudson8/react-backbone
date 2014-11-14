@@ -256,20 +256,18 @@ Set the value on the model bound to the current React component (see ```modelAwa
 
 Utility mixin used to iterate child components and have their associated model value be set on the parent component model.
 
-#### modelPopulate (componentArray[, callback, options]) (callback[, options])
+#### modelPopulate ([componentArray][, callback][, options][, model]) (callback[, options])
 * componentArray: the array of components to iterate.  If falsy, all child components that contain a ```ref``` attribute will be used
 * callback: the callback that will be executed ***only if*** the model passed validation when the attributes were set.  If provided, the model will be set automatically.
 * options: the model set options (Backbone.Model.set options parameter)
+* model: the model to set the form values on or false if the default component bound model should not be used in favor or just returning the attributes
 
 *returns the attribute values*
 
-Iterate child (or provided) components and have each component set it's ***UI*** input value on the model attributes.
-Components will only participate in model population if they implement ***getUIModelValue*** to return the value that should be set on the model.
+Iterate child (or provided) components and have each component set it's input value on the model attributes.
+Components will only participate in model population if they implement ***getValue*** to return the value that should be set on the model.
 
-The difference between ***getModelValue*** and ***getUIModelValue*** is
-
-* ***getModelValue*** is an abstraction so a component can get it's own model value without knowning how it is retrieved
-* ***getUIModelValue*** is a method used by external components to see what value has been set in the UI exposed by the component
+If a component does not contain a ```getValue``` method but does contain a ```modelPopulate``` method (by including the ```modelPopulate``` mixin), the modelPopulate method on that component will be called as well with the attributes applied to the parent component's model.
 
 ```
     React.create.Class({

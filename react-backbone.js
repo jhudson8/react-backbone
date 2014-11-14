@@ -187,24 +187,20 @@
    * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
    */
   React.mixins.add('modelPopulate', {
-    modelPopulate: function(components, callback, options, model) {
-      if (!_.isArray(components)) {
-        // allow callback to be provided as first function if using refs
-        options = callback;
-        callback = components;
-        components = undefined;
-      }
-      if (!_.isFunction(callback)) {
-        model = options;
-        options = callback;
-        callback = undefined;
-      }
-      if (options instanceof Backbone.Model || options === false) {
-        model = options;
-        options = undefined;
-      }
+    modelPopulate: function() {
+      var components, callback, options, model;
+      _.each(arguments, function(value) {
+        if (value instanceof Backbone.Model || value === false) {
+          model = value;
+        } else if (_.isArray(value)) {
+          components = value;
+        } else if (_.isFunction(value)) {
+          callback = value;
+        } else {
+          options = value;
+        }
+      });
       if (_.isUndefined(model) && this.getModel) {
-        // pass false for provided model if you do not want component bound model to be populated
         model = this.getModel();
       }
 
@@ -213,19 +209,53 @@
         // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
         components = _.map(this.refs, function(value) {return value;});
       }
+      var models = {};
       _.each(components, function(component) {
-        // the component *must* implement getValue
-        if (component.getModelValue) {
-          var key = getKey(component),
-              value = component.getModelValue();
-          attributes[key] = value;
-        } else if (component.modelPopulate) {
-          var _attributes = component.modelPopulate(options, false);
-          _.extend(attributes, _attributes);
+        // the component *must* implement getValue or modelPopulate to participate
+        if (component.getValue) {
+          var key = getKey(component)
+          if (key) {
+            var value = component.getValue();
+            attributes[key] = value;
+          }
+        }
+        else if (component.modelPopulate && component.getModel) {
+          if (!model) {
+            // if we aren't populating to models, this is not necessary
+            return;
+          }
+          var _model = component.getModel();
+          if (_model) {
+            var _attributes = component.modelPopulate(options, false);
+            var previousAttributes = models[_model.cid] || {};
+            _.extend(previousAttributes, _attributes);
+            models[_model.cid] = {model: _model, attr: previousAttributes};
+          }
         }
       });
       if (model) {
-        if (model.set(attributes, options || {validate: true}) && callback) {
+        // make sure all submodels are valid so this can be atomic
+        var isValid = true;
+        var data = models[model.cid];
+        if (!data) {
+          data = {model: model, attr: {}};
+        }
+        _.extend(data.attr, attributes);
+        models[model.cid] = data;
+        options = options || {};
+        _.each(models, function(data) {
+          var errors = !data.model._validate(data.attr, options);
+          isValid = !errors && isValid;
+        });
+
+        if (isValid) {
+          options = _.defaults({validate: false}, options);
+          _.each(models, function(data) {
+            data.model.set(data.attr, options);
+          });
+        }
+
+        if (callback && isValid) {
           callback.call(this, model);
         }
       }
@@ -629,6 +659,7 @@
   // Standard input components that implement react-backbone model awareness
   var _inputClass = function(type, attributes, isCheckable, classAttributes) {
     return React.createClass(_.extend({
+      mixins: ['modelAware'],
       render: function() {
         var props = {};
         var defaultValue = getModelValue(this);
