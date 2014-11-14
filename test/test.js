@@ -126,19 +126,19 @@ describe('react-backbone', function() {
 
   describe('modelPopulate', function() {
 
-    it('should iterate components and call getUIModelValue to set attributes', function() {
+    it('should iterate components and call getModelValue to set attributes', function() {
       var obj = newComponent({}, ['modelPopulate']);
       var components = [
         {
           props: {
             ref: 'foo'
           },
-          getUIModelValue: function() {
+          getModelValue: function() {
             return 'bar';
           }
         }
       ];
-      var attributes = obj.modelPopulate(components);
+      var attributes = obj.modelPopulate(components, false);
       expect(attributes).to.eql({foo: 'bar'});
     });
 
@@ -148,14 +148,14 @@ describe('react-backbone', function() {
         props: {
           ref: 'foo'
         },
-        getUIModelValue: function() {
+        getModelValue: function() {
           return 'bar';
         }
       };
       obj.refs = {
         foo: component
       };
-      var attributes = obj.modelPopulate();
+      var attributes = obj.modelPopulate(false);
       expect(attributes).to.eql({foo: 'bar'});
     });
 
@@ -166,7 +166,7 @@ describe('react-backbone', function() {
         props: {
           ref: 'foo'
         },
-        getUIModelValue: function() {
+        getModelValue: function() {
           return 'bar';
         }
       };
@@ -192,7 +192,7 @@ describe('react-backbone', function() {
         props: {
           ref: 'foo'
         },
-        getUIModelValue: function() {
+        getModelValue: function() {
           return 'bar';
         }
       };
@@ -207,21 +207,24 @@ describe('react-backbone', function() {
     });
   });
 
-  describe('modelValueAware', function() {
+  describe('model value awareness', function() {
 
-    it('should get and set the model value using "key"', function() {
+    it('should get value from model using Backbone.input.getModelValue(component) and set the model value using "key"', function() {
       var model = new Backbone.Model({foo: 'bar'}),
-          obj = newComponent({props: {model: model, key: 'foo'}}, ['modelValueAware']);
-      expect(obj.getModelValue()).to.eql('bar');
-      obj.setModelValue('baz');
+          obj = newComponent({props: {model: model, key: 'foo'}}, ['modelAware']);
+      // expect(Backbone.input.getModelValue(obj)).to.eql('bar');
+      var val = Backbone.input.getModelValue(obj);
+      expect(val).to.eql('bar');
+
+      Backbone.input.setModelValue(obj, 'baz');
       expect(model.get('foo')).to.eql('baz');
     });
 
     it('should get and set the model value using "ref"', function() {
       var model = new Backbone.Model({foo: 'bar'}),
-          obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelValueAware']);
-      expect(obj.getModelValue()).to.eql('bar');
-      obj.setModelValue('baz');
+          obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelAware']);
+      expect(Backbone.input.getModelValue(obj)).to.eql('bar');
+      Backbone.input.setModelValue(obj, 'baz');
       expect(model.get('foo')).to.eql('baz');
     });
   });
