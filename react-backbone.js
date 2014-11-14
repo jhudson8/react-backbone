@@ -242,9 +242,9 @@
         }
         _.extend(data.attr, attributes);
         models[model.cid] = data;
-        options = options || {};
+        var validateOptions = _.defaults({validate: true}, options);
         _.each(models, function(data) {
-          var errors = !data.model._validate(data.attr, options);
+          var errors = !data.model._validate(data.attr, validateOptions);
           isValid = !errors && isValid;
         });
 

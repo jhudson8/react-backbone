@@ -126,14 +126,14 @@ describe('react-backbone', function() {
 
   describe('modelPopulate', function() {
 
-    it('should iterate components and call getModelValue to set attributes', function() {
+    it('should iterate components and call getValue to set attributes', function() {
       var obj = newComponent({}, ['modelPopulate']);
       var components = [
         {
           props: {
             ref: 'foo'
           },
-          getModelValue: function() {
+          getValue: function() {
             return 'bar';
           }
         }
@@ -142,13 +142,13 @@ describe('react-backbone', function() {
       expect(attributes).to.eql({foo: 'bar'});
     });
 
-    it('should iterate components and call getModelValue to set attributes using refs', function() {
+    it('should iterate components and call getValue to set attributes using refs', function() {
       var obj = newComponent({}, ['modelPopulate']);
       var component = {
         props: {
           ref: 'foo'
         },
-        getModelValue: function() {
+        getValue: function() {
           return 'bar';
         }
       };
@@ -166,7 +166,7 @@ describe('react-backbone', function() {
         props: {
           ref: 'foo'
         },
-        getModelValue: function() {
+        getValue: function() {
           return 'bar';
         }
       };
@@ -192,7 +192,7 @@ describe('react-backbone', function() {
         props: {
           ref: 'foo'
         },
-        getModelValue: function() {
+        getValue: function() {
           return 'bar';
         }
       };
@@ -696,7 +696,6 @@ describe('react-backbone', function() {
             },
             onChange: spy
           }, ['events', 'modelEventAware']);
-      debugger;
       obj.mount();
       model.set({foo: 'bar'});
       expect(spy.callCount).to.eql(1);
