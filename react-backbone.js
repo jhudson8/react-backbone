@@ -187,13 +187,27 @@
    * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
    */
   React.mixins.add('modelPopulate', {
-    modelPopulate: function(components, callback, options) {
-      if (_.isFunction(components)) {
+    modelPopulate: function(components, callback, options, model) {
+      if (!_.isArray(components)) {
         // allow callback to be provided as first function if using refs
         options = callback;
         callback = components;
         components = undefined;
       }
+      if (!_.isFunction(callback)) {
+        model = options;
+        options = callback;
+        callback = undefined;
+      }
+      if (options instanceof Backbone.Model || options === false) {
+        model = options;
+        options = undefined;
+      }
+      if (_.isUndefined(model) && this.getModel) {
+        // pass false for provided model if you do not want component bound model to be populated
+        model = this.getModel();
+      }
+
       var attributes = {};
       if (!components) {
         // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
@@ -201,18 +215,18 @@
       }
       _.each(components, function(component) {
         // the component *must* implement getValue
-        if (component.getUIModelValue) {
+        if (component.getModelValue) {
           var key = getKey(component),
-              value = component.getUIModelValue();
+              value = component.getModelValue();
           attributes[key] = value;
+        } else if (component.modelPopulate) {
+          var _attributes = component.modelPopulate(options, false);
+          _.extend(attributes, _attributes);
         }
       });
-      if (callback && this.getModel) {
-        var model = this.getModel();
-        if (model) {
-          if (model.set(attributes, options || {validate: true})) {
-            callback.call(this, model);
-          }
+      if (model) {
+        if (model.set(attributes, options || {validate: true}) && callback) {
+          callback.call(this, model);
         }
       }
       return attributes;
