@@ -124,6 +124,28 @@
   }
 
 
+  Backbone.input = Backbone.input || {};
+  function getModelAndKey(component, callback) {
+    if (component.getModel) {
+      var key = getKey(component);
+      var model = component.getModel();
+      if (model) {
+        return callback(key, model);
+      }
+    }
+  }
+  var getModelValue = Backbone.input.getModelValue = function(component) {
+    return getModelAndKey(component, function(key, model) {
+      return model.get(key);
+    });
+  };
+  var setModelValue = Backbone.input.setModelValue = function(component, value, options) {
+    return getModelAndKey(component, function(key, model) {
+      return model.set(key, value, options);
+    });
+  }
+
+
   /**
    * Simple overrideable mixin to get/set models.  Model can
    * be set on props or by calling setModel
@@ -157,37 +179,6 @@
       }
     }
   });
-
-
-  /**
-   * Simple overrideable mixin to get/set model values.  While this is trivial to do
-   * it allows 3rd party to work with stubs which this can override.  This is basically
-   * an interface which allows the "modelPopulator" mixin to retrieve values from components
-   * that should be set on a model.
-   *
-   * This allows model value oriented components to work with models without setting the updated
-   * values directly on the models until the user performs some specific action (like clicking a save button).
-   */
-  React.mixins.add('modelValueAware', function(key) {
-    return {
-      getModelValue: function() {
-        var _key = key || getKey(this);
-        var model = this.getModel();
-        if (model && _key) {
-          return model.get(_key);
-        }
-      },
-
-      setModelValue: function(value, options) {
-        var _key = key || getKey(this);
-        var model = this.getModel();
-            model = this.getModel();
-        if (model && _key) {
-          return model.set(_key, value, options);
-        }
-      }
-    }
-  }, 'modelAware');
 
 
   /**
