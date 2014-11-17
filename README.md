@@ -485,7 +485,7 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
     ...
     new MyComponent({loadOn: 'read'});
     // or
-    new MyComponent({updateOn: ['read', 'update']});
+    new MyComponent({loadOn: ['read', 'update']});
 ```
 
 When the XHR event name(s) are statically defined by the owning component
