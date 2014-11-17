@@ -470,7 +470,7 @@ When this event is fired, the state attribute ```loading``` will be set to ```tr
 
 Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
 
-*when a parent component provides the event names as the ```modelLoadOn``` parameter*
+When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
 ```
     var MyComponent = React.createClass({
       mixins: ['modelLoadOn'],
@@ -488,10 +488,10 @@ Use the ```loadOn``` property to define the specific async event name to bind to
     new MyComponent({updateOn: ['read', 'update']});
 ```
 
-*when a child/declaring component provides the event names as mixin parameters*
+When the XHR event name(s) are statically defined by the owning component
 ```
     var MyComponent = React.createClass({
-      mixins: ['modelUpdateOn("read", "update")'],
+      mixins: ['modelLoadOn("read", "update")'],
       ...
     });
 ```
