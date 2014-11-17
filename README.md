@@ -525,7 +525,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 
 ```
     React.createClass({
-      mixins: ['modelAsyncAware'],
+      mixins: ['modelXHRAware'],
       render: function() {
         if (this.state.loading) {
           // return something if we are loading

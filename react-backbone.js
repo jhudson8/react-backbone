@@ -353,6 +353,14 @@
    */
   React.mixins.add('modelEventAware', {
     getInitialState: function() {
+      // model sanity check
+      var model = this.getModel();
+      if (model) {
+        if (!model.off || !model.on) {
+          console.error('the model does not implement on/off functions - you will see problems');
+          console.log(model);
+        }
+      }
       return {};
     },
 
