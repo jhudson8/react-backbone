@@ -76,6 +76,7 @@ function newComponent(attributes, mixins) {
       obj[name] = attributes[name];
     }
   }
+  obj.props = obj.props || {};
 
   var state, aggregateState;
 

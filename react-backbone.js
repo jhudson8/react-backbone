@@ -81,7 +81,10 @@
   }
 
   function getKey(context) {
-    return context.key || context.ref || context.props.key || context.props.ref;
+    if (context.getModelKey) {
+      return context.getModelKey();
+    }
+    return context.props.key || context.props.ref || context.props.name;
   }
 
   function modelEventHandler(identifier, context, eventFormat, callback) {
@@ -280,7 +283,7 @@
 
 
   /**
-   * Core event watcher mixin that won't be documented
+   * Core event watcher mixin that will not be documented
    */
   React.mixins.add('_eventWatcher', {
     // bind all registered events to the model

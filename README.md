@@ -6,7 +6,7 @@ React mixins have the ability to add very tight integration between Backbone.Vie
 
 Most other projects of this nature just provide a single mixin which caused the React component to refresh if the associated model or collection has changed.  This project goes *much* further by isolating many different functions into unique plugins giving the developer the ability to include only the appropriate behaviors to their components.
 
-A set of low level input components which are model-aware are included as well.  These components allow you so simply supply a ```ref``` and ```model``` property to show the correct value.
+A set of low level input components which are model-aware are included as well.
 
 This project uses [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) so mixins are referenced their string alias, for example:
 
@@ -33,7 +33,7 @@ API: Input Components
 -------------
 Low level backbone model-aware input components are provided.  These will
 
-* set the appropriate value if the model and (ref or key) property are defined
+* set the appropriate value if the model and (```ref``` or ```key``` < react 0.12) or (```name``` >= react 0.12) property are defined (or the component can implement their own ```getModelKey``` function)
 * work with modelPopulate mixin to populate the attributes with the correct UI value
 
 This simple example shows how to use these components to get and set the model appropriately
