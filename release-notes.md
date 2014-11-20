@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.1...master)
+
+## v0.12.1 - November 20th, 2014
+- support react 0.12 (allow "name" prop to identify model key) - 8b0b693
+- add error detection - e7b8834
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.0...v0.12.1)
 
 ## v0.12.0 - November 14th, 2014
 - add additional method signatures for modelPopulate - e6c1c6c
