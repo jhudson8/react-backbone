@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- (function(main) {
+(function(main) {
   if (typeof define === 'function' && define.amd) {
     define(['react', 'backbone', 'underscore'], main);
   } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
@@ -54,7 +54,7 @@
   function setState(state, context) {
     if (context.isMounted()) {
       context.setState(state);
-    } else if (context.state)  {
+    } else if (context.state) {
       _.extend(context.state, state);
     } else {
       // if we aren't mounted, we will get an exception if we try to set the state
@@ -66,7 +66,7 @@
 
   function getState(key, context) {
     var state = context.state,
-        initState = context.__react_backbone_state;
+      initState = context.__react_backbone_state;
     return (state && state[key]) || (initState && initState[key]);
   }
 
@@ -89,10 +89,10 @@
 
   function modelEventHandler(identifier, context, eventFormat, callback) {
     var keys = Array.isArray(identifier) ? identifier : eventParser(context.props[identifier]),
-        key, eventName;
+      key, eventName;
     if (keys) {
       // register the event handlers to watch for these events
-      for (var i=0; i<keys.length; i++) {
+      for (var i = 0; i < keys.length; i++) {
         key = keys[i];
         eventName = eventFormat.replace('{key}', key);
         context.modelOn(eventName, _.bind(callback, context), this);
@@ -108,11 +108,15 @@
    */
   function manageEvent(type, data) {
     var eventsParent = this;
-    data = _.extend({type: type}, data);
+    data = _.extend({
+      type: type
+    }, data);
     var watchedEvents = getState('__watchedEvents', this);
     if (!watchedEvents) {
       watchedEvents = [];
-      setState({__watchedEvents: watchedEvents}, this);
+      setState({
+        __watchedEvents: watchedEvents
+      }, this);
     }
     data.context = data.context || this;
     watchedEvents.push(data);
@@ -128,6 +132,7 @@
 
 
   Backbone.input = Backbone.input || {};
+
   function getModelAndKey(component, callback) {
     if (component.getModel) {
       var key = getKey(component);
@@ -167,15 +172,16 @@
     },
 
     getModel: function() {
-      return getState('model', this) || getState('collection', this)
-          || this.props.model || this.props.collection;
+      return getState('model', this) || getState('collection', this) || this.props.model || this.props.collection;
     },
 
     setModel: function(model) {
       if (this._watchedEventsUnbindAll) {
         this._watchedEventsUnbindAll(true);
       }
-      setState({model: model}, this);
+      setState({
+        model: model
+      }, this);
       if (this._watchedEventsBindAll && this.isMounted()) {
         // bind all events if using modelEventAware
         this._watchedEventsBindAll();
@@ -210,7 +216,9 @@
       var attributes = {};
       if (!components) {
         // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
-        components = _.map(this.refs, function(value) {return value;});
+        components = _.map(this.refs, function(value) {
+          return value;
+        });
       }
       var models = {};
       _.each(components, function(component) {
@@ -221,8 +229,7 @@
             var value = component.getValue();
             attributes[key] = value;
           }
-        }
-        else if (component.modelPopulate && component.getModel) {
+        } else if (component.modelPopulate && component.getModel) {
           if (!model) {
             // if we aren't populating to models, this is not necessary
             return;
@@ -232,7 +239,10 @@
             var _attributes = component.modelPopulate(options, false);
             var previousAttributes = models[_model.cid] || {};
             _.extend(previousAttributes, _attributes);
-            models[_model.cid] = {model: _model, attr: previousAttributes};
+            models[_model.cid] = {
+              model: _model,
+              attr: previousAttributes
+            };
           }
         }
       });
@@ -241,18 +251,25 @@
         var isValid = true;
         var data = models[model.cid];
         if (!data) {
-          data = {model: model, attr: {}};
+          data = {
+            model: model,
+            attr: {}
+          };
         }
         _.extend(data.attr, attributes);
         models[model.cid] = data;
-        var validateOptions = _.defaults({validate: true}, options);
+        var validateOptions = _.defaults({
+          validate: true
+        }, options);
         _.each(models, function(data) {
           var errors = !data.model._validate(data.attr, validateOptions);
           isValid = !errors && isValid;
         });
 
         if (isValid) {
-          options = _.defaults({validate: false}, options);
+          options = _.defaults({
+            validate: false
+          }, options);
           _.each(models, function(data) {
             data.model.set(data.attr, options);
           });
@@ -312,7 +329,9 @@
           }
         });
         if (!keepRegisteredEvents) {
-          setState({__watchedEvents: []}, this);
+          setState({
+            __watchedEvents: []
+          }, this);
         }
       }
     },
@@ -335,12 +354,22 @@
   React.mixins.add('listenTo', {
     // {event, callback, context, model}
     listenTo: function(target, event, callback, context) {
-      var data = {event: event, callback: callback, target: target, context: context};
+      var data = {
+        event: event,
+        callback: callback,
+        target: target,
+        context: context
+      };
       manageEvent.call(this, 'on', data);
     },
 
     stopListening: function(target, event, callback, context) {
-      var data = {event: event, callback: callback, target: target, context: context};
+      var data = {
+        event: event,
+        callback: callback,
+        target: target,
+        context: context
+      };
       manageEvent.call(this, 'off', data);
     }
   }, '_eventWatcher');
@@ -382,24 +411,33 @@
 
     // model.on
     // ({event, model, callback, context}) or event, callback
-    modelOn: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event;
+    modelOn: function(event, callback) {
+      var data = callback ? {
+        event: event,
+        callback: callback
+      } : event;
       manageEvent.call(this, 'on', data);
     },
 
     // model.once
-    modelOnce: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event;
+    modelOnce: function(event, callback) {
+      var data = callback ? {
+        event: event,
+        callback: callback
+      } : event;
       manageEvent.call(this, 'once', data);
     },
 
-    modelOff: function (event, callback) {
-      var data = callback ? {event: event, callback: callback} : event,
-          watchedEvents = this.state.__watchedEvents;
+    modelOff: function(event, callback) {
+      var data = callback ? {
+          event: event,
+          callback: callback
+        } : event,
+        watchedEvents = this.state.__watchedEvents;
       if (watchedEvents) {
         // find the existing binding
         var _event;
-        for (var i=0; i<watchedEvents.length; i++) {
+        for (var i = 0; i < watchedEvents.length; i++) {
           _event = watchedEvents[i];
           if (_event.event === data.event && _event.model === data.model && _event.callback === data.callback) {
             var target = data.target || this.getModel();
@@ -420,7 +458,9 @@
   React.mixins.add('modelChangeAware', {
     getInitialState: function() {
       _.each(['change', 'reset', 'add', 'remove', 'sort'], function(type) {
-        this.modelOn(type, function() { this.deferUpdate(); });
+        this.modelOn(type, function() {
+          this.deferUpdate();
+        });
       }, this);
       return null;
     }
@@ -437,37 +477,52 @@
   React.mixins.add('modelXHRAware', {
     getInitialState: function() {
       this.modelOn(xhrEventName, function(eventName, events) {
-        setState({loading: true}, this);
+        setState({
+          loading: true
+        }, this);
 
         var model = this.getModel();
         events.on('success', function() {
-          setState({loading: model[xhrModelLoadingAttribute]}, this);
+          setState({
+            loading: model[xhrModelLoadingAttribute]
+          }, this);
         }, this);
         events.on('error', function(error) {
-          setState({loading: model[xhrModelLoadingAttribute], error: error}, this);
+          setState({
+            loading: model[xhrModelLoadingAttribute],
+            error: error
+          }, this);
         }, this);
       });
 
       var model = this.getModel();
-      return {loading: model && model[xhrModelLoadingAttribute]};
+      return {
+        loading: model && model[xhrModelLoadingAttribute]
+      };
     },
 
     componentDidMount: function() {
       // make sure the model didn't get into a non-loading state before mounting
       var state = this.state,
-          model = this.getModel();
+        model = this.getModel();
       if (model) {
         var loading = model[xhrModelLoadingAttribute];
         if (loading) {
           // we're still loading yet but we haven't yet bound to this event
           this.modelOnce(xhrCompleteEventName, function() {
-            setState({loading: false}, this);
+            setState({
+              loading: false
+            }, this);
           });
           if (!state.loading) {
-            setState({loading: true}, this);
+            setState({
+              loading: true
+            }, this);
           }
         } else if (state.loading) {
-          setState({loading: false}, this);
+          setState({
+            loading: false
+          }, this);
         }
       }
     }
@@ -487,7 +542,9 @@
           var _errors = this.modelIndexErrors(errors) || {};
           var message = _errors && _errors[key];
           if (message) {
-            setState({invalid: message}, this);
+            setState({
+              invalid: message
+            }, this);
           }
         });
       }
@@ -530,9 +587,13 @@
       getInitialState: function() {
         keys = modelEventHandler(keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
           var model = this.getModel();
-          setState({loading: model[xhrModelLoadingAttribute]}, this);
+          setState({
+            loading: model[xhrModelLoadingAttribute]
+          }, this);
           events.on('complete', function() {
-            setState({loading: false}, this);
+            setState({
+              loading: false
+            }, this);
           }, this);
         });
 
@@ -540,18 +601,22 @@
         var model = this.getModel();
         if (model) {
           var currentLoads = model.loading,
-              key;
+            key;
           if (currentLoads) {
             var clearLoading = function() {
-              setState({loading: false}, this);
+              setState({
+                loading: false
+              }, this);
             }
-            for (var i=0; i<currentLoads.length; i++) {
+            for (var i = 0; i < currentLoads.length; i++) {
               var keyIndex = keys.indexOf(currentLoads[i].method);
               if (keyIndex >= 0) {
                 // there is currently an async event for this key
                 key = keys[keyIndex];
                 currentLoads[i].on('complete', clearLoading, this);
-                return {loading: model[xhrModelLoadingAttribute]};
+                return {
+                  loading: model[xhrModelLoadingAttribute]
+                };
               }
             }
           }
@@ -566,10 +631,13 @@
       loadWhile: function(options) {
         options = options || {};
         var self = this;
+
         function wrap(type) {
           var _callback = options[type];
           options[type] = function() {
-            setState({loading: false}, self);
+            setState({
+              loading: false
+            }, self);
             if (_callback) {
               _callback.apply(this, arguments);
             }
@@ -577,7 +645,9 @@
         }
         wrap('error');
         wrap('success');
-        setState({loading: true}, this);
+        setState({
+          loading: true
+        }, this);
         return options;
       }
     }
@@ -617,8 +687,8 @@
     var _modelPattern = /^model(\[.+\])?$/;
     React.events.handle(_modelPattern, function(options, callback) {
       var match = options.key.match(_modelPattern),
-          modelKey = match[1] && match[1].substring(1, match[1].length-1),
-          model = modelKey && (this.props[modelKey] || this.refs[modelKey]);
+        modelKey = match[1] && match[1].substring(1, match[1].length - 1),
+        model = modelKey && (this.props[modelKey] || this.refs[modelKey]);
       if (!model && modelKey) {
         throw new Error('no model found with "' + modelKey + '"');
       }
@@ -640,7 +710,7 @@
       // add underscore wrapped special event handlers
       function parseArgs(args) {
         var arg;
-        for (var i=0; i<args.length; i++) {
+        for (var i = 0; i < args.length; i++) {
           arg = args[i];
           if (arg === 'true') {
             arg = true;
@@ -655,7 +725,7 @@
         }
         return args;
       }
-      var reactEventSpecials = ['memoize', 'delay', 'defer','throttle', 'debounce', 'once'];
+      var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once'];
       _.each(reactEventSpecials, function(name) {
         specials[name] = specials[name] || function(callback, args) {
           args = parseArgs(args);
@@ -701,10 +771,14 @@
 
   Backbone.input = Backbone.input || {};
   _.defaults(Backbone.input, {
-    Text: _inputClass('input', {type: 'text'}),
+    Text: _inputClass('input', {
+      type: 'text'
+    }),
     TextArea: _inputClass('textarea'),
     Select: _inputClass('select', undefined, undefined),
-    CheckBox: _inputClass('input', {type: 'checkbox'}, true),
+    CheckBox: _inputClass('input', {
+      type: 'checkbox'
+    }, true),
     RadioGroup: React.createClass({
       render: function() {
         var props = this.props;
@@ -724,7 +798,7 @@
         if (this.isMounted()) {
           var selector = 'input[type="radio"]';
           var els = $(this.getDOMNode()).find(selector);
-          for (var i=0; i<els.length; i++) {
+          for (var i = 0; i < els.length; i++) {
             if (els[i].checked) {
               return els[i].value;
             }
