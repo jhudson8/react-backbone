@@ -38,6 +38,12 @@
   var xhrCompleteEventName = Backbone.xhrCompleteEventName;
   var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
 
+  var getState = React.mixins.getState;
+  var setState = React.mixins.setState;
+
+  /**
+   * Return the model specified by a ReactComponent property key
+   */
   function getModelByPropkey(key, context, useGetModel) {
     var model;
     if (key) {
@@ -51,24 +57,6 @@
     return model;
   }
 
-  function setState(state, context) {
-    if (context.isMounted()) {
-      context.setState(state);
-    } else if (context.state) {
-      _.extend(context.state, state);
-    } else {
-      // if we aren't mounted, we will get an exception if we try to set the state
-      // so keep a placeholder state until we're mounted
-      // this is mainly useful if setModel is called on getInitialState
-      context.__react_backbone_state = _.extend(context.__react_backbone_state || {}, state);
-    }
-  }
-
-  function getState(key, context) {
-    var state = context.state,
-      initState = context.__react_backbone_state;
-    return (state && state[key]) || (initState && initState[key]);
-  }
 
   function eventParser(src) {
     if (!src) {
