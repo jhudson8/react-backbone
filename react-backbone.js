@@ -322,58 +322,29 @@
 
     componentWillReceiveProps: function(props) {
       var preModel = this.getModel();
-      var self = this;
-      _.defer(function() {
-        var postModel = self.getModel();
-        if (preModel !== postModel) {
-          // we need to clear out the previously bound model events
-          self._watchedEventsUnbindAll(true, preModel);
-          self._watchedEventsBindAll();
-        }
-      });
+      var postModel = this.getModel(props);
+      if (preModel !== postModel) {
+        this.setModel(postModel, true);
+      }
     },
 
     // model.on
-    // ({event, model, callback, context}) or event, callback
-    modelOn: function(event, callback) {
-      var data = callback ? {
-        event: event,
-        callback: callback
-      } : event;
-      manageEvent.call(this, 'on', data);
+    // ({event, callback})
+    modelOn: function(ev, callback, context) {
+      modelOnOrOnce('on', arguments, this);
     },
 
     // model.once
-    modelOnce: function(event, callback) {
-      var data = callback ? {
-        event: event,
-        callback: callback
-      } : event;
-      manageEvent.call(this, 'once', data);
+    modelOnce: function(ev, callback, context) {
+      modelOnOrOnce('once', arguments, this);
     },
 
-    modelOff: function(event, callback) {
-      var data = callback ? {
-          event: event,
-          callback: callback
-        } : event,
-        watchedEvents = this.state.__watchedEvents;
-      if (watchedEvents) {
-        // find the existing binding
-        var _event;
-        for (var i = 0; i < watchedEvents.length; i++) {
-          _event = watchedEvents[i];
-          if (_event.event === data.event && _event.model === data.model && _event.callback === data.callback) {
-            var target = data.target || this.getModel();
-            if (target) {
-              target.off(data.event, data.callback, data.context || this);
-            }
-            watchedEvents.splice(i, 1);
-          }
-        }
-      }
+    modelOff: function(ev, callback, context, _model) {
+      var modelEvents = getModelEvents(this);
+      delete modelEvents[ev];
+      this.stopListening(targetModel(_model), ev, callback, context);
     }
-  }, 'modelAware', '_eventWatcher');
+  }, 'modelAware', 'listen');
 
 
   /**
