@@ -57,8 +57,11 @@
     return model;
   }
 
-
-  function eventParser(src) {
+  /**
+   * Return either an array of elements (if src provided is not an array)
+   * or undefined if the src is undefined
+   */
+  function ensureArray(src) {
     if (!src) {
       return;
     }
@@ -68,15 +71,50 @@
     return [src];
   }
 
+  /**
+   * Return a callback function that will provide the model
+   */
+  function targetModel(modelToUse) {
+    return function() {
+      if (modelToUse) {
+        return modelToUse;
+      }
+      if (this.getModel) {
+        return this.getModel();
+      }
+    }
+  }
+
+  /**
+   * Return a model attribute key used for attribute specific operations
+   */
   function getKey(context) {
     if (context.getModelKey) {
       return context.getModelKey();
     }
-    return context.props.key || context.props.ref || context.props.name;
+    return context.props.key || context.props.ref ||
+        context.props.name;
   }
 
+  /**
+   * Return the callback function (key, model) if both the model exists
+   * and the model key is available
+   */
+  function ifModelAndKey(component, callback) {
+    if (component.getModel) {
+      var key = getKey(component);
+      var model = component.getModel();
+      if (model) {
+        return callback(key, model);
+      }
+    }
+  }
+
+  /**
+   * Utility method used to handle model events
+   */
   function modelEventHandler(identifier, context, eventFormat, callback) {
-    var keys = Array.isArray(identifier) ? identifier : eventParser(context.props[identifier]),
+    var keys = Array.isArray(identifier) ? identifier : ensureArray(context.props[identifier]),
       key, eventName;
     if (keys) {
       // register the event handlers to watch for these events
@@ -89,54 +127,43 @@
     }
   }
 
+  /**
+   * Provide modelOn and modelOnce argument with proxied arguments
+   * arguments are event, callback, context
+   */
+  function modelOnOrOnce(type, args, _this, _model) {
+    var modelEvents = getModelEvents(_this);
+    var ev = args[0];
+    var cb = args[1];
+    var ctx = args[2];
+    modelEvents[ev] = {type: type, ev: ev, cb: cb, ctx: ctx};
+    var model = _model || _this.getModel();
+    if (model) {
+      _this[type === 'on' ? 'listenTo' : 'listenToOnce'](model, ev, cb, ctx);
+    }
+  }
 
   /**
-   * Internal model event binding handler
-   * (type(on|once|off), {event, callback, context, target})
+   * Return all bound model events
    */
-  function manageEvent(type, data) {
-    var eventsParent = this;
-    data = _.extend({
-      type: type
-    }, data);
-    var watchedEvents = getState('__watchedEvents', this);
-    if (!watchedEvents) {
-      watchedEvents = [];
-      setState({
-        __watchedEvents: watchedEvents
-      }, this);
+  function getModelEvents(context) {
+    var modelEvents = getState('__modelEvents', context);
+    if (!modelEvents) {
+      modelEvents = {};
+      setState({__modelEvents: modelEvents}, context);
     }
-    data.context = data.context || this;
-    watchedEvents.push(data);
-
-    // bind now if we are already mounted (as the mount function won't be called)
-    if (this.isMounted()) {
-      var target = data.target || data.model || this.getModel();
-      if (target) {
-        target[data.type](data.event, data.callback, data.context);
-      }
-    }
+    return modelEvents;
   }
 
 
   Backbone.input = Backbone.input || {};
-
-  function getModelAndKey(component, callback) {
-    if (component.getModel) {
-      var key = getKey(component);
-      var model = component.getModel();
-      if (model) {
-        return callback(key, model);
-      }
-    }
-  }
   var getModelValue = Backbone.input.getModelValue = function(component) {
-    return getModelAndKey(component, function(key, model) {
+    return ifModelAndKey(component, function(key, model) {
       return model.get(key);
     });
   };
   var setModelValue = Backbone.input.setModelValue = function(component, value, options) {
-    return getModelAndKey(component, function(key, model) {
+    return ifModelAndKey(component, function(key, model) {
       return model.set(key, value, options);
     });
   }
@@ -147,35 +174,23 @@
    * be set on props or by calling setModel
    */
   React.mixins.add('modelAware', {
-    componentWillMount: function() {
-      // not directly related to this mixin but all of these mixins have this as a dependency
-      // if setState was called before the component was mounted, the actual component state was
-      // not set because it might not exist.  Convert the pretend state to the real thing
-      // (but don't trigger a render)
-      var _state = this.__react_backbone_state;
-      if (_state) {
-        this.state = _.extend(this.state || {}, _state);
-        delete this.__react_backbone_state;
-      }
+    getModel: function(props) {
+      props = props || this.props;
+      return getState('model', this) || getState('collection', this) ||
+          props.model || props.collection;
     },
-
-    getModel: function() {
-      return getState('model', this) || getState('collection', this) || this.props.model || this.props.collection;
-    },
-
-    setModel: function(model) {
-      if (this._watchedEventsUnbindAll) {
-        this._watchedEventsUnbindAll(true);
-      }
-      setState({
-        model: model
+    setModel: function(model, _suppressState) {
+      var preModel = this.getModel();
+      var modelEvents = getModelEvents(this);
+      _.each(modelEvents, function(data) {
+        this.modelOff(data.ev, data.cb, data.ctx, preModel);
+        modelOnOrOnce(data.type, [data.ev, data.cb, data.ctx], this, model);
       }, this);
-      if (this._watchedEventsBindAll && this.isMounted()) {
-        // bind all events if using modelEventAware
-        this._watchedEventsBindAll();
+      if (_suppressState !== true) {
+        setState('model', model);
       }
     }
-  });
+  }, 'state');
 
 
   /**
@@ -186,6 +201,7 @@
   React.mixins.add('modelPopulate', {
     modelPopulate: function() {
       var components, callback, options, model;
+      // determine the function args
       _.each(arguments, function(value) {
         if (value instanceof Backbone.Model || value === false) {
           model = value;
@@ -234,6 +250,7 @@
           }
         }
       });
+
       if (model) {
         // make sure all submodels are valid so this can be atomic
         var isValid = true;
@@ -267,6 +284,7 @@
           callback.call(this, model);
         }
       }
+
       return attributes;
     }
   }, 'modelAware');
