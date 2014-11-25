@@ -569,20 +569,9 @@
      */
     var _modelPattern = /^model(\[.+\])?$/;
     React.events.handle(_modelPattern, function(options, callback) {
-      var match = options.key.match(_modelPattern),
-        modelKey = match[1] && match[1].substring(1, match[1].length - 1),
-        model = modelKey && (this.props[modelKey] || this.refs[modelKey]);
-      if (!model && modelKey) {
-        throw new Error('no model found with "' + modelKey + '"');
-      }
-      var data = {
-        model: model,
-        event: options.path,
-        callback: callback
-      };
       return {
         on: function() {
-          this.modelOn(data);
+          this.modelOn(options.path, callback);
         },
         off: function() { /* NOP, modelOn will clean up */ }
       };
