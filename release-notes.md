@@ -2,7 +2,18 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.0...master)
+
+## v0.13.0 - November 25th, 2014
+- remove support for "model[propKey]" declaritive event in favor of "prop[propKey]" react-events definition - 4ded30b
+- use react-events "listen" mixin for modelOn/modelOnce/modelOff events - e88dc8f
+- remove "listenTo" mixin (now part of "listen" react-events mixin) - 68bdfc8
+
+Compatibility notes:
+jhudson8/react-events is now a hard dependency (in addition to react-mixin-manager) for react-backbone as the "listenTo" functionality was moved to react-events named as the "listen" mixin
+all references to declarative events like "model:someEvent" are fine but any specific prop key references like "model[foo]:someEvent" need to be changed to react-event prop bindings "prop:foo:someEvent"
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.12.1...v0.13.0)
 
 ## v0.12.1 - November 20th, 2014
 - support react 0.12 (allow "name" prop to identify model key) - 8b0b693
