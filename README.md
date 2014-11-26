@@ -32,7 +32,7 @@ require('react-backbone')(require('react'), require('backbone'), require('unders
 AMD
 ```
 require(
-  ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
+  ['react', 'backbone', 'underscore', 'react-backbone'], function(React, Backbone, _, reactBackbone) {
   reactBackbone(React, Backbone, _); 
 });
 ```

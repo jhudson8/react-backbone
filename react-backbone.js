@@ -27,7 +27,7 @@
     define([], function() {
       // with AMD
       //  require(
-      //    ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
+      //    ['react', 'backbone', 'underscore', 'react-backbone'], function(React, Backbone, _, reactBackbone) {
       //    reactBackbone(React, Backbone, _); 
       //  });
       return main;
@@ -35,9 +35,7 @@
   } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
     // with CommonJS
     // require('react-backbone')(require('react'), require('backbone'), require('underscore'));
-    module.exports = function(React, Backbone, _) {
-      main(React, Backbone, _);
-    };
+    module.exports = main;
   } else {
     main(React, Backbone, _);
   }

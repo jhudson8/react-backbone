@@ -6,7 +6,7 @@
 
 ## v0.13.1 - November 26th, 2014
 - for AMD, you must execute the function with params (see README AMD install instructions) - 51adfbe
-- ```
+```
 require(
   ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
   reactBackbone(React, Backbone, _); 
