@@ -20,6 +20,10 @@ Installation
 --------------
 Browser:
 ```
+<script src=".../react[-min].js"></script>
+<script src=".../underscore[-min].js"></script>
+<script src=".../jquery[-min].js"></script>
+<script src=".../backbone[-min].js"></script>
 <script src=".../react-mixin-manager[-min].js"></script>
 <script src=".../react-events[-min].js"></script>
 <script src=".../backbone-xhr-events[-min].js"></script>
