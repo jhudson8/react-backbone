@@ -2,31 +2,19 @@ react-backbone
 ==============
 Connect [Backbone](http://backbonejs.org/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
 
+[View the fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) for a better docs experience
+
 React mixins have the ability to add very tight integration between Backbone.Views with React components.
 
 Most other projects of this nature just provide a single mixin which caused the React component to refresh if the associated model or collection has changed.  This project goes *much* further by isolating many different functions into unique plugins giving the developer the ability to include only the appropriate behaviors to their components.
 
 A set of low level input components which are model-aware are included as well.
 
-This project uses [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) so mixins are referenced their string alias, for example:
-
-```
-React.createClass({
-  // force update if the model/collection changes
-  mixins: ['modelChangeAware']
-});
-```
-
-[View the fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) or checkout [backbone-reaction](https://github.com/jhudson8/backbone-reaction), a project containing *react-backbone* and several other React and Backbone enhancements.
-
-
 Dependencies
 --------------
-* [React](http://facebook.github.io/react/)
-* [Backbone](http://backbonejs.org/)
-* [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager) (>= 0.6.0, optional)
+* [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager)
+* [jhudson8/react-events](https://github.com/jhudson8/react-events)
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) (optional)
-* [jhudson8/react-events](https://github.com/jhudson8/react-events) (>= 0.4.1, optional)
 
 
 API: Input Components
@@ -117,9 +105,7 @@ This simple example shows how to use these components to get and set the model a
 
 *note: these components can still be set (will override model values) just like their wrapped components (```value``` and ```defaultValue```) and all other properties will be pushed through as well```
 
-### Backbone.input
-
-#### Text
+### Text
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 Nested content is N/A.
@@ -131,7 +117,7 @@ Nested content is N/A.
     <Text type="number" ref="age" model={model}/>
 ```
 
-#### TextArea
+### TextArea
 A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 ```
@@ -141,7 +127,7 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
     <TextArea type="number" ref="description" model={model}/>
 ```
 
-#### CheckBox
+### CheckBox
 A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
 
 ```
@@ -151,7 +137,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
     <CheckBox ref="acceptTermsOfService" model={model}/>
 ```
 
-#### Select
+### Select
 A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 ```
@@ -165,7 +151,7 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
     </Select>
 ```
 
-#### RadioGroup
+### RadioGroup
 A model-aware component that should contain one or *React.DOM.input* (type=radio).  This component will initialize with the correct default value from the provided model as well as participate in the *modelPopulate* mixin.
 
 *note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
@@ -210,7 +196,8 @@ The model can be set using the ```model``` or ```collection``` property or by ex
 #### setModel(model)
 * ***model***: the Backbone model to set
 
-Associate the model with the current React component which can be retrieved using ```getModel```
+Associate the model with the current React component which can be retrieved using ```getModel```.  When using this, all model event bindings
+will be automatically transferred to the new model.
 
 
 ### modelValueAware
@@ -291,47 +278,12 @@ If a component does not contain a ```getValue``` method but does contain a ```mo
 ```
 
 
-### listenTo
-
-Utility mixin to expose managed Backbone.Events binding functions which are cleaned up when the component is unmounted.
-This is similar to the "modelEventAware" mixin but is not model specific.
-
-```
-    var MyClass React.createClass({
-      mixins: ['listenTo'],
-      getInitialState: function() {
-        this.listenTo(this.props.someObject, 'change', this.onChange);
-        return null;
-      },
-      onChange: function() { ... }
-    });
-```
-
-
-#### listenTo(target, eventName, callback[, context])
-* ***target***: the source object to bind to
-* ***eventName***: the event name
-* ***callback***: the event callback function
-* ***context***: the callback context
-
-Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.
-
-
-#### stopListening(eventName, callback[, context])
-* ***target***: the source object to bind to
-* ***eventName***: the event name
-* ***callback***: the event callback function
-* ***context***: the callback context
-
-Equivalent to Backbone.Events.off for events registered using this mixin.
-
-
 ### modelEventAware
 *depends on modelAware*
 
 Utility mixin to expose managed model binding functions which are cleaned up when the component is unmounted.
 
-This is similar to the "listenTo" mixin but will auto rebind if the model is changed by updating the props.
+This is similar to the [jhudson8/react-events](https://github.com/jhudson8/react-events) "listen" mixin but will auto rebind if the model is changed by updating the props or calling ```setModel```.
 
 This can also be achieved using declarative events with [jhudson8/react-events](https://github.com/jhudson8/react-events)
 
@@ -537,16 +489,11 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 ```
 
 
-Sections
---------
+API: Event Binding Definitions
+--------------
+Event listeners can be declared using the ```events``` attribute.  To add this support the ```events``` mixin ***must*** be included with your component mixins.  see [react-events](https://github.com/jhudson8/react-events) for details
 
-### Installation
-* Browser: include *react-backbone[.min].js* after the listed dependencies
-* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
-
-
-### Declaritive Model Event
-
+### model events
 In addition to providing mixins which give Backbone awareness to React components, declaritive model events are made available similar to the ```events``` hash in Backbone.View.
 
 Model events can be defined using the ```model:``` prefix.
@@ -558,31 +505,103 @@ For example, by including the ```events``` mixin, you can do this:
       mixins: ['events'],
       events: {
         'model:some-event': 'onSomeEvent',
-        // will bind to a specific model set as "foo" on this.props or this.refs
-        'model[foo]:some-event': 'onFooSomeEvent'
+        // will bind to a model set as "model" on the component properties
+        'model:some-event': 'onFooSomeEvent'
       },
       ...
     });
 ```
-In addition, Backbone.Events methods can be used on your component so your component allowing it to trigger events.
-
-This requires [react-events](https://github.com/jhudson8/react-events) to be included.
 
 
-### Event Callback Wrappers
+### *memoize
+Memoizes a given function by caching the computed result.  see [_.memoize](http://underscorejs.org/#memoize) for more details
 
-The following event callback wrappers are implemented (see [react-events](https://github.com/jhudson8/react-events)  for more details)
-
-* memoize
-* delay
-* defer
-* throttle
-* debounce
-* once
-
-For example
+Assiming I am memoizing a prop event handler
 ```
-    events: {
-      '*throttle(300):window:resize': 'forceUpdate'
-    }
+events: {
+  '*memoize:prop:foo': 'onFoo'
+}
 ```
+
+### *delay
+Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/#delay) for more details
+
+Assiming I am delaying a window resize handler by 1 second
+```
+events: {
+  '*delay(1000):window:resize': 'onResize'
+}
+```
+
+### *defer
+Defers invoking the function until the current call stack has cleared.  see [_.defer](http://underscorejs.org/#defer) for more details
+
+Assiming I am deferring a model change event handler
+```
+events: {
+  '*defer:model:change': 'onFoo'
+}
+```
+
+
+### *throttle
+Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds.  see [_.throttle](http://underscorejs.org/#throttle) for more details
+
+Assiming I am throttling a window resize handler every 1 second
+```
+events: {
+  '*throttle(1000):window:resize': 'onResize'
+}
+```
+
+
+### *debounce
+Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked.  see [_.debounce](http://underscorejs.org/#debounce) for more details
+
+Assiming I am debouncing a window resize handler every 1 second
+```
+events: {
+  '*debounce(1000):window:resize': 'onResize'
+}
+```
+
+
+### *once
+Creates a version of the function that can only be called one time. Repeated calls to the modified function will have no effect, returning the value from the original call.  see [_.once](http://underscorejs.org/#once) for more details
+
+Assiming I am once-ing a ref event handler
+```
+events: {
+  '*once:ref:save': 'onSave'
+}
+```
+
+
+### *after
+Creates a version of the function that will only be run after first being called count times.  see [_.after](http://underscorejs.org/#after) for more details
+
+Assiming I am after-ing a ref event handler
+```
+events: {
+  '*after(3):ref:save': 'onSave'
+}
+```
+
+
+### *after
+Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
+
+Assiming I am before-ing a ref event handler
+```
+events: {
+  '*before(3):ref:save': 'onSave'
+}
+```
+
+
+Sections
+--------
+
+### Installation
+* Browser: include *react-backbone[.min].js* after the listed dependencies
+* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```

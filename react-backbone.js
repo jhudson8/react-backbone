@@ -615,7 +615,7 @@
         }
         return args;
       }
-      var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once'];
+      var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
       _.each(reactEventSpecials, function(name) {
         specials[name] = specials[name] || function(callback, args) {
           args = parseArgs(args);
