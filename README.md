@@ -588,7 +588,7 @@ events: {
 ```
 
 
-### *after
+### *before
 Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
 
 Assiming I am before-ing a ref event handler
