@@ -516,7 +516,7 @@ For example, by including the ```events``` mixin, you can do this:
 ### *memoize
 Memoizes a given function by caching the computed result.  see [_.memoize](http://underscorejs.org/#memoize) for more details
 
-Assiming I am memoizing a prop event handler
+Assuming I am memoizing a prop event handler
 ```
 events: {
   '*memoize:prop:foo': 'onFoo'
@@ -526,7 +526,7 @@ events: {
 ### *delay
 Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/#delay) for more details
 
-Assiming I am delaying a window resize handler by 1 second
+Assuming I am delaying a window resize handler by 1 second
 ```
 events: {
   '*delay(1000):window:resize': 'onResize'
@@ -536,7 +536,7 @@ events: {
 ### *defer
 Defers invoking the function until the current call stack has cleared.  see [_.defer](http://underscorejs.org/#defer) for more details
 
-Assiming I am deferring a model change event handler
+Assuming I am deferring a model change event handler
 ```
 events: {
   '*defer:model:change': 'onFoo'
@@ -547,7 +547,7 @@ events: {
 ### *throttle
 Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds.  see [_.throttle](http://underscorejs.org/#throttle) for more details
 
-Assiming I am throttling a window resize handler every 1 second
+Assuming I am throttling a window resize handler every 1 second
 ```
 events: {
   '*throttle(1000):window:resize': 'onResize'
@@ -558,7 +558,7 @@ events: {
 ### *debounce
 Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked.  see [_.debounce](http://underscorejs.org/#debounce) for more details
 
-Assiming I am debouncing a window resize handler every 1 second
+Assuming I am debouncing a window resize handler every 1 second
 ```
 events: {
   '*debounce(1000):window:resize': 'onResize'
@@ -569,7 +569,7 @@ events: {
 ### *once
 Creates a version of the function that can only be called one time. Repeated calls to the modified function will have no effect, returning the value from the original call.  see [_.once](http://underscorejs.org/#once) for more details
 
-Assiming I am once-ing a ref event handler
+Assuming I am once-ing a ref event handler
 ```
 events: {
   '*once:ref:save': 'onSave'
@@ -580,7 +580,7 @@ events: {
 ### *after
 Creates a version of the function that will only be run after first being called count times.  see [_.after](http://underscorejs.org/#after) for more details
 
-Assiming I am after-ing a ref event handler
+Assuming I am after-ing a ref event handler
 ```
 events: {
   '*after(3):ref:save': 'onSave'
@@ -591,7 +591,7 @@ events: {
 ### *before
 Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
 
-Assiming I am before-ing a ref event handler
+Assuming I am before-ing a ref event handler
 ```
 events: {
   '*before(3):ref:save': 'onSave'
