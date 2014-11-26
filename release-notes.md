@@ -6,12 +6,16 @@
 
 ## v0.13.1 - November 26th, 2014
 - for AMD, you must execute the function with params (see README AMD install instructions) - 51adfbe
+- ```
 require(
   ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
   reactBackbone(React, Backbone, _); 
 });
+```
 - The underscore impl must be provided to the CommonJS function (see README CommonJS install instructions)
+```
 require('react-backbone')(require('react'), require('backbone'), require('underscore'));
+```
 
 
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.0...v0.13.1)
