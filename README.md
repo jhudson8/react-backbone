@@ -16,6 +16,30 @@ Dependencies
 * [jhudson8/react-events](https://github.com/jhudson8/react-events)
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) (optional)
 
+Installation
+--------------
+Browser:
+```
+<script src=".../react-mixin-manager[-min].js"></script>
+<script src=".../react-events[-min].js"></script>
+<script src=".../backbone-xhr-events[-min].js"></script>
+<script src=".../react-backbone[-min].js"></script>
+```
+CommonJS
+```
+require('react-backbone')(require('react'), require('backbone'), require('underscore'));
+```
+AMD
+```
+require(
+  ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
+  reactBackbone(React, Backbone, _); 
+});
+```
+
+
+* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
+
 
 API: Input Components
 -------------
@@ -597,11 +621,3 @@ events: {
   '*before(3):ref:save': 'onSave'
 }
 ```
-
-
-Sections
---------
-
-### Installation
-* Browser: include *react-backbone[.min].js* after the listed dependencies
-* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```

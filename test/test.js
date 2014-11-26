@@ -29,7 +29,7 @@ require('react-mixin-manager')(React);
 require('backbone-xhr-events')(Backbone);
 require('react-events')(React);
 // add react-backbone mixins
-require('../index')(React, Backbone);
+require('../index')(React, Backbone, _);
 
 function newComponent(attributes, mixins) {
 

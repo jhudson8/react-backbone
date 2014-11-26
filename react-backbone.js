@@ -24,10 +24,19 @@
  */
 (function(main) {
   if (typeof define === 'function' && define.amd) {
-    define(['react', 'backbone', 'underscore'], main);
+    define([], function() {
+      // with AMD
+      //  require(
+      //    ['react', 'backbone', 'underscore', react-backbone'], function(React, Backbone, _, reactBackbone) {
+      //    reactBackbone(React, Backbone, _); 
+      //  });
+      return main;
+    });
   } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
-    module.exports = function(React, Backbone) {
-      main(React, Backbone, require('underscore'));
+    // with CommonJS
+    // require('react-backbone')(require('react'), require('backbone'), require('underscore'));
+    module.exports = function(React, Backbone, _) {
+      main(React, Backbone, _);
     };
   } else {
     main(React, Backbone, _);
