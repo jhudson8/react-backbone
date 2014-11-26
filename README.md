@@ -38,9 +38,6 @@ require(
 ```
 
 
-* CommonJS: ```require('react-backbone')(require('react'), require('backbone'));```
-
-
 API: Input Components
 -------------
 Low level backbone model-aware input components are provided.  These will
