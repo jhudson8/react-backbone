@@ -560,13 +560,17 @@ For example, by including the ```events``` mixin, you can do this:
     React.createClass({
       mixins: ['events'],
       events: {
-        'model:some-event': 'onSomeEvent',
-        // will bind to a model set as "model" on the component properties
-        'model:some-event': 'onFooSomeEvent'
+        'model:event1': 'onEvent1',
+        model: {
+          event2: 'onEvent2',
+          event3: function() { ... }
+        }
       },
-      ...
+      onEvent1: ...,
+      onEvent2: ...
     });
 ```
+And the model that is bound to the component (using the ```model``` or ```collection``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
 
 
 ### *memoize
