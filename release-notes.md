@@ -2,7 +2,24 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.2...master)
+
+## v0.13.2 - November 26th, 2014
+- add additional file which includes all dependencies (not react, backbone) - 9e816ed
+CommonJS
+```
+require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'));
+```
+AMD
+```
+require(
+  ['react', 'backbone', 'underscore', react-backbone/with-deps'],
+  function(React, Backbone, underscore, reactBackbone) {
+    reactBackbone(React, Backbone, _); 
+});
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.1...v0.13.2)
 
 ## v0.13.1 - November 26th, 2014
 - for AMD, you must execute the function with params (see README AMD install instructions) - 51adfbe
