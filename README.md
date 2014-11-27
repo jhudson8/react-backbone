@@ -18,26 +18,57 @@ Dependencies
 
 Installation
 --------------
-Browser:
+#### Browser:
+with dependencies together
 ```
 <script src=".../react[-min].js"></script>
 <script src=".../underscore[-min].js"></script>
-<script src=".../jquery[-min].js"></script>
+<script src=".../backbone[-min].js"></script>
+<script src=".../react-backbone-with-deps[-min].js"></script>
+```
+or separate
+```
+<script src=".../react[-min].js"></script>
+<script src=".../underscore[-min].js"></script>
 <script src=".../backbone[-min].js"></script>
 <script src=".../react-mixin-manager[-min].js"></script>
 <script src=".../react-events[-min].js"></script>
-<script src=".../backbone-xhr-events[-min].js"></script>
+<script src=".../backbone-xhr-events[-min].js"></script> (optional)
 <script src=".../react-backbone[-min].js"></script>
 ```
-CommonJS
+
+#### CommonJS
+with dependencies together
 ```
-require('react-backbone')(require('react'), require('backbone'), require('underscore'));
+require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'));
 ```
-AMD
+or separate
+```
+var React = require('react');
+var Backbone = require('backbone');
+var _ = require('underscore');
+require('react-mixin-manager')(React);
+require('react-events')(React);
+require('react-backbone')(React, Backbone, _);
+```
+
+#### AMD
+with dependencies together
 ```
 require(
-  ['react', 'backbone', 'underscore', 'react-backbone'], function(React, Backbone, _, reactBackbone) {
-  reactBackbone(React, Backbone, _); 
+  ['react', 'backbone', 'underscore', react-backbone/with-deps'],
+  function(React, Backbone, underscore, reactBackbone) {
+    reactBackbone(React, Backbone, _); 
+});
+```
+or separate
+```
+require(
+  ['react', 'backbone', 'underscore', 'react-mixin-manager', 'react-events', 'react-backbone'],
+  function(React, Backbone, _, reactMixinManager, reactEvents, reactBackbone) {
+    reactMixinManager(React); 
+    reactEvents(React); 
+    reactBackbone(React, Backbone, _); 
 });
 ```
 
