@@ -579,7 +579,7 @@ Memoizes a given function by caching the computed result.  see [_.memoize](http:
 Assuming I am memoizing a prop event handler
 ```
 events: {
-  '*memoize:prop:foo': 'onFoo'
+  '*memoize():prop:foo': 'onFoo'
 }
 ```
 
@@ -599,7 +599,7 @@ Defers invoking the function until the current call stack has cleared.  see [_.d
 Assuming I am deferring a model change event handler
 ```
 events: {
-  '*defer:model:change': 'onFoo'
+  '*defer():model:change': 'onFoo'
 }
 ```
 
@@ -632,7 +632,7 @@ Creates a version of the function that can only be called one time. Repeated cal
 Assuming I am once-ing a ref event handler
 ```
 events: {
-  '*once:ref:save': 'onSave'
+  '*once():ref:save': 'onSave'
 }
 ```
 
