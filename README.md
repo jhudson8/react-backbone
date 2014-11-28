@@ -579,7 +579,7 @@ Memoizes a given function by caching the computed result.  see [_.memoize](http:
 Assuming I am memoizing a prop event handler
 ```
 events: {
-  '*memoize():prop:foo': 'onFoo'
+  '*memoize()->prop:foo': 'onFoo'
 }
 ```
 
@@ -589,7 +589,7 @@ Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/
 Assuming I am delaying a window resize handler by 1 second
 ```
 events: {
-  '*delay(1000):window:resize': 'onResize'
+  '*delay(1000)->window:resize': 'onResize'
 }
 ```
 
@@ -599,7 +599,7 @@ Defers invoking the function until the current call stack has cleared.  see [_.d
 Assuming I am deferring a model change event handler
 ```
 events: {
-  '*defer():model:change': 'onFoo'
+  '*defer()->model:change': 'onFoo'
 }
 ```
 
@@ -610,7 +610,7 @@ Creates and returns a new, throttled version of the passed function, that, when 
 Assuming I am throttling a window resize handler every 1 second
 ```
 events: {
-  '*throttle(1000):window:resize': 'onResize'
+  '*throttle(1000)->window:resize': 'onResize'
 }
 ```
 
@@ -621,7 +621,7 @@ Creates and returns a new debounced version of the passed function which will po
 Assuming I am debouncing a window resize handler every 1 second
 ```
 events: {
-  '*debounce(1000):window:resize': 'onResize'
+  '*debounce(1000)->window:resize': 'onResize'
 }
 ```
 
@@ -632,7 +632,7 @@ Creates a version of the function that can only be called one time. Repeated cal
 Assuming I am once-ing a ref event handler
 ```
 events: {
-  '*once():ref:save': 'onSave'
+  '*once()->ref:save': 'onSave'
 }
 ```
 
@@ -643,7 +643,7 @@ Creates a version of the function that will only be run after first being called
 Assuming I am after-ing a ref event handler
 ```
 events: {
-  '*after(3):ref:save': 'onSave'
+  '*after(3)->ref:save': 'onSave'
 }
 ```
 
@@ -654,6 +654,6 @@ Creates a version of the function that can be called no more than count times.  
 Assuming I am before-ing a ref event handler
 ```
 events: {
-  '*before(3):ref:save': 'onSave'
+  '*before(3)->ref:save': 'onSave'
 }
 ```
