@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.3...master)
+
+## v0.13.3 - November 29th, 2014
+No react-backbone updates... bringing react-events up to date (0.7.2 -> 0.7.4) in react-backbone-with-deps.js
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.2...v0.13.3)
 
 ## v0.13.2 - November 26th, 2014
 - add additional file which includes all dependencies (not react, backbone) - 9e816ed
