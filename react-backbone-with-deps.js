@@ -27,8 +27,8 @@
   Container script which includes the following:
   https://github.com/jhudson8/backbone-xhr-events v0.9.0
   https://github.com/jhudson8/react-mixin-manager v0.9.1
-  https://github.com/jhudson8/react-events v0.7.2
-  https://github.com/jhudson8/react-backbone v0.13.1
+  https://github.com/jhudson8/react-events v0.7.4
+  https://github.com/jhudson8/react-backbone v0.13.2
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -589,7 +589,7 @@
   var handlers = {},
     patternHandlers = [],
     splitter = /^([^:]+):?(.*)/,
-    specialWrapper = /^\*([^\(]+)\(([^)]*)\):(.*)/,
+    specialWrapper = /^\*([^\(]+)\(([^)]*)\)[->:]*(.*)/,
     noArgMethods = ['forceUpdate'],
     setState = React.mixins.setState,
     getState = React.mixins.getState;
@@ -739,7 +739,7 @@
     var match = event.match(specialWrapper);
     if (match) {
       var specialMethodName = match[1],
-        args = match[2].split(/\s*,\s*/),
+        args = eval('[' + match[2] + ']'),
         rest = match[3],
         specialHandler = React.events.specials[specialMethodName];
       if (specialHandler) {
@@ -765,7 +765,7 @@
       }
     }
     if (!handler) {
-      throw 'no handler registered for "' + event + '"';
+      throw new Error('no handler registered for "' + event + '"');
     }
 
     return handler.call(context, {
@@ -1097,6 +1097,7 @@
       manageEvent.call(this, 'off', data);
     }
   });
+
 
 /*******************
  * end of react-events

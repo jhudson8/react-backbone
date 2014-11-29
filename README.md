@@ -1,14 +1,8 @@
 react-backbone
 ==============
-Connect [Backbone](http://backbonejs.org/) to [React](http://facebook.github.io/react/) using a suite of focused mixins.
+Connect [Backbone](http://backbonejs.org/) to [React](http://facebook.github.io/react/) using a suite of focused mixins, [Backbone](http://backbonejs.org/)-aware input components and [Backbone](http://backbonejs.org/).View-like declarative events.
 
 [View the fancydocs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone) for a better docs experience
-
-React mixins have the ability to add very tight integration between Backbone.Views with React components.
-
-Most other projects of this nature just provide a single mixin which caused the React component to refresh if the associated model or collection has changed.  This project goes *much* further by isolating many different functions into unique plugins giving the developer the ability to include only the appropriate behaviors to their components.
-
-A set of low level input components which are model-aware are included as well.
 
 Dependencies
 --------------
