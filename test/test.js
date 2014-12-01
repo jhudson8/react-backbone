@@ -31,6 +31,9 @@ require('react-events')(React);
 // add react-backbone mixins
 require('../index')(React, Backbone, _);
 
+// just make sure the "with-deps" file is not hosed since it is a copy
+require('../with-deps')(_.clone(React), _.clone(Backbone), _);
+
 function newComponent(attributes, mixins) {
 
   if (mixins) {
