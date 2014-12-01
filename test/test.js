@@ -26,7 +26,7 @@ Backbone.$ = $;
 
 // intitialize dependencies
 require('react-mixin-manager')(React);
-require('backbone-xhr-events')(Backbone);
+require('backbone-xhr-events')(Backbone, _);
 require('react-events')(React);
 // add react-backbone mixins
 require('../index')(React, Backbone, _);

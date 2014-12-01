@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/jhudson8/react-backbone.git"
   },
+  "scripts": {
+    "test": "mocha"
+  },
   "keywords": [
     "react",
     "mixin",
