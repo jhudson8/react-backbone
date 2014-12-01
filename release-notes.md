@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.4...master)
+
+## v0.13.4 - December 1st, 2014
+- with-deps react-mixin-manager 0.9.1 -> 0.9.2; react-events 0.7.4 -> 0.7.5 - caf9317
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.3...v0.13.4)
 
 ## v0.13.3 - November 29th, 2014
 No react-backbone updates... bringing react-events up to date (0.7.2 -> 0.7.4) in react-backbone-with-deps.js
