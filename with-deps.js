@@ -26,9 +26,9 @@
 /*
   Container script which includes the following:
   https://github.com/jhudson8/backbone-xhr-events v0.9.0
-  https://github.com/jhudson8/react-mixin-manager v0.9.1
-  https://github.com/jhudson8/react-events v0.7.4
-  https://github.com/jhudson8/react-backbone v0.13.2
+  https://github.com/jhudson8/react-mixin-manager v0.9.2
+  https://github.com/jhudson8/react-events v0.7.5
+  https://github.com/jhudson8/react-backbone v0.13.4
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1058,11 +1058,17 @@
         func.apply(context, arguments);
       };
     }
-    if (eventManager.mixin) {
+    var eventHandler = eventManager.mixin;
+    if (eventHandler) {
       var eventHandlerMixin = {},
-        state = {};
-      for (var name in eventManager.mixin) {
-        eventHandlerMixin[name] = bind(eventManager.mixin[name], state);
+        state = {},
+        key;
+      var keys = ['on', 'off', 'trigger'];
+      for (var i=0; i<keys.length; i++) {
+        var key = keys[i];
+        if (eventHandler[key]) {
+          eventHandlerMixin[key] = bind(eventHandler[key], state);
+        }
       }
       eventHandlerMixin.getInitialState = function() {
         return {
@@ -1120,7 +1126,6 @@
       manageEvent.call(this, 'off', data);
     }
   });
-
 
 /*******************
  * end of react-events
