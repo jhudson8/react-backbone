@@ -166,7 +166,7 @@ Nested content is N/A.
     var Text = Backbone.input.Text;
     ...
     // assuming a model attribute "age" exists
-    <Text type="number" ref="age" model={model}/>
+    <Text type="number" name="age" model={model}/>
 ```
 
 ### TextArea
@@ -176,7 +176,7 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
     var TextArea = Backbone.input.TextArea;
     ...
     // assuming a model attribute "description" exists
-    <TextArea type="number" ref="description" model={model}/>
+    <TextArea type="number" name="description" model={model}/>
 ```
 
 ### CheckBox
@@ -186,7 +186,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
     var CheckBox = Backbone.input.CheckBox;
     ...
     // assuming a model attribute "acceptTermsOfService" exists
-    <CheckBox ref="acceptTermsOfService" model={model}/>
+    <CheckBox name="acceptTermsOfService" model={model}/>
 ```
 
 ### Select
@@ -196,7 +196,7 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
     var Select = Backbone.input.Select;
     ...
     // assuming a model attribute "eyeColor" exists
-    <Select ref="eyeColor" model={model}>
+    <Select name="eyeColor" model={model}>
       <option value="blue">blue</option>
       <option value="green">green</option>
       <option value="brown">brown</option>
@@ -212,7 +212,7 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
     var RadioGroup = Backbone.input.RadioGroup;
     ...
     // assuming a model attribute "eyeColor" exists
-    <RadioGroup ref="eyeColor" model={model}>
+    <RadioGroup name="eyeColor" model={model}>
       <input type="radio" value="blue"/> blue
       <input type="radio" value="green"> green
       <input type="radio" value="brown"> brown
@@ -303,7 +303,7 @@ Utility mixin used to iterate child components and have their associated model v
 
 *returns the attribute values*
 
-Iterate child (or provided) components and have each component set it's input value on the model attributes.
+Iterate all child components with a [ref](http://facebook.github.io/react/docs/more-about-refs.html) property and have each component set it's input value on the model attributes.
 Components will only participate in model population if they implement ***getValue*** to return the value that should be set on the model.
 
 If a component does not contain a ```getValue``` method but does contain a ```modelPopulate``` method (by including the ```modelPopulate``` mixin), the modelPopulate method on that component will be called as well with the attributes applied to the parent component's model.
