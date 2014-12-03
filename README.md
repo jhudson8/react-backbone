@@ -351,7 +351,18 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.
+Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.  Also similar to the "listenTo" method except that if the model is changed, the previous model bindings will be removed and the new model will have the bindings applied.
+
+```
+    var MyClass React.createClass({
+      mixins: ['modelEvents'],
+      getInitialState: function() {
+        this.modelOn('change', this.onChange);
+        return null;
+      },
+      onChange: function() { ... }
+    });
+```
 
 
 #### modelOnce(eventName, callback[, context])
@@ -393,11 +404,11 @@ Call the associated model's validate method
 
 
 ### modelInvalidAware
-*depends on modelEventAware, modelIndexErrors*
+*depends on modelEvents*
 
 Allow components to be aware of field specific validation errors.
 
-Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using the ```modelIndexErrors``` method from the ```modelIndexErrors``` mixin and set the components ```error``` state attribute with the normalized error value.
+Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using ```React.mixins.modelIndexErrors``` method and set the components ```error``` state attribute with the normalized error value.
 
 
 ```
