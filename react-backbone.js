@@ -345,45 +345,47 @@
    * This is similar to the "listenTo" mixin but model event bindings here will
    * be transferred to another model if a new one is set on the props.
    */
-  React.mixins.add('modelEventAware', {
-    getInitialState: function() {
-      // model sanity check
-      var model = this.getModel();
-      if (model) {
-        if (!model.off || !model.on) {
-          console.error('the model does not implement on/off functions - you will see problems');
-          console.log(model);
+   // FIXME remove modelEventAware mixin name with the next minor release
+  _.each(['modelEvents', 'modelEventAware'], function(name) {
+    React.mixins.add(name, {
+      getInitialState: function() {
+        // model sanity check
+        var model = this.getModel();
+        if (model) {
+          if (!model.off || !model.on) {
+            console.error('the model does not implement on/off functions - you will see problems');
+            console.log(model);
+          }
         }
+        return {};
+      },
+
+      componentWillReceiveProps: function(props) {
+        var preModel = this.getModel();
+        var postModel = this.getModel(props);
+        if (preModel !== postModel) {
+          this.setModel(postModel, true);
+        }
+      },
+
+      // model.on
+      // ({event, callback})
+      modelOn: function(ev, callback, context) {
+        modelOnOrOnce('on', arguments, this);
+      },
+
+      // model.once
+      modelOnce: function(ev, callback, context) {
+        modelOnOrOnce('once', arguments, this);
+      },
+
+      modelOff: function(ev, callback, context, _model) {
+        var modelEvents = getModelEvents(this);
+        delete modelEvents[ev];
+        this.stopListening(targetModel(_model), ev, callback, context);
       }
-      return {};
-    },
-
-    componentWillReceiveProps: function(props) {
-      var preModel = this.getModel();
-      var postModel = this.getModel(props);
-      if (preModel !== postModel) {
-        this.setModel(postModel, true);
-      }
-    },
-
-    // model.on
-    // ({event, callback})
-    modelOn: function(ev, callback, context) {
-      modelOnOrOnce('on', arguments, this);
-    },
-
-    // model.once
-    modelOnce: function(ev, callback, context) {
-      modelOnOrOnce('once', arguments, this);
-    },
-
-    modelOff: function(ev, callback, context, _model) {
-      var modelEvents = getModelEvents(this);
-      delete modelEvents[ev];
-      this.stopListening(targetModel(_model), ev, callback, context);
-    }
-  }, 'modelAware', 'listen');
-
+    }, 'modelAware', 'listen', 'events');
+  });
 
   /**
    * Mixin used to force render any time the model has changed

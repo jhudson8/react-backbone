@@ -330,21 +330,16 @@ If a component does not contain a ```getValue``` method but does contain a ```mo
 ```
 
 
-### modelEventAware
-*depends on modelAware*
+### modelEvents
+Utility mixin to support declarative model event bindings as well as expose managed model binding functions which are cleaned up when the component is unmounted.
 
-Utility mixin to expose managed model binding functions which are cleaned up when the component is unmounted.
-
-This is similar to the [jhudson8/react-events](https://github.com/jhudson8/react-events) "listen" mixin but will auto rebind if the model is changed by updating the props or calling ```setModel```.
-
-This can also be achieved using declarative events with [jhudson8/react-events](https://github.com/jhudson8/react-events)
+This mixin should be included (instead of the "events" mixin) if any declarative model event bindings are used.
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelEventAware'],
-      getInitialState: function() {
-        this.modelOn('change', this.onChange);
-        return null;
+      mixins: ['modelEvents'],
+      events: {
+        'model:change': 'onChange'
       },
       onChange: function() { ... }
     });
