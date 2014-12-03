@@ -367,9 +367,6 @@ Equivalent to Backbone.Events.once but will be unbound when the component is unm
       getInitialState: function() {
         this.modelOnce('change', this.onChange);
         return null;
-Equivalent to Backbone.Events.off for events registered using this mixin.
-
-Equivalent to Backbone.Events.off for events registered using this mixin.
       },
       onChange: function() { ... }
     });
@@ -380,6 +377,7 @@ Equivalent to Backbone.Events.off for events registered using this mixin.
 * ***callback***: the event callback function
 * ***context***: the callback context
 
+Remove the provided modeOn / modelOnce event bindings.
 
 
 ### modelValidator
