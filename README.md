@@ -252,54 +252,16 @@ Associate the model with the current React component which can be retrieved usin
 will be automatically transferred to the new model.
 
 
-### modelValueAware
-*depends on modelAware*
-
-Utility methods to get and set the model value for a specific attribute key.  This can be used by input components for example so the model attribute key can be abstracted away.
-
-The ```key``` or ```ref``` attribute are used to specify the model key.  In addition, the component using this mixin can supply the key (see examples).
-
-
-*allow the parent to set the "key" or "ref" model key attribute using the *key* or *ref* property
-```
-    var MyComponent = React.createClass({
-      mixins: ['modelValueAware']
-    });
-    ...
-    new MyComponent({ref: 'foo'});
-
-```
-
-*allow the component to provide the model key attribute*
-```
-    var MyComponent = React.createClass({
-      mixins: ['modelValueAware("foo")']
-    });
-```
-
-#### getModelValue()
-
-*returns the value from the model bound to the current React component (see ```modelAware```) using the appropriate attribute key (see ```modelValueAware```).*
-
-
-#### setModelValue(value)
-* ***value***: the model value to set
-
-*returns true if the model was set successfully and false otherwise*
-
-Set the value on the model bound to the current React component (see ```modelAware```) using the appropriate attribute key (see ```modelValueAware```).
-
-
 ### modelPopulate
 *depends on modelAware*
 
-Utility mixin used to iterate child components and have their associated model value be set on the parent component model.
+Utility mixin used to iterate child components and have their associated value set on a Backbone.Model.
 
-#### modelPopulate ([componentArray][, callback][, options][, model]) (callback[, options])
+#### modelPopulate ([componentArray][, callback][, options][, model])
 * componentArray: the array of components to iterate.  If falsy, all child components that contain a ```ref``` attribute will be used
 * callback: the callback that will be executed ***only if*** the model passed validation when the attributes were set.  If provided, the model will be set automatically.
 * options: the model set options (Backbone.Model.set options parameter)
-* model: the model to set the form values on or false if the default component bound model should not be used in favor or just returning the attributes
+* model: the model to set the form values on or false if the default component bound model should not be used in favor or just returning the attributes.  If no model is provided the componet's bound model will be used.
 
 *returns the attribute values*
 
@@ -308,9 +270,11 @@ Components will only participate in model population if they implement ***getVal
 
 If a component does not contain a ```getValue``` method but does contain a ```modelPopulate``` method (by including the ```modelPopulate``` mixin), the modelPopulate method on that component will be called as well with the attributes applied to the parent component's model.
 
+If a model is provided, the attributes will be set on it as long as they pass model validation.
 ```
     React.create.Class({
       mixins: ['modelPopulate'],
+
       render: function() {
         // return a form with react-backbone input fields
       },
@@ -338,6 +302,7 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 ```
     var MyClass React.createClass({
       mixins: ['modelEvents'],
+
       events: {
         'model:change': 'onChange'
       },
@@ -356,6 +321,7 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 ```
     var MyClass React.createClass({
       mixins: ['modelEvents'],
+
       getInitialState: function() {
         this.modelOn('change', this.onChange);
         return null;
@@ -375,6 +341,7 @@ Equivalent to Backbone.Events.once but will be unbound when the component is unm
 ```
     var MyClass React.createClass({
       mixins: ['modelEvents'],
+
       getInitialState: function() {
         this.modelOnce('change', this.onChange);
         return null;
@@ -398,25 +365,24 @@ Remove the provided modeOn / modelOnce event bindings.
 * ***attributes***: the model attributes
 * ***options***: the set options
 
-*return the response from the model's validate method*
-
-Call the associated model's validate method
+*return the response from the model's validate method (transformed with React.mixins.modelIndexErrors)*
 
 
 ### modelInvalidAware
 *depends on modelEvents*
 
-Allow components to be aware of field specific validation errors.
+Allow components to be aware of field specific validation errors.  The ```name``` property much be provide to tell this mixin which model attribute to listen to for ```invalid``` events.  When the event is triggered, the ```invalid``` state attribute will be set as the error message provided to the ```invalid``` event.  The state will not be unset by this mixin (as there is no ```valid``` model event).
 
-Listen for attribute specific model ```invalid``` events.  When these occur, normalize the error payload using ```React.mixins.modelIndexErrors``` method and set the components ```error``` state attribute with the normalized error value.
+When these occur, normalize the error payload using ```React.mixins.modelIndexErrors```.
 
 
 ```
     var MyClass React.createClass({
       mixins: ['modelInvalidAware'],
+
       render: function() {
-        var error = this.state.error;
-        if (error) {
+        var invalidMessage = this.state.invalid;
+        if (invalidMessage) {
           return 'Error: ' + error;
         } else {
           return 'No error';
@@ -463,6 +429,20 @@ Listen to a specific event (or array of events).  When this event is fired, the 
       mixins: ['modelUpdateOn("foo", "bar")'],
       ...
     });
+
+    // equivalent to
+
+    var MyComponent = React.createClass({
+      mixins: ['events'],
+
+      events: {
+        model: {
+          foo: 'forceUpdate',
+          bar: 'forceUpdate'
+        }
+      }
+      ...
+    });
 ```
 
 
@@ -481,6 +461,7 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
 ```
     var MyComponent = React.createClass({
       mixins: ['modelLoadOn'],
+
       render: function() {
         if (this.state.loading) {
           ...
@@ -533,6 +514,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 ```
     React.createClass({
       mixins: ['modelXHRAware'],
+
       render: function() {
         if (this.state.loading) {
           // return something if we are loading
@@ -558,6 +540,7 @@ For example, by including the ```events``` mixin, you can do this:
 ```
     React.createClass({
       mixins: ['events'],
+
       events: {
         'model:event1': 'onEvent1',
         model: {
