@@ -99,9 +99,9 @@
     if (context.getModelKey) {
       return context.getModelKey();
     }
-    return context.props.key || context.props.ref ||
-        context.props.name;
+    return context.props.name || context.props.key || context.props.ref;
   }
+  React.mixins.getModelKey = getKey;
 
   /**
    * Return the callback function (key, model) if both the model exists

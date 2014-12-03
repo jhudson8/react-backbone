@@ -643,3 +643,19 @@ events: {
   '*before(3)->window:resize': 'onWindowResize'
 }
 ```
+
+
+API
+-------------
+### React.mixins
+#### getModelKey (component)
+* ***component***: The ReactComponent that is associated with the model key specific property
+
+Return the model key name associated with a component.  While this can be overridden to sute your needs, the default impl is as follows:
+
+```
+    if (reactComponent.getModelKey) {
+      return component.getModelKey();
+    }
+    return component.props.name || component.props.key || component.props.ref;
+```
