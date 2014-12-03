@@ -362,28 +362,27 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.
+Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.  Also similar to the "listenToOnce" method except that if the model is changed, the previous model bindings will be removed and the new model will have the bindings applied.
 
+```
+    var MyClass React.createClass({
+      mixins: ['modelEvents'],
+      getInitialState: function() {
+        this.modelOnce('change', this.onChange);
+        return null;
+Equivalent to Backbone.Events.off for events registered using this mixin.
+
+Equivalent to Backbone.Events.off for events registered using this mixin.
+      },
+      onChange: function() { ... }
+    });
+```
 
 #### modelOff(eventName, callback[, context])
 * ***eventName***: the event name
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Equivalent to Backbone.Events.off for events registered using this mixin.
-
-
-### modelIndexErrors
-Utility mixin to allow components to handle model validation error responses (used by the ```modelValidator``` mixin)
-
-#### modelIndexErrors(errors)
-* ***errors***: errors returned from the Backbone.Model.set ```invalid``` event
-
-*return errors in the format of ```{ field1Key: errorMessage, field2Key: errorMessage, ... }```*
-
-The expected input of the error object is ```[{field1Key: message}, {field2Key: message}, ...]```.
-
-This mixin only exists to override core functionality if the error structure returned by the Backbone.Model validate method is non-standard.
 
 
 ### modelValidator
@@ -422,7 +421,7 @@ Listen for attribute specific model ```invalid``` events.  When these occur, nor
 
 
 ### modelChangeAware
-*depends on modelEventAware*
+*depends on modelEvents*
 
 Will force a render if the associated model has changed.  The "change" events are for models or collections and include
 
@@ -436,7 +435,7 @@ If you want to force a render only on specific model events, see *modelUpdateOn*
 
 
 ### modelUpdateOn
-*depends on modelEventAware*
+*depends on modelEvents*
 
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
@@ -658,4 +657,16 @@ Return the model key name associated with a component.  While this can be overri
       return component.getModelKey();
     }
     return component.props.name || component.props.key || component.props.ref;
+```
+
+#### modelIndexErrors (errors, component)
+* ***errors***: the error payload from a model validation
+
+Return the errors in a standardized format.  This can be overridden to suire your needs.  The default implementation will take errors in an array
+```
+    [{field1Key: message}, {field2Key: message}, ...]
+```
+to a single object
+```
+    { field1Key: errorMessage, field2Key: errorMessage, ... }
 ```

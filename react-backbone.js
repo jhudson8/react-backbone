@@ -104,6 +104,31 @@
   React.mixins.getModelKey = getKey;
 
   /**
+   * Returns model validation errors in a standard format.
+   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
+   *
+   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
+   */
+  function modelIndexErrors(errors) {
+    if (context && context.modelIndexErrors) {
+      return context.modelIndexErrors(errors);
+    }
+    if (Array.isArray(errors)) {
+      var rtn = {};
+      _.each(errors, function(data) {
+        var key, message;
+        for (var name in data) {
+          rtn[name] = data[name];
+        }
+      });
+      return rtn;
+    } else {
+      return errors;
+    }
+  }
+  React.mixins.modelIndexErrors = modelIndexErrors;
+
+  /**
    * Return the callback function (key, model) if both the model exists
    * and the model key is available
    */
@@ -306,10 +331,10 @@
     modelValidate: function(attributes, options) {
       var model = this.getModel();
       if (model && model.validate) {
-        return this.modelIndexErrors(model.validate(attributes, options)) || false;
+        return modelIndexErrors(model.validate(attributes, options), this) || false;
       }
     }
-  }, 'modelAware', 'modelIndexErrors');
+  }, 'modelAware');
 
 
   /**
@@ -439,7 +464,7 @@
 
   /**
    * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
-   * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
+   * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
    * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
    */
   React.mixins.add('modelInvalidAware', {
@@ -447,7 +472,7 @@
       var key = getKey(this);
       if (key) {
         this.modelOn('invalid', function(model, errors) {
-          var _errors = this.modelIndexErrors(errors) || {};
+          var _errors = modelIndexErrors(errors, this) || {};
           var message = _errors && _errors[key];
           if (message) {
             setState({
@@ -458,31 +483,7 @@
       }
       return {};
     }
-  }, 'modelIndexErrors', 'modelEventAware');
-
-
-  /**
-   * Expose an indexModelErrors method which returns model validation errors in a standard format.
-   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
-   *
-   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
-   */
-  React.mixins.add('modelIndexErrors', {
-    modelIndexErrors: function(errors) {
-      if (Array.isArray(errors)) {
-        var rtn = {};
-        _.each(errors, function(data) {
-          var key, message;
-          for (var name in data) {
-            rtn[name] = data[name];
-          }
-        });
-        return rtn;
-      } else {
-        return errors;
-      }
-    }
-  });
+  }, 'modelEventAware');
 
 
   /**
