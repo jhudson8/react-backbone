@@ -2,7 +2,23 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.4...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.5...master)
+
+## v0.13.5 - December 2nd, 2014
+with-deps
+- backbone-xhr-events 0.9.0 -> 0.9.1
+- react-events 0.7.5 -> 0.7.6
+- react-backbone 0.13.4 -> 0.13.5 - 674c06e
+
+react-backbone
+- add error detection to make debugging easier - 005644a
+- rename modelEventAware mixin to modelEvents (modelEventAware is still useable... for now) - 24149cb
+- update docs to reference the need for name and ref with input components - 91b66a0
+- remove the "modelIndexErrors" mixin in favor of React.mixins.modelIndexErrors - ad960d1
+- Add React.mixins.getModelKey helper method - 70c5475
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.4...v0.13.5)
 
 ## v0.13.4 - December 1st, 2014
 - with-deps react-mixin-manager 0.9.1 -> 0.9.2; react-events 0.7.4 -> 0.7.5 - caf9317
