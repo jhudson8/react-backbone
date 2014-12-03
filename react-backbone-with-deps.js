@@ -25,10 +25,10 @@
 
 /*
   Container script which includes the following:
-  https://github.com/jhudson8/backbone-xhr-events v0.9.0
+  https://github.com/jhudson8/backbone-xhr-events v0.9.1
   https://github.com/jhudson8/react-mixin-manager v0.9.2
-  https://github.com/jhudson8/react-events v0.7.5
-  https://github.com/jhudson8/react-backbone v0.13.4
+  https://github.com/jhudson8/react-events v0.7.6
+  https://github.com/jhudson8/react-backbone v0.13.5
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -277,6 +277,19 @@
 
     return context;
   }
+
+  // allow fetch state flags to be reset if the collection has been reset or the model has been cleared
+  _.each({
+    'reset': Backbone.Collection,
+    'clear': Backbone.Model
+  }, function(Clazz, key) {
+    var protoFunc = Clazz.prototype[key];
+    Clazz.prototype[key] = function(models) {
+      if (key === 'clear' || _.isUndefined(models)) {
+        this.hasBeenFetched = this.hadFetchError = false;
+      }
+    }
+  });
 
 /*******************
  * end of backbone-xhr-events
@@ -1063,7 +1076,7 @@
       var eventHandlerMixin = {},
         state = {},
         key;
-      var keys = ['on', 'off', 'trigger'];
+      var keys = ['on', 'once', 'off', 'trigger'];
       for (var i=0; i<keys.length; i++) {
         var key = keys[i];
         if (eventHandler[key]) {
@@ -1197,9 +1210,34 @@
     if (context.getModelKey) {
       return context.getModelKey();
     }
-    return context.props.key || context.props.ref ||
-        context.props.name;
+    return context.props.name || context.props.key || context.props.ref;
   }
+  React.mixins.getModelKey = getKey;
+
+  /**
+   * Returns model validation errors in a standard format.
+   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
+   *
+   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
+   */
+  function modelIndexErrors(errors) {
+    if (context && context.modelIndexErrors) {
+      return context.modelIndexErrors(errors);
+    }
+    if (Array.isArray(errors)) {
+      var rtn = {};
+      _.each(errors, function(data) {
+        var key, message;
+        for (var name in data) {
+          rtn[name] = data[name];
+        }
+      });
+      return rtn;
+    } else {
+      return errors;
+    }
+  }
+  React.mixins.modelIndexErrors = modelIndexErrors;
 
   /**
    * Return the callback function (key, model) if both the model exists
@@ -1404,10 +1442,10 @@
     modelValidate: function(attributes, options) {
       var model = this.getModel();
       if (model && model.validate) {
-        return this.modelIndexErrors(model.validate(attributes, options)) || false;
+        return modelIndexErrors(model.validate(attributes, options), this) || false;
       }
     }
-  }, 'modelAware', 'modelIndexErrors');
+  }, 'modelAware');
 
 
   /**
@@ -1418,45 +1456,47 @@
    * This is similar to the "listenTo" mixin but model event bindings here will
    * be transferred to another model if a new one is set on the props.
    */
-  React.mixins.add('modelEventAware', {
-    getInitialState: function() {
-      // model sanity check
-      var model = this.getModel();
-      if (model) {
-        if (!model.off || !model.on) {
-          console.error('the model does not implement on/off functions - you will see problems');
-          console.log(model);
+   // FIXME remove modelEventAware mixin name with the next minor release
+  _.each(['modelEvents', 'modelEventAware'], function(name) {
+    React.mixins.add(name, {
+      getInitialState: function() {
+        // model sanity check
+        var model = this.getModel();
+        if (model) {
+          if (!model.off || !model.on) {
+            console.error('the model does not implement on/off functions - you will see problems');
+            console.log(model);
+          }
         }
+        return {};
+      },
+
+      componentWillReceiveProps: function(props) {
+        var preModel = this.getModel();
+        var postModel = this.getModel(props);
+        if (preModel !== postModel) {
+          this.setModel(postModel, true);
+        }
+      },
+
+      // model.on
+      // ({event, callback})
+      modelOn: function(ev, callback, context) {
+        modelOnOrOnce('on', arguments, this);
+      },
+
+      // model.once
+      modelOnce: function(ev, callback, context) {
+        modelOnOrOnce('once', arguments, this);
+      },
+
+      modelOff: function(ev, callback, context, _model) {
+        var modelEvents = getModelEvents(this);
+        delete modelEvents[ev];
+        this.stopListening(targetModel(_model), ev, callback, context);
       }
-      return {};
-    },
-
-    componentWillReceiveProps: function(props) {
-      var preModel = this.getModel();
-      var postModel = this.getModel(props);
-      if (preModel !== postModel) {
-        this.setModel(postModel, true);
-      }
-    },
-
-    // model.on
-    // ({event, callback})
-    modelOn: function(ev, callback, context) {
-      modelOnOrOnce('on', arguments, this);
-    },
-
-    // model.once
-    modelOnce: function(ev, callback, context) {
-      modelOnOrOnce('once', arguments, this);
-    },
-
-    modelOff: function(ev, callback, context, _model) {
-      var modelEvents = getModelEvents(this);
-      delete modelEvents[ev];
-      this.stopListening(targetModel(_model), ev, callback, context);
-    }
-  }, 'modelAware', 'listen');
-
+    }, 'modelAware', 'listen', 'events');
+  });
 
   /**
    * Mixin used to force render any time the model has changed
@@ -1537,7 +1577,7 @@
 
   /**
    * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
-   * is found, set the "error" state to the field error message.  Use the "modelIndexErrors" mixin
+   * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
    * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
    */
   React.mixins.add('modelInvalidAware', {
@@ -1545,7 +1585,7 @@
       var key = getKey(this);
       if (key) {
         this.modelOn('invalid', function(model, errors) {
-          var _errors = this.modelIndexErrors(errors) || {};
+          var _errors = modelIndexErrors(errors, this) || {};
           var message = _errors && _errors[key];
           if (message) {
             setState({
@@ -1556,31 +1596,7 @@
       }
       return {};
     }
-  }, 'modelIndexErrors', 'modelEventAware');
-
-
-  /**
-   * Expose an indexModelErrors method which returns model validation errors in a standard format.
-   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
-   *
-   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
-   */
-  React.mixins.add('modelIndexErrors', {
-    modelIndexErrors: function(errors) {
-      if (Array.isArray(errors)) {
-        var rtn = {};
-        _.each(errors, function(data) {
-          var key, message;
-          for (var name in data) {
-            rtn[name] = data[name];
-          }
-        });
-        return rtn;
-      } else {
-        return errors;
-      }
-    }
-  });
+  }, 'modelEventAware');
 
 
   /**
@@ -1694,6 +1710,9 @@
     React.events.handle(_modelPattern, function(options, callback) {
       return {
         on: function() {
+          if (!this.modelOn) {
+            throw new Error('use the "modelEvents" mixin instead of "events"');
+          }
           this.modelOn(options.path, callback);
         },
         off: function() { /* NOP, modelOn will clean up */ }
