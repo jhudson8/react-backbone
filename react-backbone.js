@@ -599,6 +599,9 @@
     React.events.handle(_modelPattern, function(options, callback) {
       return {
         on: function() {
+          if (!this.modelOn) {
+            throw new Error('use the "modelEvents" mixin instead of "events"');
+          }
           this.modelOn(options.path, callback);
         },
         off: function() { /* NOP, modelOn will clean up */ }
