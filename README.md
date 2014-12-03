@@ -71,8 +71,8 @@ API: Input Components
 -------------
 Low level backbone model-aware input components are provided.  These will
 
-* set the appropriate value if the model and (```ref``` or ```key``` < react 0.12) or (```name``` >= react 0.12) property are defined (or the component can implement their own ```getModelKey``` function)
-* work with modelPopulate mixin to populate the attributes with the correct UI value
+* set the correct value from the model if the *name* property matches the model attribute to be used
+* contribute to [modelPopulate](#snippet/package/modelPopulate)
 
 This simple example shows how to use these components to get and set the model appropriately
 
@@ -102,24 +102,25 @@ This simple example shows how to use these components to get and set the model a
       render: function() {
 
         // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
+        //    used to allow the input field to contribute to the modelPopulate command (the ref name does not matter... just need to get into "this.refs")
         var model = this.getModel();
 
         return (
           <form onSubmit={this.onSubmit}>
             Name:
-            <Text ref="name" model={model}/>
+            <Text ref="name" name="name" model={model}/>
             <br/>
 
             Summary:
-            <TextArea ref="summary" model={model}/>
+            <TextArea ref="summary" name="summary" model={model}/>
             <br/>
 
             Accept Terms and Conditions?:
-            <CheckBox ref="acceptTOC" model={model}/>
+            <CheckBox ref="acceptTOC" name="acceptTOC" model={model}/>
             <br/>
 
             Hair Color:
-            <Select ref="hairColor" model={model}>
+            <Select ref="hairColor" name="hairColor" model={model}>
               <option value="black">black</option>
               <option value="blonde">blonde</option>
               <option value="brown">brown</option>
@@ -127,7 +128,7 @@ This simple example shows how to use these components to get and set the model a
             <br/>
 
             Eye Color:
-            <RadioGroup ref="eyeColor" model={model}>
+            <RadioGroup ref="eyeColor" name="eyeColor" model={model}>
               <input type="radio" name="eyeColor" value="blue"/> blue
               <input type="radio" name="eyeColor" value="brown"/> brown
               <input type="radio" name="eyeColor" value="green"/> green
