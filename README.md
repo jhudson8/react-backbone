@@ -102,6 +102,7 @@ This simple example shows how to use these components to get and set the model a
       render: function() {
 
         // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
+        // note: the "name" property is used to retrieve the correct model value for the input field and the "ref" property is
         //    used to allow the input field to contribute to the modelPopulate command (the ref name does not matter... just need to get into "this.refs")
         var model = this.getModel();
 
