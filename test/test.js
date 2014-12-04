@@ -103,6 +103,17 @@ var Model = Backbone.Model.extend({
 });
 
 describe('react-backbone', function() {
+
+  describe('modelIndexErrors', function() {
+    it('should index errors', function() {
+      var errors = [
+        {foo: 'bar', abc: 'def'}
+      ];
+      errors = React.mixins.modelIndexErrors(errors);
+      expect(errors.foo).to.eql('bar');
+      expect(errors.abc).to.eql('def');
+    });
+  });  
   describe('modelAware', function() {
 
     it('should get the model using props.model', function() {

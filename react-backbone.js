@@ -109,7 +109,7 @@
    *
    * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
    */
-  function modelIndexErrors(errors) {
+  function modelIndexErrors(errors, context) {
     if (context && context.modelIndexErrors) {
       return context.modelIndexErrors(errors);
     }
