@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.6...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.7...master)
+
+## v0.13.7 - December 4th, 2014
+- include backbone-xhr-events bug fix (0.9.2) to "with-deps" script - 8cd4200
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.6...v0.13.7)
 
 ## v0.13.6 - December 4th, 2014
 - fix modelPopulate to support population of nested components - fea3a35
