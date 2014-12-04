@@ -28,7 +28,7 @@
   https://github.com/jhudson8/backbone-xhr-events v0.9.2
   https://github.com/jhudson8/react-mixin-manager v0.9.2
   https://github.com/jhudson8/react-events v0.7.7
-  https://github.com/jhudson8/react-backbone v0.13.7
+  https://github.com/jhudson8/react-backbone v0.13.8
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1232,7 +1232,7 @@
    *
    * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
    */
-  function modelIndexErrors(errors) {
+  function modelIndexErrors(errors, context) {
     if (context && context.modelIndexErrors) {
       return context.modelIndexErrors(errors);
     }
