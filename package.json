@@ -1,6 +1,6 @@
 {
   "name": "react-backbone",
-  "version": "0.13.5",
+  "version": "0.13.6",
   "author": "Joe Hudson <joehud@gmail.com>",
   "description": "backbone-aware mixins for React",
   "repository": {
