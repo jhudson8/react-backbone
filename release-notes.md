@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.7...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.8...master)
+
+## v0.13.8 - December 4th, 2014
+- sync "with-deps" - 0cba56f
+- bug fix: modelIndexErrors - 94c146d
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.7...v0.13.8)
 
 ## v0.13.7 - December 4th, 2014
 - include backbone-xhr-events bug fix (0.9.2) to "with-deps" script - 8cd4200
