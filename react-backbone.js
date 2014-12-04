@@ -232,11 +232,15 @@
    */
   React.mixins.add('modelPopulate', {
     modelPopulate: function() {
-      var components, callback, options, model;
+      var components, callback, options, model, drillDown;
       // determine the function args
       _.each(arguments, function(value) {
-        if (value instanceof Backbone.Model || value === false) {
-          model = value;
+        if (value instanceof Backbone.Model || _.isBoolean(value)) {
+          if (value) {
+            drillDown = true;
+          } else {
+            model = value;
+          }
         } else if (_.isArray(value)) {
           components = value;
         } else if (_.isFunction(value)) {
@@ -266,13 +270,13 @@
             attributes[key] = value;
           }
         } else if (component.modelPopulate && component.getModel) {
-          if (!model) {
+          if (!model && !drillDown) {
             // if we aren't populating to models, this is not necessary
             return;
           }
           var _model = component.getModel();
           if (_model) {
-            var _attributes = component.modelPopulate(options, false);
+            var _attributes = component.modelPopulate(options, true);
             var previousAttributes = models[_model.cid] || {};
             _.extend(previousAttributes, _attributes);
             models[_model.cid] = {
