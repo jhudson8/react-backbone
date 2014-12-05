@@ -48,6 +48,9 @@
   var getState = React.mixins.getState;
   var setState = React.mixins.setState;
 
+  // use Backbone.Events as the events impl if none is already defined
+  React.events.mixin = React.events.mixin || Backbone.Events;
+
   /**
    * Return the model specified by a ReactComponent property key
    */
@@ -62,6 +65,14 @@
       model = context.getModel();
     }
     return model;
+  }
+
+  function getModelOrCollection(type, context, props) {
+    if (type === 'collection') {
+      return context.getCollection(props);
+    } else {
+      return context.getModel(props)
+    }
   }
 
   /**
@@ -143,9 +154,9 @@
   }
 
   /**
-   * Utility method used to handle model events
+   * Utility method used to handle model/collection events
    */
-  function modelEventHandler(identifier, context, eventFormat, callback) {
+  function modelOrCollectionEventHandler(type, identifier, context, eventFormat, callback) {
     var keys = Array.isArray(identifier) ? identifier : ensureArray(context.props[identifier]),
       key, eventName;
     if (keys) {
@@ -153,7 +164,7 @@
       for (var i = 0; i < keys.length; i++) {
         key = keys[i];
         eventName = eventFormat.replace('{key}', key);
-        context.modelOn(eventName, _.bind(callback, context), this);
+        context[type + 'On'](eventName, _.bind(callback, context), this);
       }
       return keys;
     }
@@ -163,15 +174,15 @@
    * Provide modelOn and modelOnce argument with proxied arguments
    * arguments are event, callback, context
    */
-  function modelOnOrOnce(type, args, _this, _model) {
+  function modelOnOrOnce(modelType, type, args, _this, _modelOrCollection) {
     var modelEvents = getModelEvents(_this);
     var ev = args[0];
     var cb = args[1];
     var ctx = args[2];
     modelEvents[ev] = {type: type, ev: ev, cb: cb, ctx: ctx};
-    var model = _model || _this.getModel();
-    if (model) {
-      _this[type === 'on' ? 'listenTo' : 'listenToOnce'](model, ev, cb, ctx);
+    var modelOrCollection = _modelOrCollection || getModelOrCollection(modelType, _this);
+    if (modelOrCollection) {
+      _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
     }
   }
 
@@ -201,28 +212,277 @@
   }
 
 
-  /**
-   * Simple overrideable mixin to get/set models.  Model can
-   * be set on props or by calling setModel
-   */
-  React.mixins.add('modelAware', {
-    getModel: function(props) {
+  _.each([{
+    type: 'model',
+    capType: 'Model',
+    changeEvents: ['change']
+  }, {
+    type: 'collection',
+    capType: 'Collection',
+    changeEvents: ['add', 'remove', 'reset', 'sort']
+  }], function(typeData) {
+
+    /**
+     * Simple overrideable mixin to get/set models or collections.  Model/Collection can
+     * be set on props or by calling setModel or setCollection
+     */
+    var typeAware = {};
+    typeAware['get' + typeData.capType] = function(props) {
       props = props || this.props;
-      return getState('model', this) || getState('collection', this) ||
-          props.model || props.collection;
-    },
-    setModel: function(model, _suppressState) {
-      var preModel = this.getModel();
+      return getState(typeData.type, this) || props[typeData.type];
+    };
+    typeAware['set' + typeData.capType] = function(modelOrCollection, _suppressState) {
+      var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
       var modelEvents = getModelEvents(this);
       _.each(modelEvents, function(data) {
-        this.modelOff(data.ev, data.cb, data.ctx, preModel);
-        modelOnOrOnce(data.type, [data.ev, data.cb, data.ctx], this, model);
+        this.modelOff(data.ev, data.cb, data.ctx, preModelOrCollection);
+        modelOnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
       }, this);
       if (_suppressState !== true) {
-        setState('model', model);
+        setState(typeData.type, modelOrCollection);
       }
     }
-  }, 'state');
+    React.mixins.add(typeData.type + 'Aware', typeAware, 'state');
+
+
+    /**
+     * Exposes model binding registration functions that will
+     * be cleaned up when the component is unmounted and not actually registered
+     * until the component is mounted.  The context will be "this" if not provided.
+     *
+     * This is similar to the "listenTo" mixin but model event bindings here will
+     * be transferred to another model if a new one is set on the props.
+     */
+    var typeEvents = {
+      getInitialState: function() {
+        // model sanity check
+        var modelOrCollection = getModelOrCollection(typeData.type, this);
+        if (modelOrCollection) {
+          if (!modelOrCollection.off || !modelOrCollection.on) {
+            console.error('the model/collection does not implement on/off functions - you will see problems');
+            console.log(modelOrCollection);
+          }
+        }
+        return {};
+      },
+
+      componentWillReceiveProps: function(props) {
+        var preModelOrCollection = getModelOrCollection(typeData.type, this);
+        var postModelOrCollection = getModelOrCollection(typeData.type, this, props);
+        if (preModelOrCollection !== postModelOrCollection) {
+          this['set' + typeData.capType](postModelOrCollection, true);
+        }
+      },
+    };
+    typeEvents[typeData.type + 'On'] = function(ev, callback, context) {
+      modelOnOrOnce(typeData.type, 'on', arguments, this);
+    };
+    typeEvents[typeData.type + 'Once'] = function(ev, callback, context) {
+      modelOnOrOnce(typeData.type, 'once', arguments, this);
+    };
+    typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
+      var modelEvents = getModelEvents(this);
+      delete modelEvents[ev];
+      this.stopListening(targetModel(_modelOrCollection), ev, callback, context);
+    };
+    React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
+
+    /**
+     * Mixin used to force render any time the model has changed
+     */
+    var changeAware = {
+      getInitialState: function() {
+        _.each(typeData.changeEvents, function(eventName) {
+          this[typeData.type + 'On'](eventName, function() {
+            this.deferUpdate();
+          }, this);
+        }, this);
+      }
+    }
+    React.mixins.add(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
+
+
+    // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
+
+    /**
+     * If the model executes *any* XHR activity, the internal state "loading" attribute
+     * will be set to true and, if an error occurs with loading, the "error" state attribute
+     * will be set with the error contents
+     */
+    var xhrAware = {
+      getInitialState: function() {
+        this[typeData.type + 'On'](xhrEventName, function(eventName, events) {
+          setState({
+            loading: true
+          }, this);
+
+          var modelOrCollection = getModelOrCollection(typeData.type, this);
+          events.on('success', function() {
+            setState({
+              loading: modelOrCollection[xhrModelLoadingAttribute]
+            }, this);
+          }, this);
+          events.on('error', function(error) {
+            setState({
+              loading: modelOrCollection[xhrModelLoadingAttribute],
+              error: error
+            }, this);
+          }, this);
+        });
+
+        var modelOrCollection = getModelOrCollection(typeData.type, this);
+        return {
+          loading: modelOrCollection && modelOrCollection[xhrModelLoadingAttribute]
+        };
+      },
+
+      componentDidMount: function() {
+        // make sure the model didn't get into a non-loading state before mounting
+        var state = this.state,
+          modelOrCollection = getModelOrCollection(typeData.type, this);
+        if (modelOrCollection) {
+          var loading = modelOrCollection[xhrModelLoadingAttribute];
+          if (loading) {
+            // we're still loading yet but we haven't yet bound to this event
+            this[typeData.type + 'Once'](xhrCompleteEventName, function() {
+              setState({
+                loading: false
+              }, this);
+            });
+            if (!state.loading) {
+              setState({
+                loading: true
+              }, this);
+            }
+          } else if (state.loading) {
+            setState({
+              loading: false
+            }, this);
+          }
+        }
+      }
+    };
+    React.mixins.add(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
+
+
+    /**
+     * Gives any comonent the ability to mark the "loading" attribute in the state as true
+     * when any async event of the given type (defined by the "key" property) occurs.
+     */
+    var loadOn = function() {
+      var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+      return {
+        getInitialState: function() {
+          keys = modelOrCollectionEventHandler(typeData.type, keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
+            var modelOrCollection = getModelOrCollection(typeData.type, this);
+            setState({
+              loading: modelOrCollection[xhrModelLoadingAttribute]
+            }, this);
+            events.on('complete', function() {
+              setState({
+                loading: false
+              }, this);
+            }, this);
+          });
+
+          // see if we are currently loading something
+          var modelOrCollection = getModelOrCollection(typeData.type, this);
+          if (modelOrCollection) {
+            var currentLoads = modelOrCollection.loading,
+              key;
+            if (currentLoads) {
+              var clearLoading = function() {
+                setState({
+                  loading: false
+                }, this);
+              }
+              for (var i = 0; i < currentLoads.length; i++) {
+                var keyIndex = keys.indexOf(currentLoads[i].method);
+                if (keyIndex >= 0) {
+                  // there is currently an async event for this key
+                  key = keys[keyIndex];
+                  currentLoads[i].on('complete', clearLoading, this);
+                  return {
+                    loading: modelOrCollection[xhrModelLoadingAttribute]
+                  };
+                }
+              }
+            }
+          }
+          return {};
+        },
+
+        /**
+         * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
+         * the state once the callback has completed
+         */
+        loadWhile: function(options) {
+          options = options || {};
+          var self = this;
+
+          function wrap(type) {
+            var _callback = options[type];
+            options[type] = function() {
+              setState({
+                loading: false
+              }, self);
+              if (_callback) {
+                _callback.apply(this, arguments);
+              }
+            }
+          }
+          wrap('error');
+          wrap('success');
+          setState({
+            loading: true
+          }, this);
+          return options;
+        }
+      };
+    };
+    React.mixins.add(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
+
+
+    /**
+     * Gives any comonent the ability to force an update when an event is fired
+     */
+    var updateOn = function() {
+      var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+      return {
+        getInitialState: function() {
+          modelOrCollectionEventHandler(typeData.type, keys || 'updateOn', this, '{key}', function() {
+            this.deferUpdate();
+          });
+        }
+      };
+    };
+    React.mixins.add(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
+
+
+    /**
+     * Support the "model:{event name}" event, for example:
+     * events {
+     *   'model:something-happened': 'onSomethingHappened'
+     * }
+     * ...
+     * onSomethingHappened: function() { ... }
+     *
+     * When using these model events, you *must* include the "model/collectionEvents" mixin
+     */
+    var _modelOrCollctionPattern = new RegExp('^' + typeData.type + '(\[.+\])?$');
+    React.events.handle(_modelOrCollctionPattern, function(options, callback) {
+      return {
+        on: function() {
+          if (!this[typeData.type + 'On']) {
+            throw new Error('use the ' + typeData.type + ' "Events" mixin instead of "events"');
+          }
+          this[typeData.type + 'On'](options.path, callback);
+        },
+        off: function() { /* NOP, modelOn will clean up */ }
+      };
+    });
+
+  });
 
 
   /**
@@ -235,12 +495,11 @@
       var components, callback, options, model, drillDown;
       // determine the function args
       _.each(arguments, function(value) {
-        if (value instanceof Backbone.Model || _.isBoolean(value)) {
-          if (value) {
-            drillDown = true;
-          } else {
-            model = value;
-          }
+        if (value instanceof Backbone.Model) {
+          model = value;
+        } else if (_.isBoolean(value)) {
+          drillDown = true;
+          model = false;
         } else if (_.isArray(value)) {
           components = value;
         } else if (_.isFunction(value)) {
@@ -275,48 +534,16 @@
             return;
           }
           var _model = component.getModel();
-          if (_model) {
-            var _attributes = component.modelPopulate(options, true);
-            var previousAttributes = models[_model.cid] || {};
-            _.extend(previousAttributes, _attributes);
-            models[_model.cid] = {
-              model: _model,
-              attr: previousAttributes
-            };
+          var testModel = model || (options && options.populateModel);
+          if (_model === testModel) {
+            var _attributes = component.modelPopulate(_.extend({populateModel: testModel}, options), true);
+            _.defaults(attributes, _attributes);
           }
         }
       });
 
       if (model) {
-        // make sure all submodels are valid so this can be atomic
-        var isValid = true;
-        var data = models[model.cid];
-        if (!data) {
-          data = {
-            model: model,
-            attr: {}
-          };
-        }
-        _.extend(data.attr, attributes);
-        models[model.cid] = data;
-        var validateOptions = _.defaults({
-          validate: true
-        }, options);
-        _.each(models, function(data) {
-          var errors = !data.model._validate(data.attr, validateOptions);
-          isValid = !errors && isValid;
-        });
-
-        if (isValid) {
-          options = _.defaults({
-            validate: false
-          }, options);
-          _.each(models, function(data) {
-            data.model.set(data.attr, options);
-          });
-        }
-
-        if (callback && isValid) {
+        if (model.set(attributes, {validate: true})) {
           callback.call(this, model);
         }
       }
@@ -339,133 +566,6 @@
       }
     }
   }, 'modelAware');
-
-
-  /**
-   * Exposes model binding registration functions that will
-   * be cleaned up when the component is unmounted and not actually registered
-   * until the component is mounted.  The context will be "this" if not provided.
-   *
-   * This is similar to the "listenTo" mixin but model event bindings here will
-   * be transferred to another model if a new one is set on the props.
-   */
-   // FIXME remove modelEventAware mixin name with the next minor release
-  _.each(['modelEvents', 'modelEventAware'], function(name) {
-    React.mixins.add(name, {
-      getInitialState: function() {
-        // model sanity check
-        var model = this.getModel();
-        if (model) {
-          if (!model.off || !model.on) {
-            console.error('the model does not implement on/off functions - you will see problems');
-            console.log(model);
-          }
-        }
-        return {};
-      },
-
-      componentWillReceiveProps: function(props) {
-        var preModel = this.getModel();
-        var postModel = this.getModel(props);
-        if (preModel !== postModel) {
-          this.setModel(postModel, true);
-        }
-      },
-
-      // model.on
-      // ({event, callback})
-      modelOn: function(ev, callback, context) {
-        modelOnOrOnce('on', arguments, this);
-      },
-
-      // model.once
-      modelOnce: function(ev, callback, context) {
-        modelOnOrOnce('once', arguments, this);
-      },
-
-      modelOff: function(ev, callback, context, _model) {
-        var modelEvents = getModelEvents(this);
-        delete modelEvents[ev];
-        this.stopListening(targetModel(_model), ev, callback, context);
-      }
-    }, 'modelAware', 'listen', 'events');
-  });
-
-  /**
-   * Mixin used to force render any time the model has changed
-   */
-  React.mixins.add('modelChangeAware', {
-    getInitialState: function() {
-      _.each(['change', 'reset', 'add', 'remove', 'sort'], function(type) {
-        this.modelOn(type, function() {
-          this.deferUpdate();
-        });
-      }, this);
-      return null;
-    }
-  }, 'modelEventAware', 'deferUpdate');
-
-
-  // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
-
-  /**
-   * If the model executes *any* XHR activity, the internal state "loading" attribute
-   * will be set to true and, if an error occurs with loading, the "error" state attribute
-   * will be set with the error contents
-   */
-  React.mixins.add('modelXHRAware', {
-    getInitialState: function() {
-      this.modelOn(xhrEventName, function(eventName, events) {
-        setState({
-          loading: true
-        }, this);
-
-        var model = this.getModel();
-        events.on('success', function() {
-          setState({
-            loading: model[xhrModelLoadingAttribute]
-          }, this);
-        }, this);
-        events.on('error', function(error) {
-          setState({
-            loading: model[xhrModelLoadingAttribute],
-            error: error
-          }, this);
-        }, this);
-      });
-
-      var model = this.getModel();
-      return {
-        loading: model && model[xhrModelLoadingAttribute]
-      };
-    },
-
-    componentDidMount: function() {
-      // make sure the model didn't get into a non-loading state before mounting
-      var state = this.state,
-        model = this.getModel();
-      if (model) {
-        var loading = model[xhrModelLoadingAttribute];
-        if (loading) {
-          // we're still loading yet but we haven't yet bound to this event
-          this.modelOnce(xhrCompleteEventName, function() {
-            setState({
-              loading: false
-            }, this);
-          });
-          if (!state.loading) {
-            setState({
-              loading: true
-            }, this);
-          }
-        } else if (state.loading) {
-          setState({
-            loading: false
-          }, this);
-        }
-      }
-    }
-  }, 'modelEventAware');
 
 
   /**
@@ -492,155 +592,34 @@
   }, 'modelEventAware');
 
 
-  /**
-   * Gives any comonent the ability to mark the "loading" attribute in the state as true
-   * when any async event of the given type (defined by the "key" property) occurs.
-   */
-  React.mixins.add('modelLoadOn', function() {
-    var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-    return {
-      getInitialState: function() {
-        keys = modelEventHandler(keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
-          var model = this.getModel();
-          setState({
-            loading: model[xhrModelLoadingAttribute]
-          }, this);
-          events.on('complete', function() {
-            setState({
-              loading: false
-            }, this);
-          }, this);
-        });
-
-        // see if we are currently loading something
-        var model = this.getModel();
-        if (model) {
-          var currentLoads = model.loading,
-            key;
-          if (currentLoads) {
-            var clearLoading = function() {
-              setState({
-                loading: false
-              }, this);
-            }
-            for (var i = 0; i < currentLoads.length; i++) {
-              var keyIndex = keys.indexOf(currentLoads[i].method);
-              if (keyIndex >= 0) {
-                // there is currently an async event for this key
-                key = keys[keyIndex];
-                currentLoads[i].on('complete', clearLoading, this);
-                return {
-                  loading: model[xhrModelLoadingAttribute]
-                };
-              }
-            }
-          }
+  var specials = React.events.specials;
+  if (specials) {
+    // add underscore wrapped special event handlers
+    function parseArgs(args) {
+      var arg;
+      for (var i = 0; i < args.length; i++) {
+        arg = args[i];
+        if (arg === 'true') {
+          arg = true;
+        } else if (arg === 'false') {
+          arg = false;
+        } else if (arg.match(/^[0-9]+$/)) {
+          arg = parseInt(arg);
+        } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
+          arg = parseFloat(arg);
         }
-        return {};
-      },
-
-      /**
-       * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
-       * the state once the callback has completed
-       */
-      loadWhile: function(options) {
-        options = options || {};
-        var self = this;
-
-        function wrap(type) {
-          var _callback = options[type];
-          options[type] = function() {
-            setState({
-              loading: false
-            }, self);
-            if (_callback) {
-              _callback.apply(this, arguments);
-            }
-          }
-        }
-        wrap('error');
-        wrap('success');
-        setState({
-          loading: true
-        }, this);
-        return options;
+        args[i] = arg;
       }
+      return args;
     }
-  }, 'modelEventAware');
-
-
-  /**
-   * Gives any comonent the ability to force an update when an event is fired
-   */
-  React.mixins.add('modelUpdateOn', function() {
-    var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-    return {
-      getInitialState: function() {
-        modelEventHandler(keys || 'updateOn', this, '{key}', function() {
-          this.deferUpdate();
-        });
-      }
-    };
-  }, 'modelEventAware', 'deferUpdate');
-
-
-  // if [react-events](https://github.com/jhudson8/react-events) is included, provide some nice integration
-  if (React.events) {
-    // set Backbone.Events as the default Events mixin
-    React.events.mixin = React.events.mixin || Backbone.Events;
-
-    /**
-     * Support the "model:{event name}" event, for example:
-     * events {
-     *   'model:something-happened': 'onSomethingHappened'
-     * }
-     * ...
-     * onSomethingHappened: function() { ... }
-     *
-     * When using these model events, you *must* include the "modelEventAware" mixin
-     */
-    var _modelPattern = /^model(\[.+\])?$/;
-    React.events.handle(_modelPattern, function(options, callback) {
-      return {
-        on: function() {
-          if (!this.modelOn) {
-            throw new Error('use the "modelEvents" mixin instead of "events"');
-          }
-          this.modelOn(options.path, callback);
-        },
-        off: function() { /* NOP, modelOn will clean up */ }
+    var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
+    _.each(reactEventSpecials, function(name) {
+      specials[name] = specials[name] || function(callback, args) {
+        args = parseArgs(args);
+        args.splice(0, 0, callback);
+        return _[name].apply(_, args);
       };
     });
-
-    var specials = React.events.specials;
-    if (specials) {
-      // add underscore wrapped special event handlers
-      function parseArgs(args) {
-        var arg;
-        for (var i = 0; i < args.length; i++) {
-          arg = args[i];
-          if (arg === 'true') {
-            arg = true;
-          } else if (arg === 'false') {
-            arg = false;
-          } else if (arg.match(/^[0-9]+$/)) {
-            arg = parseInt(arg);
-          } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
-            arg = parseFloat(arg);
-          }
-          args[i] = arg;
-        }
-        return args;
-      }
-      var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
-      _.each(reactEventSpecials, function(name) {
-        specials[name] = specials[name] || function(callback, args) {
-          args = parseArgs(args);
-          args.splice(0, 0, callback);
-          return _[name].apply(_, args);
-        };
-      });
-    }
   }
 
 

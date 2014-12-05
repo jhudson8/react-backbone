@@ -122,12 +122,6 @@ describe('react-backbone', function() {
       expect(obj.getModel()).to.eql(model);
     });
 
-    it('should get the model using props.collection', function() {
-      var model = new Backbone.Model(),
-          obj = newComponent({props: {collection: model}}, ['modelAware']);
-      expect(obj.getModel()).to.eql(model);
-    });
-
     it('should set the model', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelAware']);
@@ -269,7 +263,7 @@ describe('react-backbone', function() {
   });
 
 
-  describe('modelEventAware', function() {
+  describe('modelEvents', function() {
     var clock;
     beforeEach(function() {
       clock = sinon.useFakeTimers();
@@ -280,7 +274,7 @@ describe('react-backbone', function() {
 
     it('should not do event binding until node is mounted', function() {
       var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['modelEventAware']),
+          obj = newComponent({props: {model: model}}, ['modelEvents']),
           spy = sinon.spy();
       obj.modelOn('foo', spy);
       model.trigger('foo');
@@ -307,7 +301,7 @@ describe('react-backbone', function() {
 
     it('should bind if model does not exist when registered', function() {
       var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['modelEventAware']),
+          obj = newComponent({props: {model: model}}, ['modelEvents']),
           spy = sinon.spy();
 
       // setting model before mounting
@@ -324,7 +318,7 @@ describe('react-backbone', function() {
 
     it('should bind if component has already been mounted when setting model', function() {
       var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['modelEventAware']),
+          obj = newComponent({props: {model: model}}, ['modelEvents']),
           spy = sinon.spy();
 
       obj.modelOn('foo', spy);
@@ -337,7 +331,7 @@ describe('react-backbone', function() {
     it('should unbind a previous model and rebind to a new model', function() {
       var model1 = new Backbone.Model(),
           model2 = new Backbone.Model(),
-          obj = newComponent({props: {model: model1}}, ['modelEventAware']),
+          obj = newComponent({props: {model: model1}}, ['modelEvents']),
           spy = sinon.spy();
 
       obj.modelOn('foo', spy);
@@ -357,9 +351,9 @@ describe('react-backbone', function() {
     it('should transfer bindings if a new model property is provided', function() {
       var model1 = new Backbone.Model(),
           model2 = new Backbone.Model(),
-          obj = newComponent({props: {model: model1}}, ['modelEventAware']),
+          obj = newComponent({props: {model: model1}}, ['modelEvents']),
           spy = sinon.spy();
-// joe
+
       obj.modelOn('foo', spy);
       obj.mount();
       model1.trigger('foo');
@@ -386,7 +380,7 @@ describe('react-backbone', function() {
       clock.restore();
     });
 
-    it('should listen to all events and force an update', function() {
+    it('should listen to model change events and force an update', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelChangeAware']),
           spy = sinon.spy();
@@ -397,18 +391,37 @@ describe('react-backbone', function() {
       model.trigger('change');
       clock.tick(1);
       expect(spy.callCount).to.eql(1);
-      model.trigger('reset');
+    });
+  });
+
+  describe('collectionChangeAware', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should listen to collection change events (reset, add, remove, sort) and force an update', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionChangeAware']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      collection.trigger('reset');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+      collection.trigger('add');
       clock.tick(1);
       expect(spy.callCount).to.eql(2);
-      model.trigger('add');
+      collection.trigger('remove');
       clock.tick(1);
       expect(spy.callCount).to.eql(3);
-      model.trigger('remove');
+      collection.trigger('sort');
       clock.tick(1);
       expect(spy.callCount).to.eql(4);
-      model.trigger('sort');
-      clock.tick(1);
-      expect(spy.callCount).to.eql(5);
     });
   });
 
@@ -638,7 +651,7 @@ describe('react-backbone', function() {
     });
     it('set React.events.mixin to Backbone.Events', function() {
       expect(React.events.mixin).to.eql(Backbone.Events);
-      var obj = newComponent({}, ['events', 'modelEventAware']);
+      var obj = newComponent({}, ['events', 'modelEvents']);
       expect(!!obj.on).to.eql(true);
       expect(!!obj.off).to.eql(true);
     });
@@ -651,7 +664,7 @@ describe('react-backbone', function() {
               'model:change': 'onChange'
             },
             onChange: spy
-          }, ['events', 'modelEventAware']);
+          }, ['events', 'modelEvents']);
       obj.mount();
       model.set({foo: 'bar'});
       expect(spy.callCount).to.eql(1);
