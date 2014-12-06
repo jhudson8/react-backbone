@@ -101,6 +101,9 @@ function newComponent(attributes, mixins) {
 var Model = Backbone.Model.extend({
   url: 'foo'
 });
+var Collection = Backbone.Collection.extend({
+  url: 'foo'
+});
 
 describe('react-backbone', function() {
 
@@ -113,7 +116,9 @@ describe('react-backbone', function() {
       expect(errors.foo).to.eql('bar');
       expect(errors.abc).to.eql('def');
     });
-  });  
+  });
+
+
   describe('modelAware', function() {
 
     it('should get the model using props.model', function() {
@@ -132,6 +137,27 @@ describe('react-backbone', function() {
       expect(obj.getModel()).to.eql(model2);
     });
   });
+
+
+  describe('collectionAware', function() {
+
+    it('should get the collection using props.collection', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionAware']);
+      expect(obj.getCollection()).to.eql(collection);
+    });
+
+    it('should set the collection', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionAware']);
+      expect(obj.getCollection()).to.eql(collection);
+
+      var collection2 = new Backbone.Collection();
+      obj.setProps({collection: collection2});
+      expect(obj.getCollection()).to.eql(collection2);
+    });
+  });
+
 
   describe('modelPopulate', function() {
 
@@ -216,12 +242,12 @@ describe('react-backbone', function() {
     });
   });
 
-  describe('model value awareness', function() {
+
+  describe('getModelValue', function() {
 
     it('should get value from model using Backbone.input.getModelValue(component) and set the model value using "key"', function() {
       var model = new Backbone.Model({foo: 'bar'}),
           obj = newComponent({props: {model: model, key: 'foo'}}, ['modelAware']);
-      // expect(Backbone.input.getModelValue(obj)).to.eql('bar');
       var val = Backbone.input.getModelValue(obj);
       expect(val).to.eql('bar');
 
@@ -237,6 +263,7 @@ describe('react-backbone', function() {
       expect(model.get('foo')).to.eql('baz');
     });
   });
+
 
   describe('modelValidator', function() {
     var Model = Backbone.Model.extend({
@@ -371,6 +398,116 @@ describe('react-backbone', function() {
     });
   });
 
+
+  describe('collectionEvents', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should not do event binding until node is mounted', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionEvents']),
+          spy = sinon.spy();
+      obj.collectionOn('foo', spy);
+      collection.trigger('foo');
+      // we shouldn't bind yet because we aren't mounted
+      expect(spy.callCount).to.eql(0);
+
+      obj.mount();
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // we shouldn't bind now because we will be unmounted
+      obj.unmount();
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // mount again and ensure that we rebind
+      obj.mount();
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+      obj.unmount();
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+    });
+
+    it('should bind if collection does not exist when registered', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionEvents']),
+          spy = sinon.spy();
+
+      // setting model before mounting
+      obj.collectionOn('foo', spy);
+      obj.setProps({collection: collection});
+      // we shouldn't bind yet because we are not mounted
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(0);
+
+      obj.mount();
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+    });
+
+    it('should bind if component has already been mounted when setting collection', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionEvents']),
+          spy = sinon.spy();
+
+      obj.collectionOn('foo', spy);
+      obj.mount();
+      obj.setProps({collection: collection});
+      collection.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+    });
+
+    it('should unbind a previous collection and rebind to a new collection', function() {
+      var collection1 = new Backbone.Collection(),
+          collection2 = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection1}}, ['collectionEvents']),
+          spy = sinon.spy();
+
+      obj.collectionOn('foo', spy);
+      obj.mount();
+      collection1.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // set another collection and ensure the first was unbound
+      obj.setProps({collection: collection2});
+      collection2.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+
+      collection1.trigger('foo');
+      expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
+    });
+
+    it('should transfer bindings if a new collection property is provided', function() {
+      var collection1 = new Backbone.Collection(),
+          collection2 = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection1}}, ['collectionEvents']),
+          spy = sinon.spy();
+
+      obj.collectionOn('foo', spy);
+      obj.mount();
+      collection1.trigger('foo');
+      expect(spy.callCount).to.eql(1);
+
+      // set another model and ensure the first was unbound
+      obj.setProps({collection: collection2});
+      clock.tick(1);
+
+      collection2.trigger('foo');
+      expect(spy.callCount).to.eql(2);
+
+      collection1.trigger('foo');
+      expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
+    });
+  });
+
+
   describe('modelChangeAware', function() {
     var clock;
     beforeEach(function() {
@@ -394,6 +531,7 @@ describe('react-backbone', function() {
     });
   });
 
+
   describe('collectionChangeAware', function() {
     var clock;
     beforeEach(function() {
@@ -404,7 +542,7 @@ describe('react-backbone', function() {
     });
 
     it('should listen to collection change events (reset, add, remove, sort) and force an update', function() {
-      var collection = new Backbone.Collection(),
+      var collection = new Collection(),
           obj = newComponent({props: {collection: collection}}, ['collectionChangeAware']),
           spy = sinon.spy();
       obj.forceUpdate = spy;
@@ -424,6 +562,7 @@ describe('react-backbone', function() {
       expect(spy.callCount).to.eql(4);
     });
   });
+
 
   describe('modelUpdateOn', function() {
     var clock;
@@ -475,6 +614,62 @@ describe('react-backbone', function() {
       clock.tick(1);
       expect(spy.callCount).to.eql(1);
       model.trigger('bar');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(2);
+    });
+  });
+
+
+  describe('collectionUpdateOn', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should listen to provided events and force an update', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection, updateOn: 'foo'}}, ['collectionUpdateOn']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      expect(spy.callCount).to.eql(0);
+      collection.trigger('foo');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+    });
+
+    it('should listen to provided events (as array) and force an update', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection, updateOn: ['foo', 'bar']}}, ['collectionUpdateOn']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      expect(spy.callCount).to.eql(0);
+      collection.trigger('foo');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+      collection.trigger('bar');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(2);
+    });
+
+    it('should listen to declaring component provided events and force an update', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionUpdateOn("foo", "bar")']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      expect(spy.callCount).to.eql(0);
+      collection.trigger('foo');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+      collection.trigger('bar');
       clock.tick(1);
       expect(spy.callCount).to.eql(2);
     });
@@ -546,49 +741,118 @@ describe('react-backbone', function() {
       expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
       expect(spy.callCount).to.eql(2);
     });
+  });
 
-    describe('loadWhile', function() {
-      it('should provide a return callback if none is supplied', function() {
-        var model = new Backbone.Model(),
-            obj = newComponent({props: {model: model}}, ['modelLoadOn']),
-            spy = sinon.spy();
-        obj.setState = spy;
-        obj.mount();
 
-        var options = obj.loadWhile();
-        expect(spy).to.have.been.calledWith({loading: true});
-        expect(!!options.success).to.eql(true);
-        expect(!!options.error).to.eql(true);
-        options.success();
-        expect(spy).to.have.been.calledWith({loading: false});
-        options.error();
-        expect(spy.callCount).to.eql(3);
-        expect(spy).to.have.been.calledWith({loading: false});
+  describe('collectionLoadOn', function() {
+
+    it('should not call setState if the component is not mounted (but still set the loading state attribute)', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: { collection: collection, loadOn: 'foo' }}, ['collectionLoadOn']);
+
+      // initialize the plugins
+      obj.mount();
+
+      // make it look like we aren't mounted
+      obj._mounted = false;
+      Backbone.sync('foo', collection, { url: 'foo' });
+      expect(obj.setState).to.not.have.been.called;
+      expect(!!obj.state.loading).to.eql(true);
+
+      obj._mounted = true;
+      $.success();
+      expect(obj.setState).to.have.been.calledWith({loading: false});
+      expect(obj.setState.callCount).to.eql(1);
+    });
+
+    it('should set loading state when an async event is triggered (success condition)', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: { collection: collection, loadOn: 'foo' }}, ['collectionLoadOn']);
+      obj.mount();
+
+      Backbone.sync('foo', collection, { url: 'foo' });
+      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
+      $.success();
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      expect(obj.setState.callCount).to.eql(2);
+    });
+
+    it('should set loading state when an async event is triggered (error condition)', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection, loadOn: 'foo'}}, ['collectionLoadOn']);
+      obj.mount();
+
+      Backbone.sync('foo', collection, {url: 'foo'});
+      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
+      $.error();
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      expect(obj.setState.callCount).to.eql(2);
+    });
+
+    it('should not error if no "loadOn" property is defined', function() {
+      newComponent({props: {collection: new Backbone.Collection()}}, ['collectionLoadOn']);
+      // we are just looking for an error thrown in getInitialState
+    });
+
+    it('should support mixin parameters instead of the "loadOn" property', function() {
+      var collection = new Backbone.Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionLoadOn("foo"))']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      Backbone.sync('foo', collection, {url: 'foo'});
+      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
+      $.success();
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      expect(spy.callCount).to.eql(2);
+    });
+
+  });
+
+
+  describe('loadWhile', function() {
+    it('should provide a return callback if none is supplied', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['loadWhile']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      var options = obj.loadWhile();
+      expect(spy).to.have.been.calledWith({loading: true});
+      expect(!!options.success).to.eql(true);
+      expect(!!options.error).to.eql(true);
+      options.success();
+      expect(spy).to.have.been.calledWith({loading: false});
+      options.error();
+      expect(spy.callCount).to.eql(3);
+      expect(spy).to.have.been.calledWith({loading: false});
+    });
+    it('should wrap callback functions if they are supplied', function() {
+      var model = new Backbone.Model(),
+          obj = newComponent({props: {model: model}}, ['loadWhile']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      var _success = sinon.spy();
+      var _error = sinon.spy();
+      var options = obj.loadWhile({
+        success: _success,
+        error: _error
       });
-      it('should wrap callback functions if they are supplied', function() {
-        var model = new Backbone.Model(),
-            obj = newComponent({props: {model: model}}, ['modelLoadOn']),
-            spy = sinon.spy();
-        obj.setState = spy;
-        obj.mount();
-
-        var _success = sinon.spy();
-        var _error = sinon.spy();
-        var options = obj.loadWhile({
-          success: _success,
-          error: _error
-        });
-        expect(spy).to.have.been.calledWith({loading: true});
-        options.success('foo');
-        expect(spy).to.have.been.calledWith({loading: false});
-        expect(_success).to.have.been.calledWith('foo')
-        options.error('bar');
-        expect(_error).to.have.been.calledWith('bar')
-        expect(spy.callCount).to.eql(3);
-        expect(spy).to.have.been.calledWith({loading: false});
-      });
+      expect(spy).to.have.been.calledWith({loading: true});
+      options.success('foo');
+      expect(spy).to.have.been.calledWith({loading: false});
+      expect(_success).to.have.been.calledWith('foo')
+      options.error('bar');
+      expect(_error).to.have.been.calledWith('bar')
+      expect(spy.callCount).to.eql(3);
+      expect(spy).to.have.been.calledWith({loading: false});
     });
   });
+
 
   describe('modelXHRAware', function() {
 
@@ -644,6 +908,62 @@ describe('react-backbone', function() {
     });
   });
 
+
+  describe('collectionXHRAware', function() {
+
+    it('moch (success condition)', function() {
+      var collection = new Collection(),
+          obj = newComponent({props: { collection: collection }}, ['collectionXHRAware']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      expect(spy.callCount).to.eql(0);
+      Backbone.sync('foo', collection, { url: 'foo' });
+      expect(spy.callCount).to.eql(1);
+      expect(spy.getCall(0).args).to.eql([{ loading: true }]);
+      $.success();
+      expect(spy.callCount).to.eql(2);
+      expect(!!spy.getCall(1).args[0].loading).to.eql(false);
+      expect(spy.callCount).to.eql(2);
+
+      Backbone.sync('bar', collection, { url: 'foo' });
+      $.success();
+      expect(spy.callCount).to.eql(4);
+      expect(!!spy.getCall(2).args[0].loading).to.eql(true);
+      expect(!!spy.getCall(3).args[0].loading).to.eql(false);
+    });
+
+    it('should set loading state if the collection is loading when set on the component', function() {
+      var collection = new Collection();
+      collection.fetch();
+      var obj = newComponent({props: { collection: collection }}, ['collectionXHRAware']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+      expect(!!obj.state.loading).to.eql(true);
+      expect(spy.callCount).to.eql(0);
+      $.success();
+      expect(!!spy.getCall(0).args[0].loading).to.eql(false);
+    });
+
+    it('should set loading state if the collection is loading after being set but before mounting', function() {
+      var collection = new Collection(),
+          obj = newComponent({props: { collection: collection }}, ['collectionXHRAware']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      collection.fetch();
+      expect(spy.callCount).to.eql(0);
+      obj.mount();
+      expect(spy.callCount).to.eql(1);
+      expect(spy.getCall(0).args).to.eql([{loading: true}]);
+      $.success();
+      expect(spy.callCount).to.eql(2);
+      expect(spy.getCall(1).args).to.eql([{loading: false}]);
+    });
+  });
+
+
   describe('react-events integration', function() {
     it('should include events mixin, Backbone.Events for on/off/trigger mixin and the react-events "state" mixin', function() {
       var mixins = React.mixins.get('events');
@@ -651,23 +971,51 @@ describe('react-backbone', function() {
     });
     it('set React.events.mixin to Backbone.Events', function() {
       expect(React.events.mixin).to.eql(Backbone.Events);
-      var obj = newComponent({}, ['events', 'modelEvents']);
+      var obj = newComponent({}, ['modelEvents']);
       expect(!!obj.on).to.eql(true);
       expect(!!obj.off).to.eql(true);
     });
-    it('should do model binding', function() {
+    it('should do model declarative event binding', function() {
       var model = new Model(),
-          spy = sinon.spy(),
+          spy1 = sinon.spy(),
+          spy2 = sinon.spy(),
           obj = newComponent({
-            props: {model: model},
+            props: { model: model },
             events: {
-              'model:change': 'onChange'
+              'model:foo': 'onFoo',
+              model: {
+                bar: 'onBar'
+              }
             },
-            onChange: spy
+            onFoo: spy1,
+            onBar: spy2
           }, ['events', 'modelEvents']);
       obj.mount();
-      model.set({foo: 'bar'});
-      expect(spy.callCount).to.eql(1);
+      model.trigger('foo');
+      model.trigger('bar');
+      expect(spy1.callCount).to.eql(1);
+      expect(spy2.callCount).to.eql(1);
+    });
+    it('should do collection declarative event binding', function() {
+      var collection = new Collection(),
+          spy1 = sinon.spy(),
+          spy2 = sinon.spy(),
+          obj = newComponent({
+            props: { collection: collection },
+            events: {
+              'collection:foo': 'onFoo',
+              collection: {
+                bar: 'onBar'
+              }
+            },
+            onFoo: spy1,
+            onBar: spy2
+          }, ['events', 'collectionEvents']);
+      obj.mount();
+      collection.trigger('foo');
+      collection.trigger('bar');
+      expect(spy1.callCount).to.eql(1);
+      expect(spy2.callCount).to.eql(1);
     });
   });
 });

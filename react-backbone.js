@@ -174,8 +174,8 @@
    * Provide modelOn and modelOnce argument with proxied arguments
    * arguments are event, callback, context
    */
-  function modelOnOrOnce(modelType, type, args, _this, _modelOrCollection) {
-    var modelEvents = getModelEvents(_this);
+  function modelOrCollectionnOrOnce(modelType, type, args, _this, _modelOrCollection) {
+    var modelEvents = getModelAndCollectionEvents(_this);
     var ev = args[0];
     var cb = args[1];
     var ctx = args[2];
@@ -189,7 +189,7 @@
   /**
    * Return all bound model events
    */
-  function getModelEvents(context) {
+  function getModelAndCollectionEvents(context) {
     var modelEvents = getState('__modelEvents', context);
     if (!modelEvents) {
       modelEvents = {};
@@ -233,10 +233,10 @@
     };
     typeAware['set' + typeData.capType] = function(modelOrCollection, _suppressState) {
       var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
-      var modelEvents = getModelEvents(this);
+      var modelEvents = getModelAndCollectionEvents(this);
       _.each(modelEvents, function(data) {
-        this.modelOff(data.ev, data.cb, data.ctx, preModelOrCollection);
-        modelOnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
+        this[typeData.type + 'Off'](data.ev, data.cb, data.ctx, preModelOrCollection);
+        modelOrCollectionnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
       }, this);
       if (_suppressState !== true) {
         setState(typeData.type, modelOrCollection);
@@ -275,13 +275,13 @@
       },
     };
     typeEvents[typeData.type + 'On'] = function(ev, callback, context) {
-      modelOnOrOnce(typeData.type, 'on', arguments, this);
+      modelOrCollectionnOrOnce(typeData.type, 'on', arguments, this);
     };
     typeEvents[typeData.type + 'Once'] = function(ev, callback, context) {
-      modelOnOrOnce(typeData.type, 'once', arguments, this);
+      modelOrCollectionnOrOnce(typeData.type, 'once', arguments, this);
     };
     typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
-      var modelEvents = getModelEvents(this);
+      var modelEvents = getModelAndCollectionEvents(this);
       delete modelEvents[ev];
       this.stopListening(targetModel(_modelOrCollection), ev, callback, context);
     };
@@ -410,33 +410,6 @@
             }
           }
           return {};
-        },
-
-        /**
-         * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
-         * the state once the callback has completed
-         */
-        loadWhile: function(options) {
-          options = options || {};
-          var self = this;
-
-          function wrap(type) {
-            var _callback = options[type];
-            options[type] = function() {
-              setState({
-                loading: false
-              }, self);
-              if (_callback) {
-                _callback.apply(this, arguments);
-              }
-            }
-          }
-          wrap('error');
-          wrap('success');
-          setState({
-            loading: true
-          }, this);
-          return options;
         }
       };
     };
@@ -551,6 +524,36 @@
       return attributes;
     }
   }, 'modelAware');
+
+
+  /**
+   * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
+   * the state once the callback has completed
+   */
+  React.mixins.add('loadWhile', {
+    loadWhile: function(options) {
+      options = options || {};
+      var self = this;
+
+      function wrap(type) {
+        var _callback = options[type];
+        options[type] = function() {
+          setState({
+            loading: false
+          }, self);
+          if (_callback) {
+            _callback.apply(this, arguments);
+          }
+        }
+      }
+      wrap('error');
+      wrap('success');
+      setState({
+        loading: true
+      }, this);
+      return options;
+    }
+  });
 
 
   /**
