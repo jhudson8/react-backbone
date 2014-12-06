@@ -2,7 +2,31 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.8...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.0...master)
+
+## v0.14.0 - December 6th, 2014
+- add collection mixins - 543dc0b
+   - collectionAware
+   - collectionEvents
+   - collectionChangeAware
+   - collectionXHRAware
+   - collectionLoadOn
+   - collectionUpdateOn
+
+- add declarative collections support
+```
+    events: {
+      'collection:reset': 'onReset'
+    }
+```
+- add "loadWhile" mixin (extracted from the loadWhile mixin that was previously in the "modelLoadOn" mixin)
+
+A ReactComponent can now have both a bound model and/or a bound collection
+
+Compatibility notes:
+collections are no longer supported using modelChangeAware - collectionChangeAware must be used instead
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.8...v0.14.0)
 
 ## v0.13.8 - December 4th, 2014
 - sync "with-deps" - 0cba56f
