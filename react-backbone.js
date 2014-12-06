@@ -41,10 +41,10 @@
   }
 })(function(React, Backbone, _) {
 
+  // create local references to existing vars
   var xhrEventName = Backbone.xhrEventName;
   var xhrCompleteEventName = Backbone.xhrCompleteEventName;
   var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
-
   var getState = React.mixins.getState;
   var setState = React.mixins.setState;
 
@@ -90,16 +90,14 @@
   }
 
   /**
-   * Return a callback function that will provide the model
+   * Return a callback function that will provide the model or collection
    */
-  function targetModel(modelToUse) {
+  function targetModelOrCollection(type, modelOrCollectionToUse) {
     return function() {
-      if (modelToUse) {
-        return modelToUse;
+      if (modelOrCollectionToUse) {
+        return modelOrCollectionToUse;
       }
-      if (this.getModel) {
-        return this.getModel();
-      }
+      return getModelOrCollection(type, modelOrCollection);
     }
   }
 
@@ -199,6 +197,7 @@
   }
 
 
+  // helpers to get and set a model value when only the component is known
   Backbone.input = Backbone.input || {};
   var getModelValue = Backbone.input.getModelValue = function(component) {
     return ifModelAndKey(component, function(key, model) {
@@ -212,6 +211,7 @@
   }
 
 
+  // create mixins that are duplicated for both models and collections
   _.each([{
     type: 'model',
     capType: 'Model',
@@ -235,9 +235,12 @@
       var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
       var modelEvents = getModelAndCollectionEvents(this);
       _.each(modelEvents, function(data) {
+        // unbind the current model or collection
         this[typeData.type + 'Off'](data.ev, data.cb, data.ctx, preModelOrCollection);
+        // rebind the new model or collection
         modelOrCollectionnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
       }, this);
+      // if this is coming from a props update, no need to set the state
       if (_suppressState !== true) {
         setState(typeData.type, modelOrCollection);
       }
@@ -267,6 +270,7 @@
       },
 
       componentWillReceiveProps: function(props) {
+        // watch for model or collection changes by property so it can be un/rebound
         var preModelOrCollection = getModelOrCollection(typeData.type, this);
         var postModelOrCollection = getModelOrCollection(typeData.type, this, props);
         if (preModelOrCollection !== postModelOrCollection) {
@@ -283,7 +287,7 @@
     typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
       var modelEvents = getModelAndCollectionEvents(this);
       delete modelEvents[ev];
-      this.stopListening(targetModel(_modelOrCollection), ev, callback, context);
+      this.stopListening(targetModelOrCollection(typeData.type, _modelOrCollection), ev, callback, context);
     };
     React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
 
@@ -311,12 +315,14 @@
      */
     var xhrAware = {
       getInitialState: function() {
+        // bind to the xhr event on the model or collection and set loading=true
         this[typeData.type + 'On'](xhrEventName, function(eventName, events) {
           setState({
             loading: true
           }, this);
 
           var modelOrCollection = getModelOrCollection(typeData.type, this);
+          // using the xhr events context, listen for success or error to reset the loading state
           events.on('success', function() {
             setState({
               loading: modelOrCollection[xhrModelLoadingAttribute]
@@ -375,6 +381,7 @@
         getInitialState: function() {
           keys = modelOrCollectionEventHandler(typeData.type, keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
             var modelOrCollection = getModelOrCollection(typeData.type, this);
+            // set loading=truthy if we have any current xhr activity
             setState({
               loading: modelOrCollection[xhrModelLoadingAttribute]
             }, this);

@@ -237,7 +237,7 @@ Utility methods which allows other mixins to depend on ```getModel``` and ```set
 #### getModel()
 *return the model associated with the current React component.*
 
-The model can be set using the ```model``` or ```collection``` property or by explicitely calling ```setModel```.
+The model can be set using the ```model``` property or by explicitely calling ```setModel```.
 
 
 ```
@@ -255,6 +255,32 @@ The model can be set using the ```model``` or ```collection``` property or by ex
 
 Associate the model with the current React component which can be retrieved using ```getModel```.  When using this, all model event bindings
 will be automatically transferred to the new model.
+
+
+### collectionAware
+
+Utility methods which allows other mixins to depend on ```getCollection``` and ```setCollection``` methods.  This provides an single overridable mixin should you have non-standard collection population requirements.
+
+#### getCollection()
+*return the collection associated with the current React component.*
+
+The collection can be set using the ```collection``` property or by explicitely calling ```setCollection```.
+
+
+```
+    React.createClass({
+      mixins: ['collectionAware']
+    });
+    ...
+    <MyClass ref="myClass" collection={collection} key="foo"/>
+    ...
+    var collection = this.refs.myClass.getCollection();
+```
+
+#### setCollection(collection)
+* ***collection***: the Backbone collection to set
+
+Associate the collection with the current React component which can be retrieved using ```getCollection```.  When using this, all collection event bindings will be automatically transferred to the new collection.
 
 
 ### modelPopulate
@@ -309,9 +335,13 @@ This mixin should be included (instead of the "events" mixin) if any declarative
       mixins: ['modelEvents'],
 
       events: {
-        'model:change': 'onChange'
+        'model:foo': 'onFoo',
+        model: {
+          bar: 'onBar'
+        }
       },
-      onChange: function() { ... }
+      onFoo: function() { ... },
+      onBar: function() { ... }
     });
 ```
 
@@ -360,7 +390,75 @@ Equivalent to Backbone.Events.once but will be unbound when the component is unm
 * ***callback***: the event callback function
 * ***context***: the callback context
 
-Remove the provided modeOn / modelOnce event bindings.
+Remove the provided modelOn / modelOnce event bindings.
+
+
+### collectionEvents
+Utility mixin to support declarative collection event bindings as well as expose managed collection binding functions which are cleaned up when the component is unmounted.
+
+This mixin should be included (instead of the "events" mixin) if any declarative collection event bindings are used.
+
+```
+    var MyClass React.createClass({
+      mixins: ['collectionEvents'],
+
+      events: {
+        'collection:foo': 'onFoo',
+        collection: {
+          bar: onBar
+        }
+      },
+      onFoo: function() { ... },
+      onBar: function() { ... }
+    });
+```
+
+
+#### collectionOn(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.  Also similar to the "listenTo" method except that if the collection is changed, the previous collection bindings will be removed and the new collection will have the bindings applied.
+
+```
+    var MyClass React.createClass({
+      mixins: ['collectionEvents'],
+
+      getInitialState: function() {
+        this.collectionOn('reset', this.onReset);
+        return null;
+      },
+      onReset: function() { ... }
+    });
+```
+
+
+#### collectionOnce(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.  Also similar to the "listenToOnce" method except that if the collection is changed, the previous model bindings will be removed and the new collection will have the bindings applied.
+
+```
+    var MyClass React.createClass({
+      mixins: ['collectionEvents'],
+
+      getInitialState: function() {
+        this.collectionOnce('reset', this.onReset);
+        return null;
+      },
+      onReset: function() { ... }
+    });
+```
+
+#### collectionOff(eventName, callback[, context])
+* ***eventName***: the event name
+* ***callback***: the event callback function
+* ***context***: the callback context
+
+Remove the provided collectionOn / collectionOnce event bindings.
 
 
 ### modelValidator
@@ -400,21 +498,21 @@ When these occur, normalize the error payload using ```React.mixins.modelIndexEr
 ### modelChangeAware
 *depends on modelEvents*
 
-Will force a render if the associated model has changed.  The "change" events are for models or collections and include
-
-* change
-* reset
-* add
-* remove
-* sort
-
+Will force a render if the associated model fires the "change" event.
 If you want to force a render only on specific model events, see *modelUpdateOn*.
+
+
+### collectionChangeAware
+*depends on modelEvents*
+
+Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
+If you want to force a render only on specific collection events, see *collectionUpdateOn*.
 
 
 ### modelUpdateOn
 *depends on modelEvents*
 
-Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be an array or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
+Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
@@ -432,6 +530,46 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 ```
     var MyComponent = React.createClass({
       mixins: ['modelUpdateOn("foo", "bar")'],
+      ...
+    });
+
+    // equivalent to
+
+    var MyComponent = React.createClass({
+      mixins: ['events'],
+
+      events: {
+        model: {
+          foo: 'forceUpdate',
+          bar: 'forceUpdate'
+        }
+      }
+      ...
+    });
+```
+
+
+### collectionUpdateOn
+*depends on modelEvents*
+
+Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
+
+*when a parent component provides the event name(s) as the ```updateOn``` parameter*
+```
+    var MyComponent = React.createClass({
+      mixins: ['collectionUpdateOn'],
+      ...
+    });
+    ...
+    new MyComponent({updateOn: 'foo'});
+    // or
+    new MyComponent({updateOn: ['foo', 'bar']});
+```
+
+* when the child/declaring component provides the event name(s) as mixin parameters*
+```
+    var MyComponent = React.createClass({
+      mixins: ['collectionUpdateOn("foo", "bar")'],
       ...
     });
 
@@ -489,8 +627,48 @@ When the XHR event name(s) are statically defined by the owning component
     });
 ```
 
-#### loadWhile () or (options)
-* ***options***: the Backbone options
+
+### collectionLoadOn
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+
+Gives any comonent the ability to listen to a specific async event(s).
+
+See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) for more details on the async events.
+
+When this event is fired, the state attribute ```loading``` will be set to ```true```.  state.loading will be set to false when the async event is complete.
+
+Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
+
+When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
+```
+    var MyComponent = React.createClass({
+      mixins: ['collectionLoadOn'],
+
+      render: function() {
+        if (this.state.loading) {
+          ...
+        } else {
+          ...
+        }
+      }
+    });
+    ...
+    new MyComponent({loadOn: 'read'});
+    // or
+    new MyComponent({loadOn: ['read', 'update']});
+```
+
+When the XHR event name(s) are statically defined by the owning component
+```
+    var MyComponent = React.createClass({
+      mixins: ['collectionLoadOn("read", "update")'],
+      ...
+    });
+```
+
+
+#### loadWhile (options)
+* ***options***: the optional Backbone options
 
 *returns the options or a new options object if none was provided*
 
@@ -531,6 +709,30 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 ```
 
 
+### collectionXHRAware
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+
+Gives any comonent the ability to listen to ***all*** async events.
+
+See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) for more details on the async events.
+
+When ***any*** XHR event is fired, the state attribute ```loading``` will be set to a truthy value.  state.loading will be set to a falsy value when the XHR activity is complete.
+
+```
+    React.createClass({
+      mixins: ['collectionXHRAware'],
+
+      render: function() {
+        if (this.state.loading) {
+          // return something if we are loading
+        } else {
+          // return something if we are not loading
+        }
+      }
+    });
+```
+
+
 API: Event Binding Definitions
 --------------
 Event listeners can be declared using the ```events``` attribute.  To add this support the ```events``` mixin ***must*** be included with your component mixins.  see [react-events](https://github.com/jhudson8/react-events) for details
@@ -544,7 +746,7 @@ For example, by including the ```events``` mixin, you can do this:
 
 ```
     React.createClass({
-      mixins: ['events'],
+      mixins: ['modelEvents'],
 
       events: {
         'model:event1': 'onEvent1',
@@ -557,7 +759,32 @@ For example, by including the ```events``` mixin, you can do this:
       onEvent2: ...
     });
 ```
-And the model that is bound to the component (using the ```model``` or ```collection``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
+And the model that is bound to the component (using the ```model``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
+
+
+### collection events
+In addition to providing mixins which give Backbone awareness to React components, declaritive collection events are made available similar to the ```events``` hash in Backbone.View.
+
+Collection events can be defined using the ```collection:``` prefix.
+
+For example, by including the ```events``` mixin, you can do this:
+
+```
+    React.createClass({
+      mixins: ['collectionEvents'],
+
+      events: {
+        'collection:event1': 'onEvent1',
+        collection: {
+          event2: 'onEvent2',
+          event3: function() { ... }
+        }
+      },
+      onEvent1: ...,
+      onEvent2: ...
+    });
+```
+And the collection that is bound to the component (using the ```collection``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
 
 
 ### *memoize
