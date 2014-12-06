@@ -24,7 +24,9 @@
 A ReactComponent can now have both a bound model and/or a bound collection
 
 Compatibility notes:
-collections are no longer supported using modelChangeAware - collectionChangeAware must be used instead
+- collections are no longer supported using modelChangeAware: collectionChangeAware must be used instead
+- "modelEventAware" mixin has been removed and "modelEvents" should be used in it's place
+
 
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.13.8...v0.14.0)
 
