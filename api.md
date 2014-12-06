@@ -667,6 +667,7 @@ When the XHR event name(s) are statically defined by the owning component
 ```
 
 
+### loadWhile
 #### loadWhile (options)
 * ***options***: the optional Backbone options
 
