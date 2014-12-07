@@ -465,6 +465,17 @@
   });
 
 
+  // add helper methods to include both model and collection mixins using a single mixin
+  _.each({
+    'XHRAware': 'XHRAware',
+    'changeAware': 'ChangeAware',
+    'loadOn': 'LoadOn',
+    'updateOn': 'UpdateOn'
+  }, function(modelCollectionSuffix, mixinName) {
+    React.mixins.add(mixinName, {}, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+  });
+
+
   /**
    * Iterate through the provided list of components (or use this.refs if components were not provided) and
    * return a set of attributes.  If a callback is provided as the 2nd parameter and this component includes

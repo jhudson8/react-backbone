@@ -505,6 +505,12 @@ When these occur, normalize the error payload using ```React.mixins.modelIndexEr
 ```
 
 
+### changeAware
+*depends on modelChangeAware and collectionChangeAware*
+
+Convienance mixin to include the ```modelChangeAware``` and ```collectionChangeAware``` mixins.  Refer to those mixins for more details.
+
+
 ### modelChangeAware
 *depends on modelEvents*
 
@@ -517,6 +523,12 @@ If you want to force a render only on specific model events, see *modelUpdateOn*
 
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
 If you want to force a render only on specific collection events, see *collectionUpdateOn*.
+
+
+### updateOn
+*depends on modelUpdateOn and collectionUpdateOn*
+
+Convienance mixin to include the ```modelUpdateOn``` and ```collectionUpdateOn``` mixins.  Refer to those mixins for more details.
 
 
 ### modelUpdateOn
@@ -597,6 +609,12 @@ Listen to a specific event (or array of events).  When this event is fired, the 
       ...
     });
 ```
+
+
+### loadOn
+*depends on modelLoadOn and collectionLoadOn*
+
+Convienance mixin to include the ```modelLoadOn``` and ```collectionLoadOn``` mixins.  Refer to those mixins for more details.
 
 
 ### modelLoadOn
@@ -694,6 +712,12 @@ Set the state of the component with ```{loading: true}``` when this method is ex
       ...
     }));
 ```
+
+
+### XHRAware
+*depends on modelXHRAware and collectionXHRAware*
+
+Convienance mixin to include the ```modelXHRAware``` and ```collectionXHRAware``` mixins.  Refer to those mixins for more details.
 
 
 ### modelXHRAware

@@ -507,6 +507,34 @@ describe('react-backbone', function() {
     });
   });
 
+  describe('changeAware', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should work with both model and collection change events', function() {
+      var model = new Backbone.Model(),
+          collection = new Collection(),
+          obj = newComponent({props: {model: model, collection: collection}}, ['changeAware']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      expect(spy.callCount).to.eql(0);
+      model.trigger('change');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+
+      collection.trigger('reset');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(2);
+    });
+  });
+
 
   describe('modelChangeAware', function() {
     var clock;
@@ -560,6 +588,35 @@ describe('react-backbone', function() {
       collection.trigger('sort');
       clock.tick(1);
       expect(spy.callCount).to.eql(4);
+    });
+  });
+
+
+  describe('modelUpdateOn', function() {
+    var clock;
+    beforeEach(function() {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should work for models and collections', function() {
+      var model = new Backbone.Model(),
+          collection = new Backbone.Collection(),
+          obj = newComponent({props: {model: model, collection: collection, updateOn: 'foo'}}, ['updateOn']),
+          spy = sinon.spy();
+      obj.forceUpdate = spy;
+
+      obj.mount();
+      expect(spy.callCount).to.eql(0);
+      model.trigger('foo');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(1);
+
+      collection.trigger('foo');
+      clock.tick(1);
+      expect(spy.callCount).to.eql(2);
     });
   });
 
@@ -679,7 +736,24 @@ describe('react-backbone', function() {
   // THE FOLLING TESTS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
   describe('modelLoadOn', function() {
+    it('should loadOn with models and collections', function() {
+      var model = new Backbone.Model(),
+          collection = new Backbone.Collection(),
+          obj = newComponent({props: {model: model, collection: collection, loadOn: 'foo'}}, ['loadOn']);
 
+      obj.mount();
+      Backbone.sync('foo', model, {url: 'foo'});
+      expect(obj.setState.callCount).to.eql(1);
+      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
+      $.success();
+      expect(obj.setState.callCount).to.eql(2);
+
+      Backbone.sync('foo', collection, {url: 'foo'});
+      expect(obj.setState.callCount).to.eql(3);
+    });
+  });
+
+  describe('modelLoadOn', function() {
     it('should not call setState if the component is not mounted (but still set the loading state attribute)', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
@@ -850,6 +924,35 @@ describe('react-backbone', function() {
       expect(_error).to.have.been.calledWith('bar')
       expect(spy.callCount).to.eql(3);
       expect(spy).to.have.been.calledWith({loading: false});
+    });
+  });
+
+
+  describe('XHRAware', function() {
+    it('should include modelXHRAware and collectionXHRAware', function() {
+      debugger;
+      var model = new Backbone.Model(),
+          collection = new Backbone.Collection(),
+          obj = newComponent({props: {model: model, collection: collection}}, ['XHRAware']),
+          spy = sinon.spy();
+      obj.setState = spy;
+      obj.mount();
+
+      expect(spy.callCount).to.eql(0);
+      Backbone.sync('foo', model, {url: 'foo'});
+      expect(spy.callCount).to.eql(1);
+      expect(spy.getCall(0).args).to.eql([{loading: true}]);
+      $.success();
+      expect(spy.callCount).to.eql(2);
+      expect(spy.getCall(1).args).to.eql([{loading: undefined}]);
+
+      spy.reset();
+      Backbone.sync('foo', collection, {url: 'foo'});
+      expect(spy.callCount).to.eql(1);
+      expect(spy.getCall(0).args).to.eql([{loading: true}]);
+      $.success();
+      expect(spy.callCount).to.eql(2);
+      expect(spy.getCall(1).args).to.eql([{loading: undefined}]);
     });
   });
 
