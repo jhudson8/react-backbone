@@ -28,7 +28,7 @@
   https://github.com/jhudson8/backbone-xhr-events v0.9.2
   https://github.com/jhudson8/react-mixin-manager v0.9.2
   https://github.com/jhudson8/react-events v0.7.7
-  https://github.com/jhudson8/react-backbone v0.14.0
+  https://github.com/jhudson8/react-backbone v0.14.1
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1585,6 +1585,17 @@
       };
     });
 
+  });
+
+
+  // add helper methods to include both model and collection mixins using a single mixin
+  _.each({
+    'XHRAware': 'XHRAware',
+    'changeAware': 'ChangeAware',
+    'loadOn': 'LoadOn',
+    'updateOn': 'UpdateOn'
+  }, function(modelCollectionSuffix, mixinName) {
+    React.mixins.add(mixinName, {}, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
   });
 
 
