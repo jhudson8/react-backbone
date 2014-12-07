@@ -2,7 +2,15 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.1...master)
+
+## v0.14.1 - December 7th, 2014
+- add "XHRAware", "changeAware", "loadOn", "updateOn" mixins - 839061a
+
+These are basically convienance mixins which include both the model and collection functionality
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.0...v0.14.1)
 
 ## v0.14.0 - December 6th, 2014
 - add collection mixins - 543dc0b
