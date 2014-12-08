@@ -479,7 +479,7 @@
     'loadOn': 'LoadOn',
     'updateOn': 'UpdateOn'
   }, function(modelCollectionSuffix, mixinName) {
-    React.mixins.add(mixinName, {}, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+    React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
   });
 
 
