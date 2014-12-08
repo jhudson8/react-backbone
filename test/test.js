@@ -953,6 +953,26 @@ describe('react-backbone', function() {
       expect(obj.setState.callCount).to.eql(2);
       expect(obj.setState.getCall(1).args).to.eql([{loading: false}]);
     });
+
+    it('should keep track of multiple requests and loading: false should only appear when all are done', function() {
+      var model = new Backbone.Model(),
+          collection = new Backbone.Collection(),
+          obj = newComponent({props: {model: model, collection: collection}}, ['XHRAware']);
+      obj.mount();
+
+      expect(obj.setState.callCount).to.eql(0);
+      Backbone.sync('foo', model, {url: 'foo'});
+      expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
+
+      Backbone.sync('foo', collection, {url: 'foo'});
+      expect(obj.state.loading).to.eql([
+        model.xhrActivity[0], collection.xhrActivity[0]]);
+
+      $.success();
+      expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      expect(obj.state.loading).to.eql(false);
+    });
   });
 
 
