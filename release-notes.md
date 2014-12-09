@@ -2,7 +2,22 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.2...master)
+
+## v0.14.2 - December 9th, 2014
+- keep track of monitored xhr activity as state truthy value - 7bf735c
+You will now have a truthy value for state.loading instead of a boolean.  This provides the ability to keep track of multiple simultaneous XHR requests (for example, a model fetch and collection fetch).  Previously, state.loading would have gone to false after the first fetch returned (even if the second was still active)
+
+As long as you just comparing truthy values, no code changes are required.  Do this:
+```
+    if (this.state.loading) {
+```
+Do not do dhis
+```
+    if (this.state.loading === true) {
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.1...v0.14.2)
 
 ## v0.14.1 - December 7th, 2014
 - add "XHRAware", "changeAware", "loadOn", "updateOn" mixins - 839061a
