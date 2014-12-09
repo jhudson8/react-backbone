@@ -28,7 +28,7 @@
   https://github.com/jhudson8/backbone-xhr-events v0.9.2
   https://github.com/jhudson8/react-mixin-manager v0.9.2
   https://github.com/jhudson8/react-events v0.7.7
-  https://github.com/jhudson8/react-backbone v0.14.1
+  https://github.com/jhudson8/react-backbone v0.14.2
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1320,6 +1320,52 @@
   }
 
 
+  // loading state helpers
+  function pushLoadingState(xhrEvent, modelOrCollection, context) {
+    var currentLoads = getState('loading', context);
+    if (!currentLoads) {
+      currentLoads = [];
+    }
+    if (_.isArray(currentLoads)) {
+      currentLoads.push(xhrEvent);
+      setState({
+        loading: currentLoads
+      }, context);
+      xhrEvent.on('complete', function() {
+        popLoadingState(xhrEvent, modelOrCollection, context);
+      });
+    }
+  }
+
+  function popLoadingState(xhrEvent, modelOrCollection, context) {
+    var currentLoads = getState('loading', context);
+    if (_.isArray(currentLoads)) {
+      var i = currentLoads.indexOf(xhrEvent);
+      while (i >= 0) {
+        currentLoads.splice(i, 1);
+        i = currentLoads.indexOf(xhrEvent);
+      }
+      if (!currentLoads.length) {
+        setState({
+          loading: false
+        }, context);
+      }
+    }
+  }
+
+  function joinCurrentModelActivity(method, modelOrCollection, context) {
+    var xhrActivity = modelOrCollection[xhrModelLoadingAttribute];
+    if (xhrActivity) {
+      _.each(xhrActivity, function(xhrEvent) {
+        if (!method || xhrEvent.method === method) {
+          // this is one that is applicable
+          pushLoadingState(xhrEvent, modelOrCollection, context);
+        }
+      });
+    }
+  }
+
+
   // helpers to get and set a model value when only the component is known
   Backbone.input = Backbone.input || {};
   var getModelValue = Backbone.input.getModelValue = function(component) {
@@ -1431,6 +1477,46 @@
 
     // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
+    var xhrFactory = {
+      getInitialState: function(keys, self) {
+        function whenXHRActivityHappens(xhrEvents) {
+          var modelOrCollection = getModelOrCollection(typeData.type, self);
+          pushLoadingState(xhrEvents, modelOrCollection, self);
+        }
+
+        if (!keys) {
+          self[typeData.type + 'On'](xhrEventName, function(method, xhrEvents) {
+            whenXHRActivityHappens(xhrEvents);
+          });
+        } else {
+          modelOrCollectionEventHandler(typeData.type, keys, self, xhrEventName + ':{key}', whenXHRActivityHappens);
+        }
+        return {};
+      },
+
+      componentWillMount: function(keys, self) {
+        // make sure the model didn't get into a non-loading state before mounting
+        var modelOrCollection = getModelOrCollection(typeData.type, self);
+        if (modelOrCollection) {
+          // we may bind an extra for any getInitialState bindings but
+          // the cleanup logic will deal with duplicate bindings
+          if (!keys) {
+            joinCurrentModelActivity(keys, modelOrCollection, self);
+          } else {
+            var _keys = _.isArray(keys) ? keys : self.props[keys];
+            if (!_keys) {
+              return;
+            } else if (!_.isArray(_keys)) {
+              _keys = [_keys];
+            }
+            _.each(_keys, function(key) {
+              joinCurrentModelActivity(key, modelOrCollection, self);
+            })
+          }
+        }
+      }
+    };
+
     /**
      * If the model executes *any* XHR activity, the internal state "loading" attribute
      * will be set to true and, if an error occurs with loading, the "error" state attribute
@@ -1438,57 +1524,11 @@
      */
     var xhrAware = {
       getInitialState: function() {
-        // bind to the xhr event on the model or collection and set loading=true
-        this[typeData.type + 'On'](xhrEventName, function(eventName, events) {
-          setState({
-            loading: true
-          }, this);
-
-          var modelOrCollection = getModelOrCollection(typeData.type, this);
-          // using the xhr events context, listen for success or error to reset the loading state
-          events.on('success', function() {
-            setState({
-              loading: modelOrCollection[xhrModelLoadingAttribute]
-            }, this);
-          }, this);
-          events.on('error', function(error) {
-            setState({
-              loading: modelOrCollection[xhrModelLoadingAttribute],
-              error: error
-            }, this);
-          }, this);
-        });
-
-        var modelOrCollection = getModelOrCollection(typeData.type, this);
-        return {
-          loading: modelOrCollection && modelOrCollection[xhrModelLoadingAttribute]
-        };
+        return xhrFactory.getInitialState(undefined, this);
       },
 
-      componentDidMount: function() {
-        // make sure the model didn't get into a non-loading state before mounting
-        var state = this.state,
-          modelOrCollection = getModelOrCollection(typeData.type, this);
-        if (modelOrCollection) {
-          var loading = modelOrCollection[xhrModelLoadingAttribute];
-          if (loading) {
-            // we're still loading yet but we haven't yet bound to this event
-            this[typeData.type + 'Once'](xhrCompleteEventName, function() {
-              setState({
-                loading: false
-              }, this);
-            });
-            if (!state.loading) {
-              setState({
-                loading: true
-              }, this);
-            }
-          } else if (state.loading) {
-            setState({
-              loading: false
-            }, this);
-          }
-        }
+      componentWillMount: function() {
+        return xhrFactory.componentWillMount(undefined, this);
       }
     };
     React.mixins.add(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
@@ -1502,44 +1542,11 @@
       var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
       return {
         getInitialState: function() {
-          keys = modelOrCollectionEventHandler(typeData.type, keys || 'loadOn', this, xhrEventName + ':{key}', function(events) {
-            var modelOrCollection = getModelOrCollection(typeData.type, this);
-            // set loading=truthy if we have any current xhr activity
-            setState({
-              loading: modelOrCollection[xhrModelLoadingAttribute]
-            }, this);
-            events.on('complete', function() {
-              setState({
-                loading: false
-              }, this);
-            }, this);
-          });
+          return xhrFactory.getInitialState(keys || 'loadOn', this);
+        },
 
-          // see if we are currently loading something
-          var modelOrCollection = getModelOrCollection(typeData.type, this);
-          if (modelOrCollection) {
-            var currentLoads = modelOrCollection.loading,
-              key;
-            if (currentLoads) {
-              var clearLoading = function() {
-                setState({
-                  loading: false
-                }, this);
-              }
-              for (var i = 0; i < currentLoads.length; i++) {
-                var keyIndex = keys.indexOf(currentLoads[i].method);
-                if (keyIndex >= 0) {
-                  // there is currently an async event for this key
-                  key = keys[keyIndex];
-                  currentLoads[i].on('complete', clearLoading, this);
-                  return {
-                    loading: modelOrCollection[xhrModelLoadingAttribute]
-                  };
-                }
-              }
-            }
-          }
-          return {};
+        componentWillMount: function() {
+          return xhrFactory.componentWillMount(keys || 'loadOn', this);
         }
       };
     };
@@ -1595,7 +1602,7 @@
     'loadOn': 'LoadOn',
     'updateOn': 'UpdateOn'
   }, function(modelCollectionSuffix, mixinName) {
-    React.mixins.add(mixinName, {}, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+    React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
   });
 
 
