@@ -41,6 +41,7 @@
   }
 })(function(React, Backbone, _) {
 
+  // react-backbone:with-deps start
   // create local references to existing vars
   var xhrEventName = Backbone.xhrEventName;
   var xhrCompleteEventName = Backbone.xhrCompleteEventName;
@@ -727,5 +728,6 @@
       }
     })
   });
+  // react-backbone:with-deps end
 
 });
