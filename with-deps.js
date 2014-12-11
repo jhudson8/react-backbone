@@ -25,9 +25,9 @@
 
 /*
   Container script which includes the following:
-    jhudson8/backbone-xhr-events 0.9.4
-    jhudson8/react-mixin-manager 0.9.3
-    jhudson8/react-events 0.7.8
+    jhudson8/backbone-xhr-events 0.9.5
+    jhudson8/react-mixin-manager 0.9.4
+    jhudson8/react-events 0.7.9
     jhudson8/react-backbone 0.14.2
 */
  (function(main) {
@@ -54,1785 +54,1782 @@
 // jhudson8/backbone-xhr-events
 (function() {
 
-  // ANY OVERRIDES MUST BE DEFINED BEFORE LOADING OF THIS SCRIPT
-  // Backbone.xhrCompleteEventName: event triggered on models when all XHR requests have been completed
-  var xhrCompleteEventName = Backbone.xhrCompleteEventName = Backbone.xhrCompleteEventName || 'xhr:complete';
-  // the model attribute which can be used to return an array of all current XHR request events
-  var xhrLoadingAttribute = Backbone.xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute || 'xhrActivity';
-  // Backbone.xhrEventName: the event triggered on models and the global bus to signal an XHR request
-  var xhrEventName = Backbone.xhrEventName = Backbone.xhrEventName || 'xhr';
-  // Backbone.xhrGlobalAttribute: global event handler attribute name (on Backbone) used to subscribe to all model xhr events
-  var xhrGlobalAttribute = Backbone.xhrGlobalAttribute = Backbone.xhrGlobalAttribute || 'xhrEvents';
+    // ANY OVERRIDES MUST BE DEFINED BEFORE LOADING OF THIS SCRIPT
+    // Backbone.xhrCompleteEventName: event triggered on models when all XHR requests have been completed
+    var xhrCompleteEventName = Backbone.xhrCompleteEventName = Backbone.xhrCompleteEventName || 'xhr:complete';
+    // the model attribute which can be used to return an array of all current XHR request events
+    var xhrLoadingAttribute = Backbone.xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute || 'xhrActivity';
+    // Backbone.xhrEventName: the event triggered on models and the global bus to signal an XHR request
+    var xhrEventName = Backbone.xhrEventName = Backbone.xhrEventName || 'xhr';
+    // Backbone.xhrGlobalAttribute: global event handler attribute name (on Backbone) used to subscribe to all model xhr events
+    var xhrGlobalAttribute = Backbone.xhrGlobalAttribute = Backbone.xhrGlobalAttribute || 'xhrEvents';
 
-  // initialize the global event bus
-  var globalXhrBus = Backbone[xhrGlobalAttribute] = _.extend({}, Backbone.Events);
-  var SUCCESS = 'success';
-  var ERROR = 'error';
+    // initialize the global event bus
+    var globalXhrBus = Backbone[xhrGlobalAttribute] = _.extend({}, Backbone.Events);
+    var SUCCESS = 'success';
+    var ERROR = 'error';
 
-  var Context = function(method, model, options) {
-    this.method = method;
-    this.model = model;
-    this.options = options;
-  }
-  Context.prototype.abort = function() {
-    if (!this.aborted) {
-      this.aborted = true;
-      this.preventDefault = true;
-      if (this.xhr) {
-        this.xhr.abort();
-      }
-    }
-  }
-  _.extend(Context.prototype, Backbone.Events);
-
-  // allow backbone to send xhr events on models
-  var _sync = Backbone.sync;
-  Backbone.sync = function (method, model, options) {
-
-    options = options || {};
-    // Ensure that we have a URL.
-    if (!options.url) {
-      options.url = _.result(model, 'url');
-    }
-
-    var context = initializeXHRLoading(method, model, model, options);
-    if (context.preventDefault) {
-      // it is assumed that either context.options.success or context.options.error will be called
-      return;
-    }
-    var xhr = _sync.call(this, method, model, options);
-    context.xhr = xhr;
-    return xhr;
-  };
-
-  // provide helper flags to determine model fetched status
-  globalXhrBus.on(xhrEventName + ':read', function (model, events) {
-    events.on(SUCCESS, function () {
-      model.hasBeenFetched = true;
-      model.hadFetchError = false;
-    });
-    events.on(ERROR, function () {
-      model.hadFetchError = true;
-    });
-  });
-
-
-  // execute the callback directly if the model is fetch
-  // initiate a fetch with this callback as the success option if not fetched
-  // or plug into the current fetch if in progress
-  Backbone.Model.prototype.whenFetched = Backbone.Collection.whenFetched = function(success, error) {
-    var model = this;
-    function successWrapper() {
-      success(model);
-    }
-    if (this.hasBeenFetched) {
-      return success(this);
-    }
-    // find current fetch call (if any)
-    var _fetch = _.find(this[xhrLoadingAttribute], function(req) {
-      return req.method === 'read';
-    });
-    if (_fetch) {
-      _fetch.on('success', successWrapper);
-      if (error) {
-        _fetch.on('error', error);
-      }
-    } else {
-      this.fetch({ success: successWrapper, error: error });
-    }
-  }
-
-  // forward all or some XHR events from the source object to the dest object
-  // FIXME remove humpback case names after next minor release
-  Backbone.forwardXhrEvents = Backbone.forwardXHREvents = function (source, dest, typeOrCallback) {
-    var handler = handleForwardedEvents(!_.isFunction(typeOrCallback) && typeOrCallback);
-    if (_.isFunction(typeOrCallback)) {
-      // forward the events *only* while the function is executing wile keeping "this" as the context
-      try {
-        source.on(xhrEventName, handler, dest);
-        typeOrCallback.call(this);
-      } finally {
-        source.off(xhrEventName, handler, dest);
-      }
-    } else {
-      var eventName = typeOrCallback ? (xhrEventName + ':') + typeOrCallback : xhrEventName;
-      source.on(eventName, handler, dest);
-    }
-  }
-
-  // FIXME remove humpback case names after next minor release
-  Backbone.stopXhrForwarding = Backbone.stopXHRForwarding = function (source, dest, type) {
-    var handler = handleForwardedEvents(type),
-      eventName = type ? (xhrEventName + ':') + type : xhrEventName;
-    source.off(xhrEventName, handler, dest);
-  }
-
-  var _eventForwarders = {};
-
-  function handleForwardedEvents(type) {
-    type = type || '_all';
-    var func = _eventForwarders[type];
-    if (!func) {
-      // cache it so we can unbind when we need to
-      func = function (eventName, events) {
-        if (type !== '_all') {
-          // if the event is already scoped, the event type will not be provided as the first parameter
-          options = events;
-          events = eventName;
-          eventName = type;
+    var Context = function(method, model, options) {
+        this.method = method;
+        this.model = model;
+        this.options = options;
+    };
+    Context.prototype.abort = function() {
+        if (!this.aborted) {
+            this.aborted = true;
+            this.preventDefault = true;
+            if (this.xhr) {
+                this.xhr.abort();
+            }
         }
-        // these events will be called because we are using the same options object as the source call
-        initializeXHRLoading(events.method, this, events.model, events.options);
-      }
-      _eventForwarders[type] = func;
-    }
-    return func;
-  }
+    };
+    _.extend(Context.prototype, Backbone.Events);
 
-  // set up the XHR eventing behavior
-  // "model" is to trigger events on and "sourceModel" is the model to provide to the success/error callbacks
-  // these are the same unless there is event forwarding in which case the "sourceModel" is the model that actually
-  // triggered the events and "model" is just forwarding those events
-  function initializeXHRLoading(method, model, sourceModel, options) {
-    var loads = model[xhrLoadingAttribute] = model[xhrLoadingAttribute] || [],
-      eventName = options && options.event || method,
-      context = new Context(method, sourceModel, options);
+    // allow backbone to send xhr events on models
+    var _sync = Backbone.sync;
+    Backbone.sync = function(method, model, options) {
 
-    var scopedEventName = xhrEventName + ':' + eventName;
-    model.trigger(xhrEventName, eventName, context);
-    model.trigger(scopedEventName, context);
-    if (model === sourceModel) {
-      // don't call global events if this is XHR forwarding
-      globalXhrBus.trigger(xhrEventName, eventName, model, context);
-      globalXhrBus.trigger(scopedEventName, model, context);
-    }
-
-    // allow for 1 last override
-    var _beforeSend = options.beforeSend;
-    options.beforeSend = function(xhr, settings) {
-      context.xhr = xhr;
-      context.settings = settings;
-
-      if (_beforeSend) {
-        var rtn = _beforeSend.call(this, xhr, settings);
-        if (rtn === false) {
-          return rtn;
+        options = options || {};
+        // Ensure that we have a URL.
+        if (!options.url) {
+            options.url = _.result(model, 'url');
         }
-      }
-      context.trigger('before-send', xhr, settings, context);
-      if (context.preventDefault) {
-        return false;
-      }
-      loads.push(context);
+
+        var context = initializeXHRLoading(method, model, model, options);
+        if (context.preventDefault) {
+            // it is assumed that either context.options.success or context.options.error will be called
+            return;
+        }
+        var xhr = _sync.call(this, method, model, options);
+        context.xhr = xhr;
+        return xhr;
     };
 
+    // provide helper flags to determine model fetched status
+    globalXhrBus.on(xhrEventName + ':read', function(model, events) {
+        events.on(SUCCESS, function() {
+            model.hasBeenFetched = true;
+            model.hadFetchError = false;
+        });
+        events.on(ERROR, function() {
+            model.hadFetchError = true;
+        });
+    });
 
-    function onComplete(type) {
-      var _type = options[type];
-      // success: (data, status, xhr);  error: (xhr, type, error)
-      options[type] = function (p1, p2, p3) {
-        if (type === SUCCESS && !context.preventDefault) {
-          // trigger the "data" event which allows manipulation of the response before any other events or callbacks are fired
-          context.trigger('after-send', p1, p2, p3, type, context);
-          p1 = context.data || p1;
-          // if context.preventDefault is true, it is assumed that the option success or callback will be manually called
-          if (context.preventDefault) {
-            return;
-          }
+    // execute the callback directly if the model is fetch
+    // initiate a fetch with this callback as the success option if not fetched
+    // or plug into the current fetch if in progress
+    Backbone.Model.prototype.whenFetched = Backbone.Collection.whenFetched = function(success, error) {
+        var model = this;
+
+        function successWrapper() {
+            success(model);
         }
-
-        var _args = arguments;
-        // options callback
-        try {
-          if (_type) {
-            _type.call(this, p1, p2, p3);
-          }
+        if (this.hasBeenFetched) {
+            return success(this);
         }
-        finally {
-          // remove the load entry
-          var index = loads.indexOf(context);
-          if (index >= 0) {
-            loads.splice(index, 1);
-          }
-
-          // if there are no more cuncurrent XHRs, model[xhrLoadingAttribute] should always be undefind
-          if (loads.length === 0) {
-            model[xhrLoadingAttribute] = undefined;
-            model.trigger(xhrCompleteEventName, context);
-          }
+        // find current fetch call (if any)
+        var _fetch = _.find(this[xhrLoadingAttribute], function(req) {
+            return req.method === 'read';
+        });
+        if (_fetch) {
+            _fetch.on('success', successWrapper);
+            if (error) {
+                _fetch.on('error', error);
+            }
+        } else {
+            this.fetch({
+                success: successWrapper,
+                error: error
+            });
         }
+    };
 
-        // trigger the success/error event
-        var args = (type === SUCCESS) ? [type, context] : [type, p1, p2, p3, context];
-        context.trigger.apply(context, args);
+    // forward all or some XHR events from the source object to the dest object
+    // FIXME remove humpback case names after next minor release
+    Backbone.forwardXhrEvents = Backbone.forwardXHREvents = function(source, dest, typeOrCallback) {
+        var handler = handleForwardedEvents(!_.isFunction(typeOrCallback) && typeOrCallback);
+        if (_.isFunction(typeOrCallback)) {
+            // forward the events *only* while the function is executing wile keeping "this" as the context
+            try {
+                source.on(xhrEventName, handler, dest);
+                typeOrCallback.call(this);
+            } finally {
+                source.off(xhrEventName, handler, dest);
+            }
+        } else {
+            var eventName = typeOrCallback ? (xhrEventName + ':') + typeOrCallback : xhrEventName;
+            source.on(eventName, handler, dest);
+        }
+    };
 
-        // trigger the complete event
-        args.splice(0, 0, 'complete');
-        context.trigger.apply(context, args);
-      };
+    // FIXME remove humpback case names after next minor release
+    Backbone.stopXhrForwarding = Backbone.stopXHRForwarding = function(source, dest, type) {
+        var handler = handleForwardedEvents(type);
+        source.off(xhrEventName, handler, dest);
+    };
+
+    var _eventForwarders = {};
+
+    function handleForwardedEvents(type) {
+        type = type || '_all';
+        var func = _eventForwarders[type];
+        if (!func) {
+            // cache it so we can unbind when we need to
+            func = function(eventName, events) {
+                if (type !== '_all') {
+                    // if the event is already scoped, the event type will not be provided as the first parameter
+                    events = eventName;
+                    eventName = type;
+                }
+                // these events will be called because we are using the same options object as the source call
+                initializeXHRLoading(events.method, this, events.model, events.options);
+            };
+            _eventForwarders[type] = func;
+        }
+        return func;
     }
-    onComplete(SUCCESS);
-    onComplete(ERROR);
 
-    return context;
-  }
+    // set up the XHR eventing behavior
+    // "model" is to trigger events on and "sourceModel" is the model to provide to the success/error callbacks
+    // these are the same unless there is event forwarding in which case the "sourceModel" is the model that actually
+    // triggered the events and "model" is just forwarding those events
+    function initializeXHRLoading(method, model, sourceModel, options) {
+        var loads = model[xhrLoadingAttribute] = model[xhrLoadingAttribute] || [],
+            eventName = options && options.event || method,
+            context = new Context(method, sourceModel, options);
 
-  // allow fetch state flags to be reset if the collection has been reset or the model has been cleared
-  _.each({
-    'reset': Backbone.Collection,
-    'clear': Backbone.Model
-  }, function(Clazz, key) {
-    var protoFunc = Clazz.prototype[key];
-    Clazz.prototype[key] = function(models) {
-      if (key === 'clear' || _.isUndefined(models)) {
-        this.hasBeenFetched = this.hadFetchError = false;
-      }
-      protoFunc.apply(this, arguments);
+        var scopedEventName = xhrEventName + ':' + eventName;
+        model.trigger(xhrEventName, eventName, context);
+        model.trigger(scopedEventName, context);
+        if (model === sourceModel) {
+            // don't call global events if this is XHR forwarding
+            globalXhrBus.trigger(xhrEventName, eventName, model, context);
+            globalXhrBus.trigger(scopedEventName, model, context);
+        }
+
+        // allow for 1 last override
+        var _beforeSend = options.beforeSend;
+        options.beforeSend = function(xhr, settings) {
+            context.xhr = xhr;
+            context.settings = settings;
+
+            if (_beforeSend) {
+                var rtn = _beforeSend.call(this, xhr, settings);
+                if (rtn === false) {
+                    return rtn;
+                }
+            }
+            context.trigger('before-send', xhr, settings, context);
+            if (context.preventDefault) {
+                return false;
+            }
+            loads.push(context);
+        };
+
+        function onComplete(type) {
+            var _type = options[type];
+            // success: (data, status, xhr);  error: (xhr, type, error)
+            options[type] = function(p1, p2, p3) {
+                if (type === SUCCESS && !context.preventDefault) {
+                    // trigger the "data" event which allows manipulation of the response before any other events or callbacks are fired
+                    context.trigger('after-send', p1, p2, p3, type, context);
+                    p1 = context.data || p1;
+                    // if context.preventDefault is true, it is assumed that the option success or callback will be manually called
+                    if (context.preventDefault) {
+                        return;
+                    }
+                }
+
+                // options callback
+                try {
+                    if (_type) {
+                        _type.call(this, p1, p2, p3);
+                    }
+                } finally {
+                    // remove the load entry
+                    var index = loads.indexOf(context);
+                    if (index >= 0) {
+                        loads.splice(index, 1);
+                    }
+
+                    // if there are no more cuncurrent XHRs, model[xhrLoadingAttribute] should always be undefind
+                    if (loads.length === 0) {
+                        model[xhrLoadingAttribute] = undefined;
+                        model.trigger(xhrCompleteEventName, context);
+                    }
+                }
+
+                // trigger the success/error event
+                var args = (type === SUCCESS) ? [type, context] : [type, p1, p2, p3, context];
+                context.trigger.apply(context, args);
+
+                // trigger the complete event
+                args.splice(0, 0, 'complete');
+                context.trigger.apply(context, args);
+            };
+        }
+        onComplete(SUCCESS);
+        onComplete(ERROR);
+
+        return context;
     }
-  });
 
+    // allow fetch state flags to be reset if the collection has been reset or the model has been cleared
+    _.each({
+        'reset': Backbone.Collection,
+        'clear': Backbone.Model
+    }, function(Clazz, key) {
+        var protoFunc = Clazz.prototype[key];
+        Clazz.prototype[key] = function(models) {
+            if (key === 'clear' || _.isUndefined(models)) {
+                this.hasBeenFetched = this.hadFetchError = false;
+            }
+            protoFunc.apply(this, arguments);
+        };
+    });
+  
 })();
 
 
 // jhudson8/react-mixin-manager
 (function() {
 
-  var _dependsOn = {};
-  var _dependsInjected = {};
-  var _mixins = {};
-  var _initiatedOnce = {};
+    var _dependsOn = {};
+    var _dependsInjected = {};
+    var _mixins = {};
+    var _initiatedOnce = {};
 
-  function setState(state, context) {
-    if (context.isMounted()) {
-      context.setState(state);
-    } else if (context.state) {
-      for (var name in state) {
-        context.state[name] = state[name];
-      }
-    } else {
-      // if we aren't mounted, we will get an exception if we try to set the state
-      // so keep a placeholder state until we're mounted
-      // this is mainly useful if setModel is called on getInitialState
-      var _state = context.__temporary_state || {};
-      for (var name in state) {
-        _state[name] = state[name];
-      }
-      context.__temporary_state = _state;
-    }
-  }
-
-  function getState(key, context) {
-    var state = context.state,
-      initState = context.__temporary_state;
-    return (state && state[key]) || (initState && initState[key]);
-  }
-
-  /**
-   * return the normalized mixin list
-   * @param values {Array} list of mixin entries
-   * @param index {Object} hash which contains a truthy value for all named mixins that have been added
-   * @param initiatedOnce {Object} hash which collects mixins and their parameters that should be initiated once
-   * @param rtn {Array} the normalized return array
-   */
-  function get(values, index, initiatedOnce, rtn) {
-    /**
-     * add the named mixin and all un-added dependencies to the return array
-     * @param the mixin name
-     */
-    function addTo(name) {
-      var indexName = name,
-        match = name.match(/^([^\(]*)\s*\(([^\)]*)\)\s*/),
-        params = match && match[2];
-      name = match && match[1] || name;
-
-      if (!index[indexName]) {
-        if (params) {
-          // there can be no function calls here because of the regex match
-          params = eval('[' + params + ']');
-        }
-        var mixin = _mixins[name],
-          checkAgain = false,
-          skip = false;
-
-        if (mixin) {
-          if (typeof mixin === 'function') {
-            if (_initiatedOnce[name]) {
-              initiatedOnce[name] = (initiatedOnce[name] || []);
-              initiatedOnce[name].push(params);
-              skip = true;
-            } else {
-              mixin = mixin.apply(this, params || []);
-              checkAgain = true;
-            }
-          } else if (params) {
-            throw new Error('the mixin "' + name + '" does not support parameters');
-          }
-          get(_dependsOn[name], index, initiatedOnce, rtn);
-          get(_dependsInjected[name], index, initiatedOnce, rtn);
-
-          index[indexName] = true;
-          if (checkAgain) {
-            get([mixin], index, initiatedOnce, rtn);
-          } else if (!skip) {
-            rtn.push(mixin);
-          }
-
-        } else {
-          throw new Error('invalid mixin "' + name + '"');
-        }
-      }
-    }
-
-    function handleMixin(mixin) {
-      if (mixin) {
-        if (Array.isArray(mixin)) {
-          // flatten it out
-          get(mixin, index, initiatedOnce, rtn);
-        } else if (typeof mixin === 'string') {
-          // add the named mixin and all of it's dependencies
-          addTo(mixin);
-        } else {
-          // if the mixin has a "mixins" attribute, clone and add those dependencies first
-          if (mixin.mixins) {
-            get(mixin.mixins, index, initiatedOnce, rtn);
-            var _mixin = _mixins[mixin];
-            if (!_mixin) {
-              _mixin = {};
-              for (var key in mixin) {
-                if (key !== 'mixins') {
-                  _mixin[key] = mixin[key];
+    function setState(state, context) {
+        if (context.isMounted()) {
+            context.setState(state);
+        } else if (context.state) {
+            for (var name in state) {
+                if (state.hasOwnProperty(name)) {
+                    context.state[name] = state[name];
                 }
-              }
             }
-            _mixins[mixin] = _mixin;
-            mixin = _mixin;
-          }
-
-          // just add the mixin normally
-          rtn.push(mixin);
+        } else {
+            // if we aren't mounted, we will get an exception if we try to set the state
+            // so keep a placeholder state until we're mounted
+            // this is mainly useful if setModel is called on getInitialState
+            var _state = context.__temporary_state || {};
+            /*jshint -W004 */
+            for (var name in state) {
+                if (state.hasOwnProperty(name)) {
+                    _state[name] = state[name];
+                }
+            }
+            context.__temporary_state = _state;
         }
-      }
     }
 
-    if (Array.isArray(values)) {
-      for (var i = 0; i < values.length; i++) {
-        handleMixin(values[i]);
-      }
-    } else {
-      handleMixin(values);
+    function getState(key, context) {
+        var state = context.state,
+            initState = context.__temporary_state;
+        return (state && state[key]) || (initState && initState[key]);
     }
-  }
-
-  /**
-   * add the mixins that should be once initiated to the normalized mixin list
-   * @param mixins {Object} hash of mixins keys and list of its parameters
-   * @param rtn {Array} the normalized return array
-   */
-  function getInitiatedOnce(mixins, rtn) {
 
     /**
-     * added once initiated mixins to return array
+     * return the normalized mixin list
+     * @param values {Array} list of mixin entries
+     * @param index {Object} hash which contains a truthy value for all named mixins that have been added
+     * @param initiatedOnce {Object} hash which collects mixins and their parameters that should be initiated once
+     * @param rtn {Array} the normalized return array
      */
-    function addInitiatedOnce(mixin, params) {
-      mixin = mixin.apply(this, params || []);
-      rtn.push(mixin);
-    }
+    function get(values, index, initiatedOnce, rtn) {
+        /**
+         * add the named mixin and all un-added dependencies to the return array
+         * @param the mixin name
+         */
+        function addTo(name) {
+            var indexName = name,
+                match = name.match(/^([^\(]*)\s*\(([^\)]*)\)\s*/),
+                params = match && match[2];
+            name = match && match[1] || name;
 
-    for (var m in mixins) {
-      if (mixins.hasOwnProperty(m)) {
-        addInitiatedOnce(_mixins[m], mixins[m]);
-      }
-    }
-  }
+            if (!index[indexName]) {
+                if (params) {
+                    // there can be no function calls here because of the regex match
+                    /*jshint evil: true */
+                    params = eval('[' + params + ']');
+                }
+                var mixin = _mixins[name],
+                    checkAgain = false,
+                    skip = false;
 
-  // allow for registered mixins to be extract just by using the standard React.createClass
-  var _createClass = React.createClass;
-  React.createClass = function(spec) {
-    if (spec.mixins) {
-      spec.mixins = React.mixins.get(spec.mixins);
-    }
-    return _createClass.apply(React, arguments);
-  };
+                if (mixin) {
+                    if (typeof mixin === 'function') {
+                        if (_initiatedOnce[name]) {
+                            initiatedOnce[name] = (initiatedOnce[name] || []);
+                            initiatedOnce[name].push(params);
+                            skip = true;
+                        } else {
+                            mixin = mixin.apply(this, params || []);
+                            checkAgain = true;
+                        }
+                    } else if (params) {
+                        throw new Error('the mixin "' + name + '" does not support parameters');
+                    }
+                    get(_dependsOn[name], index, initiatedOnce, rtn);
+                    get(_dependsInjected[name], index, initiatedOnce, rtn);
 
-  function addMixin(name, mixin, depends, override, initiatedOnce) {
-    var mixins = React.mixins;
-    if (!override && _mixins[name]) {
-      return;
-    }
-    if (depends.length) {
-      _dependsOn[name] = depends;
-    }
-    _mixins[name] = mixin;
+                    index[indexName] = true;
+                    if (checkAgain) {
+                        get([mixin], index, initiatedOnce, rtn);
+                    } else if (!skip) {
+                        rtn.push(mixin);
+                    }
 
-    if (initiatedOnce) {
-      _initiatedOnce[name] = true;
-    }
-  }
-
-  function GROUP() {
-    // empty function which is used only as a placeholder to list dependencies
-  }
-
-  function mixinParams(args, override) {
-    var name,
-      options = args[0],
-      initiatedOnce = false;
-
-    if (typeof(options) === 'object') {
-      name = options.name;
-      initiatedOnce = options.initiatedOnce;
-    } else {
-      name = options;
-    }
-
-    if (!name || !name.length) {
-      throw new Error('the mixin name hasn\'t been specified');
-    }
-
-    if (Array.isArray(args[1])) {
-      return [name, args[1][0], Array.prototype.slice.call(args[1], 1), override, initiatedOnce];
-    } else {
-      return [name, args[1], Array.prototype.slice.call(args, 2), override, initiatedOnce]
-    }
-  }
-
-  React.mixins = {
-    /**
-     * return the normalized mixins.  there can be N arguments with each argument being
-     * - an array: will be flattened out to the parent list of mixins
-     * - a string: will match against any registered mixins and append the correct mixin
-     * - an object: will be treated as a standard mixin and returned in the list of mixins
-     * any string arguments that are provided will cause any dependent mixins to be included
-     * in the return list as well
-     */
-    get: function() {
-      var rtn = [],
-        index = {},
-        initiatedOnce = {};
-
-      get(Array.prototype.slice.call(arguments), index, initiatedOnce, rtn);
-      getInitiatedOnce(initiatedOnce, rtn);
-      return rtn;
-    },
-
-    /**
-     * Inject dependencies that were not originally defined when a mixin was registered
-     * @param name {string} the main mixin name
-     * @param (any additional) {string} dependencies that should be registered against the mixin
-     */
-    inject: function(name) {
-      var l = _dependsInjected[name];
-      if (!l) {
-        l = _dependsInjected[name] = [];
-      }
-      l.push(Array.prototype.slice.call(arguments, 1));
-    },
-
-    alias: function(name) {
-      addMixin(name, GROUP, Array.prototype.slice.call(arguments, 1), false);
-    },
-
-    add: function(options, mixin) {
-      addMixin.apply(this, mixinParams(arguments, false));
-    },
-
-    replace: function(options, mixin) {
-      addMixin.apply(this, mixinParams(arguments, true));
-    },
-
-    exists: function(name) {
-      return _mixins[name] || false;
-    },
-
-    _reset: function() {
-      _dependsOn = {};
-      _mixins = {};
-      _dependsInjected = {};
-      _onceInitiated = {};
-    }
-  };
-
-  /**
-   * mixin that exposes a "deferUpdate" method which will call forceUpdate after a setTimeout(0) to defer the update.
-   * This allows the forceUpdate method to be called multiple times while only executing a render 1 time.  This will
-   * also ensure the component is mounted before calling forceUpdate.
-   *
-   * It is added to mixin manager directly because it serves a purpose that benefits when multiple plugins use it
-   */
-  React.mixins.add('deferUpdate', {
-    getInitialState: function() {
-      // ensure that the state exists because we don't want to call setState (which will cause a render)
-      return {};
-    },
-    deferUpdate: function() {
-      var state = this.state;
-      if (!state._deferUpdate) {
-        state._deferUpdate = true;
-        var self = this;
-        setTimeout(function() {
-          delete state._deferUpdate;
-          if (self.isMounted()) {
-            self.forceUpdate();
-          }
-        }, 0);
-      }
-    }
-  });
-
-  /**
-   * very simple mixin that ensures that the component state is an object.  This is useful if you
-   * know a component will be using state but won't be initialized with a state to prevent a null check on render
-   */
-  React.mixins.add('state', {
-    getInitialState: function() {
-      return {};
-    },
-
-    componentWillMount: function() {
-      // not directly related to this mixin but all of these mixins have this as a dependency
-      // if setState was called before the component was mounted, the actual component state was
-      // not set because it might not exist.  Convert the pretend state to the real thing
-      // (but don't trigger a render)
-      var _state = this.__temporary_state;
-      if (_state) {
-        for (var key in _state) {
-          this.state[key] = _state[key];
+                } else {
+                    throw new Error('invalid mixin "' + name + '"');
+                }
+            }
         }
-        delete this.__temporary_state;
-      }
-    }
-  });
-  React.mixins.setState = setState;
-  React.mixins.getState = getState;
 
+        function handleMixin(mixin) {
+            if (mixin) {
+                if (Array.isArray(mixin)) {
+                    // flatten it out
+                    get(mixin, index, initiatedOnce, rtn);
+                } else if (typeof mixin === 'string') {
+                    // add the named mixin and all of it's dependencies
+                    addTo(mixin);
+                } else {
+                    // if the mixin has a "mixins" attribute, clone and add those dependencies first
+                    if (mixin.mixins) {
+                        get(mixin.mixins, index, initiatedOnce, rtn);
+                        var _mixin = _mixins[mixin];
+                        if (!_mixin) {
+                            _mixin = {};
+                            for (var key in mixin) {
+                                if (key !== 'mixins') {
+                                    _mixin[key] = mixin[key];
+                                }
+                            }
+                        }
+                        _mixins[mixin] = _mixin;
+                        mixin = _mixin;
+                    }
+
+                    // just add the mixin normally
+                    rtn.push(mixin);
+                }
+            }
+        }
+
+        if (Array.isArray(values)) {
+            for (var i = 0; i < values.length; i++) {
+                handleMixin(values[i]);
+            }
+        } else {
+            handleMixin(values);
+        }
+    }
+
+    /**
+     * add the mixins that should be once initiated to the normalized mixin list
+     * @param mixins {Object} hash of mixins keys and list of its parameters
+     * @param rtn {Array} the normalized return array
+     */
+    function getInitiatedOnce(mixins, rtn) {
+
+        /**
+         * added once initiated mixins to return array
+         */
+        function addInitiatedOnce(mixin, params) {
+            mixin = mixin.apply(this, params || []);
+            rtn.push(mixin);
+        }
+
+        for (var m in mixins) {
+            if (mixins.hasOwnProperty(m)) {
+                addInitiatedOnce(_mixins[m], mixins[m]);
+            }
+        }
+    }
+
+    // allow for registered mixins to be extract just by using the standard React.createClass
+    var _createClass = React.createClass;
+    React.createClass = function(spec) {
+        if (spec.mixins) {
+            spec.mixins = React.mixins.get(spec.mixins);
+        }
+        return _createClass.apply(React, arguments);
+    };
+
+    function addMixin(name, mixin, depends, override, initiatedOnce) {
+        if (!override && _mixins[name]) {
+            return;
+        }
+        if (depends.length) {
+            _dependsOn[name] = depends;
+        }
+        _mixins[name] = mixin;
+
+        if (initiatedOnce) {
+            _initiatedOnce[name] = true;
+        }
+    }
+
+    function GROUP() {
+        // empty function which is used only as a placeholder to list dependencies
+    }
+
+    function mixinParams(args, override) {
+        var name,
+            options = args[0],
+            initiatedOnce = false;
+
+        if (typeof(options) === 'object') {
+            name = options.name;
+            initiatedOnce = options.initiatedOnce;
+        } else {
+            name = options;
+        }
+
+        if (!name || !name.length) {
+            throw new Error('the mixin name hasn\'t been specified');
+        }
+
+        if (Array.isArray(args[1])) {
+            return [name, args[1][0], Array.prototype.slice.call(args[1], 1), override, initiatedOnce];
+        } else {
+            return [name, args[1], Array.prototype.slice.call(args, 2), override, initiatedOnce];
+        }
+    }
+
+    React.mixins = {
+        /**
+         * return the normalized mixins.  there can be N arguments with each argument being
+         * - an array: will be flattened out to the parent list of mixins
+         * - a string: will match against any registered mixins and append the correct mixin
+         * - an object: will be treated as a standard mixin and returned in the list of mixins
+         * any string arguments that are provided will cause any dependent mixins to be included
+         * in the return list as well
+         */
+        get: function() {
+            var rtn = [],
+                index = {},
+                initiatedOnce = {};
+
+            get(Array.prototype.slice.call(arguments), index, initiatedOnce, rtn);
+            getInitiatedOnce(initiatedOnce, rtn);
+            return rtn;
+        },
+
+        /**
+         * Inject dependencies that were not originally defined when a mixin was registered
+         * @param name {string} the main mixin name
+         * @param (any additional) {string} dependencies that should be registered against the mixin
+         */
+        inject: function(name) {
+            var l = _dependsInjected[name];
+            if (!l) {
+                l = _dependsInjected[name] = [];
+            }
+            l.push(Array.prototype.slice.call(arguments, 1));
+        },
+
+        alias: function(name) {
+            addMixin(name, GROUP, Array.prototype.slice.call(arguments, 1), false);
+        },
+
+        add: function( /* options, mixin */ ) {
+            addMixin.apply(this, mixinParams(arguments, false));
+        },
+
+        replace: function( /* options, mixin */ ) {
+            addMixin.apply(this, mixinParams(arguments, true));
+        },
+
+        exists: function(name) {
+            return _mixins[name] || false;
+        },
+
+        _reset: function() {
+            _dependsOn = {};
+            _mixins = {};
+            _dependsInjected = {};
+            _initiatedOnce = {};
+        }
+    };
+
+    /**
+     * mixin that exposes a "deferUpdate" method which will call forceUpdate after a setTimeout(0) to defer the update.
+     * This allows the forceUpdate method to be called multiple times while only executing a render 1 time.  This will
+     * also ensure the component is mounted before calling forceUpdate.
+     *
+     * It is added to mixin manager directly because it serves a purpose that benefits when multiple plugins use it
+     */
+    React.mixins.add('deferUpdate', {
+        getInitialState: function() {
+            // ensure that the state exists because we don't want to call setState (which will cause a render)
+            return {};
+        },
+        deferUpdate: function() {
+            var state = this.state;
+            if (!state._deferUpdate) {
+                state._deferUpdate = true;
+                var self = this;
+                setTimeout(function() {
+                    delete state._deferUpdate;
+                    if (self.isMounted()) {
+                        self.forceUpdate();
+                    }
+                }, 0);
+            }
+        }
+    });
+
+    /**
+     * very simple mixin that ensures that the component state is an object.  This is useful if you
+     * know a component will be using state but won't be initialized with a state to prevent a null check on render
+     */
+    React.mixins.add('state', {
+        getInitialState: function() {
+            return {};
+        },
+
+        componentWillMount: function() {
+            // not directly related to this mixin but all of these mixins have this as a dependency
+            // if setState was called before the component was mounted, the actual component state was
+            // not set because it might not exist.  Convert the pretend state to the real thing
+            // (but don't trigger a render)
+            var _state = this.__temporary_state;
+            if (_state) {
+                for (var key in _state) {
+                    if (_state.hasOwnProperty(key)) {
+                        this.state[key] = _state[key];
+                    }
+                }
+                delete this.__temporary_state;
+            }
+        }
+    });
+    React.mixins.setState = setState;
+    React.mixins.getState = getState;
+  
 })();
 
 
 // jhudson8/react-events
 (function() {
 
-  var handlers = {},
-    patternHandlers = [],
-    splitter = /^([^:]+):?(.*)/,
-    specialWrapper = /^\*([^\(]+)\(([^)]*)\)[->:]*(.*)/,
-    noArgMethods = ['forceUpdate'],
-    setState = React.mixins.setState,
-    getState = React.mixins.getState;
-
-  /**
-   *  Allow events to be referenced in a hierarchical structure.  All parts in the
-   * hierarchy will be appended together using ":" as the separator
-   * window: {
-   *   scroll: 'onScroll',
-   *   resize: 'onResize'
-   * }
-   * will return as
-   * {
-   *   'window:scroll': 'onScroll',
-   *   'window:resize': 'onResize'
-   * }
-   }
-   */
-  function normalizeEvents(events, rtn, prefix) {
-    rtn = rtn || {};
-    if (prefix) {
-      prefix += ':';
-    } else {
-      prefix = '';
-    }
-    var value, valueType;
-    for (var key in events) {
-      value = events[key];
-      valueType = typeof value;
-      if (valueType === 'string' || valueType === 'function') {
-        rtn[prefix + key] = value;
-      } else if (value) {
-        normalizeEvents(value, rtn, prefix + key);
-      }
-    }
-    return rtn;
-  }
-
-  /**
-   * Internal model event binding handler
-   * (type(on|once|off), {event, callback, context, target})
-   */
-  function manageEvent(type, data) {
-    var eventsParent = this;
-    var _data = {
-      type: type
-    };
-    for (var name in data) {
-      _data[name] = data[name];
-    }
-    var watchedEvents = React.mixins.getState('__watchedEvents', this);
-    if (!watchedEvents) {
-      watchedEvents = [];
-      setState({
-        __watchedEvents: watchedEvents
-      }, this);
-    }
-    _data.context = _data.context || this;
-    watchedEvents.push(_data);
-
-    // bind now if we are already mounted (as the mount function won't be called)
-    var target = getTarget(_data.target, this);
-    if (this.isMounted()) {
-      if (target) {
-        target[_data.type](_data.event, _data.callback, _data.context);
-      }
-    }
-    if (type === 'off') {
-      var watchedEvent;
-      for (var i=0; i<watchedEvents.length; i++) {
-        watchedEvent = watchedEvents[i];
-        if (watchedEvent.event === data.event &&
-          watchedEvent.callback === data.callback &&
-          getTarget(watchedEvent.target, this) === target) {
-          watchedEvents.splice(i, 1);
-        }
-      }
-    }
-  }
-
-  // bind all registered events to the model
-  function _watchedEventsBindAll(context) {
-    var watchedEvents = getState('__watchedEvents', context);
-    if (watchedEvents) {
-      var data;
-      for (var name in watchedEvents) {
-        data = watchedEvents[name];
-        var target = getTarget(data.target, context);
-        if (target) {
-          target[data.type](data.event, data.callback, data.context);
-        }
-      }
-    }
-  }
-
-  // unbind all registered events from the model
-  function _watchedEventsUnbindAll(keepRegisteredEvents, context) {
-    var watchedEvents = getState('__watchedEvents', context);
-    if (watchedEvents) {
-      var data;
-      for (var name in watchedEvents) {
-        data = watchedEvents[name];
-        var target = getTarget(data.target, context);
-        if (target) {
-          target.off(data.event, data.callback, data.context);
-        }
-      }
-      if (!keepRegisteredEvents) {
-        setState({
-          __watchedEvents: []
-        }, context);
-      }
-    }
-  }
-
-  function getTarget(target, context) {
-    if (typeof target === 'function') {
-      return target.call(context);
-    }
-    return target;
-  }
-
-  /*
-   * wrapper for event implementations - includes on/off methods
-   */
-  function createHandler(event, callback, context, dontWrapCallback) {
-    if (!dontWrapCallback) {
-      var _callback = callback,
-        noArg;
-      if (typeof callback === 'object') {
-        // use the "callback" attribute to get the callback function.  useful if you need to reference the component as "this"
-        _callback = callback.callback.call(this);
-      }
-      if (typeof callback === 'string') {
-        noArg = (noArgMethods.indexOf(callback) >= 0);
-        _callback = context[callback];
-      }
-      if (!_callback) {
-        throw 'no callback function exists for "' + callback + '"';
-      }
-      callback = function() {
-        return _callback.apply(context, noArg ? [] : arguments);
-      };
-    }
-
-    // check for special wrapper function
-    var match = event.match(specialWrapper);
-    if (match) {
-      var specialMethodName = match[1],
-        args = eval('[' + match[2] + ']'),
-        rest = match[3],
-        specialHandler = React.events.specials[specialMethodName];
-      if (specialHandler) {
-        if (args.length === 1 && args[0] === '') {
-          args = [];
-        }
-        callback = specialHandler.call(context, callback, args);
-        return createHandler(rest, callback, context, true);
-      } else {
-        throw new Error('invalid special event handler "' + specialMethodName + "'");
-      }
-    }
-
-    var parts = event.match(splitter),
-      handlerName = parts[1];
-    path = parts[2],
-      handler = handlers[handlerName];
-
-    // check pattern handlers if no match
-    for (var i = 0; !handler && i < patternHandlers.length; i++) {
-      if (handlerName.match(patternHandlers[i].pattern)) {
-        handler = patternHandlers[i].handler;
-      }
-    }
-    if (!handler) {
-      throw new Error('no handler registered for "' + event + '"');
-    }
-
-    return handler.call(context, {
-      key: handlerName,
-      path: path
-    }, callback);
-  }
-
-  // predefined templates of common handler types for simpler custom handling
-  var handlerTemplates = {
+    var handlers = {},
+        patternHandlers = [],
+        splitter = /^([^:]+):?(.*)/,
+        specialWrapper = /^\*([^\(]+)\(([^)]*)\)[->:]*(.*)/,
+        noArgMethods = ['forceUpdate'],
+        setState = React.mixins.setState,
+        getState = React.mixins.getState;
 
     /**
-     * Return a handler which will use a standard format of on(eventName, handlerFunction) and off(eventName, handlerFunction)
-     * @param data {object} handler options
-     *   - target {object or function()}: the target to bind to or function(name, event) which returns this target ("this" is the React component)
-     *   - onKey {string}: the function attribute used to add the event binding (default is "on")
-     *   - offKey {string}: the function attribute used to add the event binding (default is "off")
+     *  Allow events to be referenced in a hierarchical structure.  All parts in the
+     * hierarchy will be appended together using ":" as the separator
+     * window: {
+     *   scroll: 'onScroll',
+     *   resize: 'onResize'
+     * }
+     * will return as
+     * {
+     *   'window:scroll': 'onScroll',
+     *   'window:resize': 'onResize'
+     * }
+     }
      */
-    standard: function(data) {
-      var accessors = {
-          on: data.onKey || 'on',
-          off: data.offKey || 'off'
-        },
-        target = data.target;
-      return function(options, callback) {
-        var path = options.path;
-
-        function checkTarget(type, context) {
-          return function() {
-            var _target = (typeof target === 'function') ? target.call(context, path) : target;
-            if (_target) {
-              // register the handler
-              _target[accessors[type]](path, callback);
+    function normalizeEvents(events, rtn, prefix) {
+        rtn = rtn || {};
+        if (prefix) {
+            prefix += ':';
+        } else {
+            prefix = '';
+        }
+        var value, valueType;
+        for (var key in events) {
+            if (events.hasOwnProperty(key)) {
+                value = events[key];
+                valueType = typeof value;
+                if (valueType === 'string' || valueType === 'function') {
+                    rtn[prefix + key] = value;
+                } else if (value) {
+                    normalizeEvents(value, rtn, prefix + key);
+                }
             }
-          };
         }
-
-        return {
-          on: checkTarget('on', this),
-          off: checkTarget('off', this),
-          initialize: data.initialize
-        };
-      };
+        return rtn;
     }
-  };
-
-  var eventManager = React.events = {
-    // placeholder for special methods
-    specials: {},
 
     /**
-     * Register an event handler
-     * @param identifier {string} the event type (first part of event definition)
-     * @param handlerOrOptions {function(options, callback) *OR* options object}
-     *
-     * handlerOrOptions as function(options, callback) a function which returns the object used as the event handler.
-     *      @param options {object}: will contain a *path* attribute - the event key (without the handler key prefix).
-     *           if the custom handler was registered as "foo" and events hash was { "foo:abc": "..." }, the path is "abc"
-     *      @param callback {function}: the callback function to be bound to the event
-     *
-     * handlerOrOptions as options: will use a predefined "standard" handler;  this assumes the event format of "{handler identifier}:{target identifier}:{event name}"
-     *      @param target {object or function(targetIdentifier, eventName)} the target to bind/unbind from or the functions which retuns this target
-     *      @param onKey {string} the attribute which identifies the event binding function on the target (default is "on")
-     *      @param offKey {string} the attribute which identifies the event un-binding function on the target (default is "off")
+     * Internal model event binding handler
+     * (type(on|once|off), {event, callback, context, target})
      */
-    handle: function(identifier, optionsOrHandler) {
-      if (typeof optionsOrHandler !== 'function') {
-        // it's options
-        optionsOrHandler = handlerTemplates[optionsOrHandler.type || 'standard'](optionsOrHandler);
-      }
-      if (identifier instanceof RegExp) {
-        patternHandlers.push({
-          pattern: identifier,
-          handler: optionsOrHandler
+    function manageEvent(type, data) {
+        /*jshint validthis:true */
+        var _data = {
+            type: type
+        };
+        for (var name in data) {
+            if (data.hasOwnProperty(name)) {
+                _data[name] = data[name];
+            }
+        }
+        var watchedEvents = React.mixins.getState('__watchedEvents', this);
+        if (!watchedEvents) {
+            watchedEvents = [];
+            setState({
+                __watchedEvents: watchedEvents
+            }, this);
+        }
+        _data.context = _data.context || this;
+        watchedEvents.push(_data);
+
+        // bind now if we are already mounted (as the mount function won't be called)
+        var target = getTarget(_data.target, this);
+        if (this.isMounted()) {
+            if (target) {
+                target[_data.type](_data.event, _data.callback, _data.context);
+            }
+        }
+        if (type === 'off') {
+            var watchedEvent;
+            for (var i = 0; i < watchedEvents.length; i++) {
+                watchedEvent = watchedEvents[i];
+                if (watchedEvent.event === data.event &&
+                    watchedEvent.callback === data.callback &&
+                    getTarget(watchedEvent.target, this) === target) {
+                    watchedEvents.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    // bind all registered events to the model
+    function _watchedEventsBindAll(context) {
+        var watchedEvents = getState('__watchedEvents', context);
+        if (watchedEvents) {
+            var data;
+            for (var name in watchedEvents) {
+                if (watchedEvents.hasOwnProperty(name)) {
+                    data = watchedEvents[name];
+                    var target = getTarget(data.target, context);
+                    if (target) {
+                        target[data.type](data.event, data.callback, data.context);
+                    }
+                }
+            }
+        }
+    }
+
+    // unbind all registered events from the model
+    function _watchedEventsUnbindAll(keepRegisteredEvents, context) {
+        var watchedEvents = getState('__watchedEvents', context);
+        if (watchedEvents) {
+            var data;
+            for (var name in watchedEvents) {
+                if (watchedEvents.hasOwnProperty(name)) {
+                    data = watchedEvents[name];
+                    var target = getTarget(data.target, context);
+                    if (target) {
+                        target.off(data.event, data.callback, data.context);
+                    }
+                }
+            }
+            if (!keepRegisteredEvents) {
+                setState({
+                    __watchedEvents: []
+                }, context);
+            }
+        }
+    }
+
+    function getTarget(target, context) {
+        if (typeof target === 'function') {
+            return target.call(context);
+        }
+        return target;
+    }
+
+    /*
+     * wrapper for event implementations - includes on/off methods
+     */
+    function createHandler(event, callback, context, dontWrapCallback) {
+        if (!dontWrapCallback) {
+            var _callback = callback,
+                noArg;
+            if (typeof callback === 'object') {
+                // use the "callback" attribute to get the callback function.  useful if you need to reference the component as "this"
+                /*jshint validthis:true */
+                _callback = callback.callback.call(this);
+            }
+            if (typeof callback === 'string') {
+                noArg = (noArgMethods.indexOf(callback) >= 0);
+                _callback = context[callback];
+            }
+            if (!_callback) {
+                throw 'no callback function exists for "' + callback + '"';
+            }
+            callback = function() {
+                return _callback.apply(context, noArg ? [] : arguments);
+            };
+        }
+
+        // check for special wrapper function
+        var match = event.match(specialWrapper);
+        if (match) {
+            var specialMethodName = match[1],
+                /*jshint evil: true */
+                args = eval('[' + match[2] + ']'),
+                rest = match[3],
+                specialHandler = React.events.specials[specialMethodName];
+            if (specialHandler) {
+                if (args.length === 1 && args[0] === '') {
+                    args = [];
+                }
+                callback = specialHandler.call(context, callback, args);
+                return createHandler(rest, callback, context, true);
+            } else {
+                throw new Error('invalid special event handler "' + specialMethodName + "'");
+            }
+        }
+
+        var parts = event.match(splitter),
+            handlerName = parts[1],
+            path = parts[2],
+            handler = handlers[handlerName];
+
+        // check pattern handlers if no match
+        for (var i = 0; !handler && i < patternHandlers.length; i++) {
+            if (handlerName.match(patternHandlers[i].pattern)) {
+                handler = patternHandlers[i].handler;
+            }
+        }
+        if (!handler) {
+            throw new Error('no handler registered for "' + event + '"');
+        }
+
+        return handler.call(context, {
+            key: handlerName,
+            path: path
+        }, callback);
+    }
+
+    // predefined templates of common handler types for simpler custom handling
+    var handlerTemplates = {
+
+        /**
+         * Return a handler which will use a standard format of on(eventName, handlerFunction) and off(eventName, handlerFunction)
+         * @param data {object} handler options
+         *   - target {object or function()}: the target to bind to or function(name, event) which returns this target ("this" is the React component)
+         *   - onKey {string}: the function attribute used to add the event binding (default is "on")
+         *   - offKey {string}: the function attribute used to add the event binding (default is "off")
+         */
+        standard: function(data) {
+            var accessors = {
+                    on: data.onKey || 'on',
+                    off: data.offKey || 'off'
+                },
+                target = data.target;
+            return function(options, callback) {
+                var path = options.path;
+
+                function checkTarget(type, context) {
+                    return function() {
+                        var _target = (typeof target === 'function') ? target.call(context, path) : target;
+                        if (_target) {
+                            // register the handler
+                            _target[accessors[type]](path, callback);
+                        }
+                    };
+                }
+
+                return {
+                    on: checkTarget('on', this),
+                    off: checkTarget('off', this),
+                    initialize: data.initialize
+                };
+            };
+        }
+    };
+
+    var eventManager = React.events = {
+        // placeholder for special methods
+        specials: {},
+
+        /**
+         * Register an event handler
+         * @param identifier {string} the event type (first part of event definition)
+         * @param handlerOrOptions {function(options, callback) *OR* options object}
+         *
+         * handlerOrOptions as function(options, callback) a function which returns the object used as the event handler.
+         *      @param options {object}: will contain a *path* attribute - the event key (without the handler key prefix).
+         *           if the custom handler was registered as "foo" and events hash was { "foo:abc": "..." }, the path is "abc"
+         *      @param callback {function}: the callback function to be bound to the event
+         *
+         * handlerOrOptions as options: will use a predefined "standard" handler;  this assumes the event format of "{handler identifier}:{target identifier}:{event name}"
+         *      @param target {object or function(targetIdentifier, eventName)} the target to bind/unbind from or the functions which retuns this target
+         *      @param onKey {string} the attribute which identifies the event binding function on the target (default is "on")
+         *      @param offKey {string} the attribute which identifies the event un-binding function on the target (default is "off")
+         */
+        handle: function(identifier, optionsOrHandler) {
+            if (typeof optionsOrHandler !== 'function') {
+                // it's options
+                optionsOrHandler = handlerTemplates[optionsOrHandler.type || 'standard'](optionsOrHandler);
+            }
+            if (identifier instanceof RegExp) {
+                patternHandlers.push({
+                    pattern: identifier,
+                    handler: optionsOrHandler
+                });
+            } else {
+                handlers[identifier] = optionsOrHandler;
+            }
+        }
+    };
+
+    //// REGISTER THE DEFAULT EVENT HANDLERS
+    if (typeof window !== 'undefined') {
+        /**
+         * Bind to window events
+         * format: "window:{event name}"
+         * example: events: { 'window:scroll': 'onScroll' }
+         */
+        eventManager.handle('window', {
+            target: window,
+            onKey: 'addEventListener',
+            offKey: 'removeEventListener'
         });
-      } else {
-        handlers[identifier] = optionsOrHandler;
-      }
     }
-  };
 
-
-  //// REGISTER THE DEFAULT EVENT HANDLERS
-  if (typeof window != 'undefined') {
-    /**
-     * Bind to window events
-     * format: "window:{event name}"
-     * example: events: { 'window:scroll': 'onScroll' }
-     */
-    eventManager.handle('window', {
-      target: window,
-      onKey: 'addEventListener',
-      offKey: 'removeEventListener'
-    });
-  }
-
-  var objectHandlers = {
-    /**
-     * Bind to events on components that are given a [ref](http://facebook.github.io/react/docs/more-about-refs.html)
-     * format: "ref:{ref name}:{event name}"
-     * example: "ref:myComponent:something-happened": "onSomethingHappened"
-     */
-    ref: function(refKey) {
-      return this.refs[refKey];
-    },
-
-    /**
-     * Bind to events on components that are provided as property values
-     * format: "prop:{prop name}:{event name}"
-     * example: "prop:componentProp:something-happened": "onSomethingHappened"
-     */
-    prop: function(propKey) {
-      return this.props[propKey];
-    }
-  };
-
-  function registerObjectHandler(key, objectFactory) {
-    eventManager.handle(key, function(options, callback) {
-      var parts = options.path.match(splitter),
-        objectKey = parts[1],
-        ev = parts[2],
-        bound, componentState;
-      return {
-        on: function() {
-          var target = objectFactory.call(this, objectKey);
-          if (target) {
-            componentState = target.state || target;
-            target.on(ev, callback);
-            bound = target;
-          }
+    var objectHandlers = {
+        /**
+         * Bind to events on components that are given a [ref](http://facebook.github.io/react/docs/more-about-refs.html)
+         * format: "ref:{ref name}:{event name}"
+         * example: "ref:myComponent:something-happened": "onSomethingHappened"
+         */
+        ref: function(refKey) {
+            return this.refs[refKey];
         },
-        off: function() {
-          if (bound) {
-            bound.off(ev, callback);
-            bound = undefined;
-            componentState = undefined;
-          }
-        },
-        isStale: function() {
-          if (bound) {
-            var target = objectFactory.call(this, objectKey);
-            if (!target || (target.state || target) !== componentState) {
-              // if the target doesn't exist now and we were bound before or the target state has changed we are stale
-              return true;
-            }
-          } else {
-            // if we weren't bound before but the component exists now, we are stale
-            return !!target;
-          }
+
+        /**
+         * Bind to events on components that are provided as property values
+         * format: "prop:{prop name}:{event name}"
+         * example: "prop:componentProp:something-happened": "onSomethingHappened"
+         */
+        prop: function(propKey) {
+            return this.props[propKey];
         }
-      };
-    });
-  }
-
-  var objectFactory;
-  for (var key in objectHandlers) {
-    registerObjectHandler(key, objectHandlers[key]);
-  }
-
-  /**
-   * Allow binding to setInterval events
-   * format: "repeat:{milis}"
-   * example: events: { 'repeat:3000': 'onRepeat3Sec' }
-   */
-  eventManager.handle('repeat', function(options, callback) {
-    var delay = parseInt(options.path, 10),
-      id;
-    return {
-      on: function() {
-        id = setInterval(callback, delay);
-      },
-      off: function() {
-        id = !!clearInterval(id);
-      }
     };
-  });
 
-  /**
-   * Like setInterval events *but* will only fire when the user is actively viewing the web page
-   * format: "!repeat:{milis}"
-   * example: events: { '!repeat:3000': 'onRepeat3Sec' }
-   */
-  eventManager.handle('!repeat', function(options, callback) {
-    var delay = parseInt(options.path, 10),
-      keepGoing;
-
-    function doInterval(suppressCallback) {
-      if (suppressCallback !== true) {
-        callback();
-      }
-      setTimeout(function() {
-        if (keepGoing) {
-          requestAnimationFrame(doInterval);
-        }
-      }, delay);
+    function registerObjectHandler(key, objectFactory) {
+        eventManager.handle(key, function(options, callback) {
+            var parts = options.path.match(splitter),
+                objectKey = parts[1],
+                ev = parts[2],
+                bound, componentState;
+            return {
+                on: function() {
+                    var target = objectFactory.call(this, objectKey);
+                    if (target) {
+                        componentState = target.state || target;
+                        target.on(ev, callback);
+                        bound = target;
+                    }
+                },
+                off: function() {
+                    if (bound) {
+                        bound.off(ev, callback);
+                        bound = undefined;
+                        componentState = undefined;
+                    }
+                },
+                isStale: function() {
+                    if (bound) {
+                        var target = objectFactory.call(this, objectKey);
+                        if (!target || (target.state || target) !== componentState) {
+                            // if the target doesn't exist now and we were bound before or the target state has changed we are stale
+                            return true;
+                        }
+                    } else {
+                        // if we weren't bound before but the component exists now, we are stale
+                        return true;
+                    }
+                }
+            };
+        });
     }
-    return {
-      on: function() {
-        keepGoing = true;
-        doInterval(true);
-      },
-      off: function() {
-        keepGoing = false;
-      }
-    };
-  });
 
-  //// REGISTER THE REACT MIXIN
-  React.mixins.add('events', function() {
-    var rtn = [{
-      /**
-       * Return a callback fundtion that will trigger an event on "this" when executed with the provided parameters
-       */
-      triggerWith: function(eventName) {
-        var args = Array.prototype.slice.call(arguments),
-          self = this;
-        return function() {
-          self.trigger.apply(self, args);
-        };
-      },
-
-      /**
-       * Return a callback fundtion that will call the provided function with the provided arguments
-       */
-      callWith: function(callback) {
-        var args = Array.prototype.slice.call(arguments, 1),
-          self = this;
-        return function() {
-          callback.apply(self, args);
-        };
-      },
-
-      getInitialState: function() {
-        var handlers = [];
-        if (this.events) {
-          var events = normalizeEvents(this.events);
-          var handler;
-          for (var ev in events) {
-            handler = createHandler(ev, events[ev], this);
-            if (handler.initialize) {
-              handler.initialize.call(this);
-            }
-            handlers.push(handler);
-          }
+    for (var key in objectHandlers) {
+        if (objectHandlers.hasOwnProperty(key)) {
+            registerObjectHandler(key, objectHandlers[key]);
         }
-        return {_eventHandlers: handlers};
-      },
-
-      componentDidUpdate: function() {
-        var handlers = getState('_eventHandlers', this),
-          handler;
-        for (var i = 0; i < handlers.length; i++) {
-          handler = handlers[i];
-          if (handler.isStale && handler.isStale.call(this)) {
-            handler.off.call(this);
-            handler.on.call(this);
-          }
-        }
-      },
-
-      componentDidMount: function() {
-        var handlers = getState('_eventHandlers', this);
-        for (var i = 0; i < handlers.length; i++) {
-          handlers[i].on.call(this);
-        }
-      },
-
-      componentWillUnmount: function() {
-        var handlers = getState('_eventHandlers', this);
-        for (var i = 0; i < handlers.length; i++) {
-          handlers[i].off.call(this);
-        }
-      }
-    }];
-
-    function bind(func, context) {
-      return function() {
-        func.apply(context, arguments);
-      };
     }
-    var eventHandler = eventManager.mixin;
-    if (eventHandler) {
-      var eventHandlerMixin = {},
-        state = {},
-        key;
-      var keys = ['on', 'once', 'off', 'trigger'];
-      for (var i=0; i<keys.length; i++) {
-        var key = keys[i];
-        if (eventHandler[key]) {
-          eventHandlerMixin[key] = bind(eventHandler[key], state);
-        }
-      }
-      eventHandlerMixin.getInitialState = function() {
+
+    /**
+     * Allow binding to setInterval events
+     * format: "repeat:{milis}"
+     * example: events: { 'repeat:3000': 'onRepeat3Sec' }
+     */
+    eventManager.handle('repeat', function(options, callback) {
+        var delay = parseInt(options.path, 10),
+            id;
         return {
-          __events: state
+            on: function() {
+                id = setInterval(callback, delay);
+            },
+            off: function() {
+                id = !!clearInterval(id);
+            }
         };
-      };
-      rtn.push(eventHandlerMixin);
-    }
-    // React.eventHandler.mixin should contain impl for "on" "off" and "trigger"
-    return rtn;
-  }, 'state');
+    });
 
-  /**
-   * Allow for managed bindings to any object which supports on/off.
-   */
-  React.mixins.add('listen', {
-    componentDidMount: function() {
-      // sanity check to prevent duplicate binding
-      _watchedEventsUnbindAll(true, this);
-      _watchedEventsBindAll(this);
-    },
+    /**
+     * Like setInterval events *but* will only fire when the user is actively viewing the web page
+     * format: "!repeat:{milis}"
+     * example: events: { '!repeat:3000': 'onRepeat3Sec' }
+     */
+    eventManager.handle('!repeat', function(options, callback) {
+        var delay = parseInt(options.path, 10),
+            keepGoing;
 
-    componentWillUnmount: function() {
-      _watchedEventsUnbindAll(true, this);
-    },
+        function doInterval(suppressCallback) {
+            if (suppressCallback !== true) {
+                callback();
+            }
+            setTimeout(function() {
+                if (keepGoing) {
+                    requestAnimationFrame(doInterval);
+                }
+            }, delay);
+        }
+        return {
+            on: function() {
+                keepGoing = true;
+                doInterval(true);
+            },
+            off: function() {
+                keepGoing = false;
+            }
+        };
+    });
 
-    // {event, callback, context, model}
-    listenTo: function(target, ev, callback, context) {
-      var data = ev ? {
-        event: ev,
-        callback: callback,
-        target: target,
-        context: context
-      } : target;
-      manageEvent.call(this, 'on', data);
-    },
+    //// REGISTER THE REACT MIXIN
+    React.mixins.add('events', function() {
+        var rtn = [{
+            /**
+             * Return a callback fundtion that will trigger an event on "this" when executed with the provided parameters
+             */
+            triggerWith: function() {
+                var args = Array.prototype.slice.call(arguments),
+                    self = this;
+                return function() {
+                    self.trigger.apply(self, args);
+                };
+            },
 
-    listenToOnce: function(target, ev, callback, context) {
-      var data = {
-        event: ev,
-        callback: callback,
-        target: target,
-        context: context
-      };
-      manageEvent.call(this, 'once', data);
-    },
+            /**
+             * Return a callback fundtion that will call the provided function with the provided arguments
+             */
+            callWith: function(callback) {
+                var args = Array.prototype.slice.call(arguments, 1),
+                    self = this;
+                return function() {
+                    callback.apply(self, args);
+                };
+            },
 
-    stopListening: function(target, ev, callback, context) {
-      var data = {
-        event: ev,
-        callback: callback,
-        target: target,
-        context: context
-      };
-      manageEvent.call(this, 'off', data);
-    }
-  });
+            getInitialState: function() {
+                var handlers = [];
+                if (this.events) {
+                    var events = normalizeEvents(this.events);
+                    var handler;
+                    for (var ev in events) {
+                        if (events.hasOwnProperty(ev)) {
+                            handler = createHandler(ev, events[ev], this);
+                            if (handler.initialize) {
+                                handler.initialize.call(this);
+                            }
+                            handlers.push(handler);
+                        }
+                    }
+                }
+                return {
+                    _eventHandlers: handlers
+                };
+            },
 
+            componentDidUpdate: function() {
+                var handlers = getState('_eventHandlers', this),
+                    handler;
+                for (var i = 0; i < handlers.length; i++) {
+                    handler = handlers[i];
+                    if (handler.isStale && handler.isStale.call(this)) {
+                        handler.off.call(this);
+                        handler.on.call(this);
+                    }
+                }
+            },
+
+            componentDidMount: function() {
+                var handlers = getState('_eventHandlers', this);
+                for (var i = 0; i < handlers.length; i++) {
+                    handlers[i].on.call(this);
+                }
+            },
+
+            componentWillUnmount: function() {
+                var handlers = getState('_eventHandlers', this);
+                for (var i = 0; i < handlers.length; i++) {
+                    handlers[i].off.call(this);
+                }
+            }
+        }];
+
+        function bind(func, context) {
+            return function() {
+                func.apply(context, arguments);
+            };
+        }
+        var eventHandler = eventManager.mixin;
+        if (eventHandler) {
+            var eventHandlerMixin = {},
+                state = {},
+                key;
+            var keys = ['on', 'once', 'off', 'trigger'];
+            for (var i = 0; i < keys.length; i++) {
+                key = keys[i];
+                if (eventHandler[key]) {
+                    eventHandlerMixin[key] = bind(eventHandler[key], state);
+                }
+            }
+            eventHandlerMixin.getInitialState = function() {
+                return {
+                    __events: state
+                };
+            };
+            rtn.push(eventHandlerMixin);
+        }
+        // React.eventHandler.mixin should contain impl for "on" "off" and "trigger"
+        return rtn;
+    }, 'state');
+
+    /**
+     * Allow for managed bindings to any object which supports on/off.
+     */
+    React.mixins.add('listen', {
+        componentDidMount: function() {
+            // sanity check to prevent duplicate binding
+            _watchedEventsUnbindAll(true, this);
+            _watchedEventsBindAll(this);
+        },
+
+        componentWillUnmount: function() {
+            _watchedEventsUnbindAll(true, this);
+        },
+
+        // {event, callback, context, model}
+        listenTo: function(target, ev, callback, context) {
+            var data = ev ? {
+                event: ev,
+                callback: callback,
+                target: target,
+                context: context
+            } : target;
+            manageEvent.call(this, 'on', data);
+        },
+
+        listenToOnce: function(target, ev, callback, context) {
+            var data = {
+                event: ev,
+                callback: callback,
+                target: target,
+                context: context
+            };
+            manageEvent.call(this, 'once', data);
+        },
+
+        stopListening: function(target, ev, callback, context) {
+            var data = {
+                event: ev,
+                callback: callback,
+                target: target,
+                context: context
+            };
+            manageEvent.call(this, 'off', data);
+        }
+    });
+  
 })();
 
 
 // jhudson8/react-backbone
 (function() {
 
-  // create local references to existing vars
-  var xhrEventName = Backbone.xhrEventName;
-  var xhrCompleteEventName = Backbone.xhrCompleteEventName;
-  var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
-  var getState = React.mixins.getState;
-  var setState = React.mixins.setState;
+    // create local references to existing vars
+    var xhrEventName = Backbone.xhrEventName;
+    var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
+    var getState = React.mixins.getState;
+    var setState = React.mixins.setState;
 
-  // use Backbone.Events as the events impl if none is already defined
-  React.events.mixin = React.events.mixin || Backbone.Events;
+    // use Backbone.Events as the events impl if none is already defined
+    React.events.mixin = React.events.mixin || Backbone.Events;
 
-  /**
-   * Return the model specified by a ReactComponent property key
-   */
-  function getModelByPropkey(key, context, useGetModel) {
-    var model;
-    if (key) {
-      model = context.props[key];
-      if (!model) {
-        throw new Error('No model found for "' + key + '"');
-      }
-    } else if (useGetModel) {
-      model = context.getModel();
-    }
-    return model;
-  }
-
-  function getModelOrCollection(type, context, props) {
-    if (type === 'collection') {
-      return context.getCollection(props);
-    } else {
-      return context.getModel(props)
-    }
-  }
-
-  /**
-   * Return either an array of elements (if src provided is not an array)
-   * or undefined if the src is undefined
-   */
-  function ensureArray(src) {
-    if (!src) {
-      return;
-    }
-    if (_.isArray(src)) {
-      return src;
-    }
-    return [src];
-  }
-
-  /**
-   * Return a callback function that will provide the model or collection
-   */
-  function targetModelOrCollection(type, modelOrCollectionToUse) {
-    return function() {
-      if (modelOrCollectionToUse) {
-        return modelOrCollectionToUse;
-      }
-      return getModelOrCollection(type, modelOrCollection);
-    }
-  }
-
-  /**
-   * Return a model attribute key used for attribute specific operations
-   */
-  function getKey(context) {
-    if (context.getModelKey) {
-      return context.getModelKey();
-    }
-    return context.props.name || context.props.key || context.props.ref;
-  }
-  React.mixins.getModelKey = getKey;
-
-  /**
-   * Returns model validation errors in a standard format.
-   * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
-   *
-   * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
-   */
-  function modelIndexErrors(errors, context) {
-    if (context && context.modelIndexErrors) {
-      return context.modelIndexErrors(errors);
-    }
-    if (Array.isArray(errors)) {
-      var rtn = {};
-      _.each(errors, function(data) {
-        var key, message;
-        for (var name in data) {
-          rtn[name] = data[name];
-        }
-      });
-      return rtn;
-    } else {
-      return errors;
-    }
-  }
-  React.mixins.modelIndexErrors = modelIndexErrors;
-
-  /**
-   * Return the callback function (key, model) if both the model exists
-   * and the model key is available
-   */
-  function ifModelAndKey(component, callback) {
-    if (component.getModel) {
-      var key = getKey(component);
-      var model = component.getModel();
-      if (model) {
-        return callback(key, model);
-      }
-    }
-  }
-
-  /**
-   * Utility method used to handle model/collection events
-   */
-  function modelOrCollectionEventHandler(type, identifier, context, eventFormat, callback) {
-    var keys = Array.isArray(identifier) ? identifier : ensureArray(context.props[identifier]),
-      key, eventName;
-    if (keys) {
-      // register the event handlers to watch for these events
-      for (var i = 0; i < keys.length; i++) {
-        key = keys[i];
-        eventName = eventFormat.replace('{key}', key);
-        context[type + 'On'](eventName, _.bind(callback, context), this);
-      }
-      return keys;
-    }
-  }
-
-  /**
-   * Provide modelOn and modelOnce argument with proxied arguments
-   * arguments are event, callback, context
-   */
-  function modelOrCollectionnOrOnce(modelType, type, args, _this, _modelOrCollection) {
-    var modelEvents = getModelAndCollectionEvents(_this);
-    var ev = args[0];
-    var cb = args[1];
-    var ctx = args[2];
-    modelEvents[ev] = {type: type, ev: ev, cb: cb, ctx: ctx};
-    var modelOrCollection = _modelOrCollection || getModelOrCollection(modelType, _this);
-    if (modelOrCollection) {
-      _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
-    }
-  }
-
-  /**
-   * Return all bound model events
-   */
-  function getModelAndCollectionEvents(context) {
-    var modelEvents = getState('__modelEvents', context);
-    if (!modelEvents) {
-      modelEvents = {};
-      setState({__modelEvents: modelEvents}, context);
-    }
-    return modelEvents;
-  }
-
-
-  // loading state helpers
-  function pushLoadingState(xhrEvent, modelOrCollection, context) {
-    var currentLoads = getState('loading', context);
-    if (!currentLoads) {
-      currentLoads = [];
-    }
-    if (_.isArray(currentLoads)) {
-      currentLoads.push(xhrEvent);
-      setState({
-        loading: currentLoads
-      }, context);
-      xhrEvent.on('complete', function() {
-        popLoadingState(xhrEvent, modelOrCollection, context);
-      });
-    }
-  }
-
-  function popLoadingState(xhrEvent, modelOrCollection, context) {
-    var currentLoads = getState('loading', context);
-    if (_.isArray(currentLoads)) {
-      var i = currentLoads.indexOf(xhrEvent);
-      while (i >= 0) {
-        currentLoads.splice(i, 1);
-        i = currentLoads.indexOf(xhrEvent);
-      }
-      if (!currentLoads.length) {
-        setState({
-          loading: false
-        }, context);
-      }
-    }
-  }
-
-  function joinCurrentModelActivity(method, modelOrCollection, context) {
-    var xhrActivity = modelOrCollection[xhrModelLoadingAttribute];
-    if (xhrActivity) {
-      _.each(xhrActivity, function(xhrEvent) {
-        if (!method || xhrEvent.method === method) {
-          // this is one that is applicable
-          pushLoadingState(xhrEvent, modelOrCollection, context);
-        }
-      });
-    }
-  }
-
-
-  // helpers to get and set a model value when only the component is known
-  Backbone.input = Backbone.input || {};
-  var getModelValue = Backbone.input.getModelValue = function(component) {
-    return ifModelAndKey(component, function(key, model) {
-      return model.get(key);
-    });
-  };
-  var setModelValue = Backbone.input.setModelValue = function(component, value, options) {
-    return ifModelAndKey(component, function(key, model) {
-      return model.set(key, value, options);
-    });
-  }
-
-
-  // create mixins that are duplicated for both models and collections
-  _.each([{
-    type: 'model',
-    capType: 'Model',
-    changeEvents: ['change']
-  }, {
-    type: 'collection',
-    capType: 'Collection',
-    changeEvents: ['add', 'remove', 'reset', 'sort']
-  }], function(typeData) {
-
-    /**
-     * Simple overrideable mixin to get/set models or collections.  Model/Collection can
-     * be set on props or by calling setModel or setCollection
-     */
-    var typeAware = {};
-    typeAware['get' + typeData.capType] = function(props) {
-      props = props || this.props;
-      return getState(typeData.type, this) || props[typeData.type];
-    };
-    typeAware['set' + typeData.capType] = function(modelOrCollection, _suppressState) {
-      var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
-      var modelEvents = getModelAndCollectionEvents(this);
-      _.each(modelEvents, function(data) {
-        // unbind the current model or collection
-        this[typeData.type + 'Off'](data.ev, data.cb, data.ctx, preModelOrCollection);
-        // rebind the new model or collection
-        modelOrCollectionnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
-      }, this);
-      // if this is coming from a props update, no need to set the state
-      if (_suppressState !== true) {
-        setState(typeData.type, modelOrCollection);
-      }
-    }
-    React.mixins.add(typeData.type + 'Aware', typeAware, 'state');
-
-
-    /**
-     * Exposes model binding registration functions that will
-     * be cleaned up when the component is unmounted and not actually registered
-     * until the component is mounted.  The context will be "this" if not provided.
-     *
-     * This is similar to the "listenTo" mixin but model event bindings here will
-     * be transferred to another model if a new one is set on the props.
-     */
-    var typeEvents = {
-      getInitialState: function() {
-        // model sanity check
-        var modelOrCollection = getModelOrCollection(typeData.type, this);
-        if (modelOrCollection) {
-          if (!modelOrCollection.off || !modelOrCollection.on) {
-            console.error('the model/collection does not implement on/off functions - you will see problems');
-            console.log(modelOrCollection);
-          }
-        }
-        return {};
-      },
-
-      componentWillReceiveProps: function(props) {
-        // watch for model or collection changes by property so it can be un/rebound
-        var preModelOrCollection = getModelOrCollection(typeData.type, this);
-        var postModelOrCollection = getModelOrCollection(typeData.type, this, props);
-        if (preModelOrCollection !== postModelOrCollection) {
-          this['set' + typeData.capType](postModelOrCollection, true);
-        }
-      },
-    };
-    typeEvents[typeData.type + 'On'] = function(ev, callback, context) {
-      modelOrCollectionnOrOnce(typeData.type, 'on', arguments, this);
-    };
-    typeEvents[typeData.type + 'Once'] = function(ev, callback, context) {
-      modelOrCollectionnOrOnce(typeData.type, 'once', arguments, this);
-    };
-    typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
-      var modelEvents = getModelAndCollectionEvents(this);
-      delete modelEvents[ev];
-      this.stopListening(targetModelOrCollection(typeData.type, _modelOrCollection), ev, callback, context);
-    };
-    React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
-
-    /**
-     * Mixin used to force render any time the model has changed
-     */
-    var changeAware = {
-      getInitialState: function() {
-        _.each(typeData.changeEvents, function(eventName) {
-          this[typeData.type + 'On'](eventName, function() {
-            this.deferUpdate();
-          }, this);
-        }, this);
-      }
-    }
-    React.mixins.add(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
-
-
-    // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
-
-    var xhrFactory = {
-      getInitialState: function(keys, self) {
-        function whenXHRActivityHappens(xhrEvents) {
-          var modelOrCollection = getModelOrCollection(typeData.type, self);
-          pushLoadingState(xhrEvents, modelOrCollection, self);
-        }
-
-        if (!keys) {
-          self[typeData.type + 'On'](xhrEventName, function(method, xhrEvents) {
-            whenXHRActivityHappens(xhrEvents);
-          });
+    function getModelOrCollection(type, context, props) {
+        if (type === 'collection') {
+            return context.getCollection(props);
         } else {
-          modelOrCollectionEventHandler(typeData.type, keys, self, xhrEventName + ':{key}', whenXHRActivityHappens);
+            return context.getModel(props);
         }
-        return {};
-      },
-
-      componentWillMount: function(keys, self) {
-        // make sure the model didn't get into a non-loading state before mounting
-        var modelOrCollection = getModelOrCollection(typeData.type, self);
-        if (modelOrCollection) {
-          // we may bind an extra for any getInitialState bindings but
-          // the cleanup logic will deal with duplicate bindings
-          if (!keys) {
-            joinCurrentModelActivity(keys, modelOrCollection, self);
-          } else {
-            var _keys = _.isArray(keys) ? keys : self.props[keys];
-            if (!_keys) {
-              return;
-            } else if (!_.isArray(_keys)) {
-              _keys = [_keys];
-            }
-            _.each(_keys, function(key) {
-              joinCurrentModelActivity(key, modelOrCollection, self);
-            })
-          }
-        }
-      }
-    };
+    }
 
     /**
-     * If the model executes *any* XHR activity, the internal state "loading" attribute
-     * will be set to true and, if an error occurs with loading, the "error" state attribute
-     * will be set with the error contents
+     * Return either an array of elements (if src provided is not an array)
+     * or undefined if the src is undefined
      */
-    var xhrAware = {
-      getInitialState: function() {
-        return xhrFactory.getInitialState(undefined, this);
-      },
-
-      componentWillMount: function() {
-        return xhrFactory.componentWillMount(undefined, this);
-      }
-    };
-    React.mixins.add(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
-
-
-    /**
-     * Gives any comonent the ability to mark the "loading" attribute in the state as true
-     * when any async event of the given type (defined by the "key" property) occurs.
-     */
-    var loadOn = function() {
-      var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-      return {
-        getInitialState: function() {
-          return xhrFactory.getInitialState(keys || 'loadOn', this);
-        },
-
-        componentWillMount: function() {
-          return xhrFactory.componentWillMount(keys || 'loadOn', this);
-        }
-      };
-    };
-    React.mixins.add(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
-
-
-    /**
-     * Gives any comonent the ability to force an update when an event is fired
-     */
-    var updateOn = function() {
-      var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-      return {
-        getInitialState: function() {
-          modelOrCollectionEventHandler(typeData.type, keys || 'updateOn', this, '{key}', function() {
-            this.deferUpdate();
-          });
-        }
-      };
-    };
-    React.mixins.add(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
-
-
-    /**
-     * Support the "model:{event name}" event, for example:
-     * events {
-     *   'model:something-happened': 'onSomethingHappened'
-     * }
-     * ...
-     * onSomethingHappened: function() { ... }
-     *
-     * When using these model events, you *must* include the "model/collectionEvents" mixin
-     */
-    var _modelOrCollctionPattern = new RegExp('^' + typeData.type + '(\[.+\])?$');
-    React.events.handle(_modelOrCollctionPattern, function(options, callback) {
-      return {
-        on: function() {
-          if (!this[typeData.type + 'On']) {
-            throw new Error('use the ' + typeData.type + ' "Events" mixin instead of "events"');
-          }
-          this[typeData.type + 'On'](options.path, callback);
-        },
-        off: function() { /* NOP, modelOn will clean up */ }
-      };
-    });
-
-  });
-
-
-  // add helper methods to include both model and collection mixins using a single mixin
-  _.each({
-    'XHRAware': 'XHRAware',
-    'changeAware': 'ChangeAware',
-    'loadOn': 'LoadOn',
-    'updateOn': 'UpdateOn'
-  }, function(modelCollectionSuffix, mixinName) {
-    React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
-  });
-
-
-  /**
-   * Iterate through the provided list of components (or use this.refs if components were not provided) and
-   * return a set of attributes.  If a callback is provided as the 2nd parameter and this component includes
-   * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
-   */
-  React.mixins.add('modelPopulate', {
-    modelPopulate: function() {
-      var components, callback, options, model, drillDown;
-      // determine the function args
-      _.each(arguments, function(value) {
-        if (value instanceof Backbone.Model) {
-          model = value;
-        } else if (_.isBoolean(value)) {
-          drillDown = true;
-          model = false;
-        } else if (_.isArray(value)) {
-          components = value;
-        } else if (_.isFunction(value)) {
-          callback = value;
-        } else {
-          options = value;
-        }
-      });
-      if (_.isUndefined(model) && this.getModel) {
-        model = this.getModel();
-      }
-
-      var attributes = {};
-      if (!components) {
-        // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
-        components = _.map(this.refs, function(value) {
-          return value;
-        });
-      }
-      var models = {};
-      _.each(components, function(component) {
-        // the component *must* implement getValue or modelPopulate to participate
-        if (component.getValue) {
-          var key = getKey(component)
-          if (key) {
-            var value = component.getValue();
-            attributes[key] = value;
-          }
-        } else if (component.modelPopulate && component.getModel) {
-          if (!model && !drillDown) {
-            // if we aren't populating to models, this is not necessary
+    function ensureArray(src) {
+        if (!src) {
             return;
-          }
-          var _model = component.getModel();
-          var testModel = model || (options && options.populateModel);
-          if (_model === testModel) {
-            var _attributes = component.modelPopulate(_.extend({populateModel: testModel}, options), true);
-            _.defaults(attributes, _attributes);
-          }
         }
-      });
-
-      if (model) {
-        if (model.set(attributes, {validate: true})) {
-          callback.call(this, model);
+        if (_.isArray(src)) {
+            return src;
         }
-      }
-
-      return attributes;
+        return [src];
     }
-  }, 'modelAware');
 
-
-  /**
-   * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
-   * the state once the callback has completed
-   */
-  React.mixins.add('loadWhile', {
-    loadWhile: function(options) {
-      options = options || {};
-      var self = this;
-
-      function wrap(type) {
-        var _callback = options[type];
-        options[type] = function() {
-          setState({
-            loading: false
-          }, self);
-          if (_callback) {
-            _callback.apply(this, arguments);
-          }
-        }
-      }
-      wrap('error');
-      wrap('success');
-      setState({
-        loading: true
-      }, this);
-      return options;
-    }
-  });
-
-
-  /**
-   * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
-   * against the provided attributes.  If invalid, a truthy value will be returned containing the
-   * validation errors.
-   */
-  React.mixins.add('modelValidator', {
-    modelValidate: function(attributes, options) {
-      var model = this.getModel();
-      if (model && model.validate) {
-        return modelIndexErrors(model.validate(attributes, options), this) || false;
-      }
-    }
-  }, 'modelAware');
-
-
-  /**
-   * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
-   * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
-   * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
-   */
-  React.mixins.add('modelInvalidAware', {
-    getInitialState: function() {
-      var key = getKey(this);
-      if (key) {
-        this.modelOn('invalid', function(model, errors) {
-          var _errors = modelIndexErrors(errors, this) || {};
-          var message = _errors && _errors[key];
-          if (message) {
-            setState({
-              invalid: message
-            }, this);
-          }
-        });
-      }
-      return {};
-    }
-  }, 'modelEventAware');
-
-
-  var specials = React.events.specials;
-  if (specials) {
-    // add underscore wrapped special event handlers
-    function parseArgs(args) {
-      var arg;
-      for (var i = 0; i < args.length; i++) {
-        arg = args[i];
-        if (arg === 'true') {
-          arg = true;
-        } else if (arg === 'false') {
-          arg = false;
-        } else if (arg.match(/^[0-9]+$/)) {
-          arg = parseInt(arg);
-        } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
-          arg = parseFloat(arg);
-        }
-        args[i] = arg;
-      }
-      return args;
-    }
-    var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
-    _.each(reactEventSpecials, function(name) {
-      specials[name] = specials[name] || function(callback, args) {
-        args = parseArgs(args);
-        args.splice(0, 0, callback);
-        return _[name].apply(_, args);
-      };
-    });
-  }
-
-
-  // Standard input components that implement react-backbone model awareness
-  var _inputClass = function(type, attributes, isCheckable, classAttributes) {
-    return React.createClass(_.extend({
-      mixins: ['modelAware'],
-      render: function() {
-        var props = {};
-        var defaultValue = getModelValue(this);
-        if (isCheckable) {
-          props.defaultChecked = defaultValue;
-        } else {
-          props.defaultValue = defaultValue;
-        }
-        return React.DOM[type](_.extend(props, attributes, this.props), this.props.children);
-      },
-      getValue: function() {
-        if (this.isMounted()) {
-          if (isCheckable) {
-            var el = this.getDOMNode();
-            return (el.checked && (el.value || true)) || false;
-          } else {
-            return $(this.getDOMNode()).val();
-          }
-        }
-      },
-      getDOMValue: function() {
-        if (this.isMounted()) {
-          return $(this.getDOMNode()).val();
-        }
-      }
-    }, classAttributes));
-  };
-
-  Backbone.input = Backbone.input || {};
-  _.defaults(Backbone.input, {
-    Text: _inputClass('input', {
-      type: 'text'
-    }),
-    TextArea: _inputClass('textarea'),
-    Select: _inputClass('select', undefined, undefined),
-    CheckBox: _inputClass('input', {
-      type: 'checkbox'
-    }, true),
-    RadioGroup: React.createClass({
-      render: function() {
-        var props = this.props;
-        props.ref = 'input';
-        return React.DOM[props.tag || 'span'](props, props.children);
-      },
-      componentDidMount: function() {
-        // select the appropriate radio button
-        var value = getModelValue(this);
-        if (value) {
-          var selector = 'input[value="' + value.replace('"', '\\"') + '"]';
-          var el = $(this.getDOMNode()).find(selector);
-          el.attr('checked', 'checked');
-        }
-      },
-      getValue: function() {
-        if (this.isMounted()) {
-          var selector = 'input[type="radio"]';
-          var els = $(this.getDOMNode()).find(selector);
-          for (var i = 0; i < els.length; i++) {
-            if (els[i].checked) {
-              return els[i].value;
+    /**
+     * Return a callback function that will provide the model or collection
+     */
+    function targetModelOrCollection(type, context, modelOrCollectionToUse) {
+        return function() {
+            if (modelOrCollectionToUse) {
+                return modelOrCollectionToUse;
             }
-          }
-        }
-      },
-      getDOMValue: function() {
-        if (this.isMounted()) {
-          var selector = 'input[type="radio"]';
-          return $(this.getDOMNode()).val();
-        }
-      }
-    })
-  });
+            return getModelOrCollection(type, context);
+        };
+    }
 
+    /**
+     * Return a model attribute key used for attribute specific operations
+     */
+    function getKey(context) {
+        if (context.getModelKey) {
+            return context.getModelKey();
+        }
+        return context.props.name || context.props.key || context.props.ref;
+    }
+    React.mixins.getModelKey = getKey;
+
+    /**
+     * Returns model validation errors in a standard format.
+     * expected return is { field1Key: errorMessage, field2Key: errorMessage, ... }
+     *
+     * This implementation will look for [{field1Key: message}, {field2Key: message}, ...]
+     */
+    function modelIndexErrors(errors, context) {
+        if (context && context.modelIndexErrors) {
+            return context.modelIndexErrors(errors);
+        }
+        if (Array.isArray(errors)) {
+            var rtn = {};
+            _.each(errors, function(data) {
+                for (var name in data) {
+                    if (data.hasOwnProperty(name)) {
+                        rtn[name] = data[name];
+                    }
+                }
+            });
+            return rtn;
+        } else {
+            return errors;
+        }
+    }
+    React.mixins.modelIndexErrors = modelIndexErrors;
+
+    /**
+     * Return the callback function (key, model) if both the model exists
+     * and the model key is available
+     */
+    function ifModelAndKey(component, callback) {
+        if (component.getModel) {
+            var key = getKey(component);
+            var model = component.getModel();
+            if (model) {
+                return callback(key, model);
+            }
+        }
+    }
+
+    /**
+     * Utility method used to handle model/collection events
+     */
+    function modelOrCollectionEventHandler(type, identifier, context, eventFormat, callback) {
+        var keys = Array.isArray(identifier) ? identifier : ensureArray(context.props[identifier]),
+            key, eventName;
+        if (keys) {
+            // register the event handlers to watch for these events
+            for (var i = 0; i < keys.length; i++) {
+                key = keys[i];
+                eventName = eventFormat.replace('{key}', key);
+                context[type + 'On'](eventName, _.bind(callback, context), this);
+            }
+            return keys;
+        }
+    }
+
+    /**
+     * Provide modelOn and modelOnce argument with proxied arguments
+     * arguments are event, callback, context
+     */
+    function modelOrCollectionnOrOnce(modelType, type, args, _this, _modelOrCollection) {
+        var modelEvents = getModelAndCollectionEvents(_this);
+        var ev = args[0];
+        var cb = args[1];
+        var ctx = args[2];
+        modelEvents[ev] = {
+            type: type,
+            ev: ev,
+            cb: cb,
+            ctx: ctx
+        };
+        var modelOrCollection = _modelOrCollection || getModelOrCollection(modelType, _this);
+        if (modelOrCollection) {
+            _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
+        }
+    }
+
+    /**
+     * Return all bound model events
+     */
+    function getModelAndCollectionEvents(context) {
+        var modelEvents = getState('__modelEvents', context);
+        if (!modelEvents) {
+            modelEvents = {};
+            setState({
+                __modelEvents: modelEvents
+            }, context);
+        }
+        return modelEvents;
+    }
+
+    // loading state helpers
+    function pushLoadingState(xhrEvent, modelOrCollection, context) {
+        var currentLoads = getState('loading', context);
+        if (!currentLoads) {
+            currentLoads = [];
+        }
+        if (_.isArray(currentLoads)) {
+            currentLoads.push(xhrEvent);
+            setState({
+                loading: currentLoads
+            }, context);
+            xhrEvent.on('complete', function() {
+                popLoadingState(xhrEvent, modelOrCollection, context);
+            });
+        }
+    }
+
+    // remove the xhrEvent from the loading state
+    function popLoadingState(xhrEvent, modelOrCollection, context) {
+        var currentLoads = getState('loading', context);
+        if (_.isArray(currentLoads)) {
+            var i = currentLoads.indexOf(xhrEvent);
+            while (i >= 0) {
+                currentLoads.splice(i, 1);
+                i = currentLoads.indexOf(xhrEvent);
+            }
+            if (!currentLoads.length) {
+                setState({
+                    loading: false
+                }, context);
+            }
+        }
+    }
+
+    // if there is any current xhrEvent that match the method, add a reference to it with this context
+    function joinCurrentModelActivity(method, modelOrCollection, context) {
+        var xhrActivity = modelOrCollection[xhrModelLoadingAttribute];
+        if (xhrActivity) {
+            _.each(xhrActivity, function(xhrEvent) {
+                if (!method || xhrEvent.method === method) {
+                    // this is one that is applicable
+                    pushLoadingState(xhrEvent, modelOrCollection, context);
+                }
+            });
+        }
+    }
+
+    // parse the arguments and convert string values into their native counterparts
+    function parseArgs(args) {
+        var arg;
+        for (var i = 0; i < args.length; i++) {
+            arg = args[i];
+            if (arg === 'true') {
+                arg = true;
+            } else if (arg === 'false') {
+                arg = false;
+            } else if (arg.match(/^[0-9]+$/)) {
+                arg = parseInt(arg);
+            } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
+                arg = parseFloat(arg);
+            }
+            args[i] = arg;
+        }
+        return args;
+    }
+
+    // helpers to get and set a model value when only the component is known
+    Backbone.input = Backbone.input || {};
+    var getModelValue = Backbone.input.getModelValue = function(component) {
+        return ifModelAndKey(component, function(key, model) {
+            return model.get(key);
+        });
+    };
+
+    // create mixins that are duplicated for both models and collections
+    _.each([{
+        type: 'model',
+        capType: 'Model',
+        changeEvents: ['change']
+    }, {
+        type: 'collection',
+        capType: 'Collection',
+        changeEvents: ['add', 'remove', 'reset', 'sort']
+    }], function(typeData) {
+
+        /**
+         * Simple overrideable mixin to get/set models or collections.  Model/Collection can
+         * be set on props or by calling setModel or setCollection
+         */
+        var typeAware = {};
+        typeAware['get' + typeData.capType] = function(props) {
+            props = props || this.props;
+            return getState(typeData.type, this) || props[typeData.type];
+        };
+        typeAware['set' + typeData.capType] = function(modelOrCollection, _suppressState) {
+            var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
+            var modelEvents = getModelAndCollectionEvents(this);
+            _.each(modelEvents, function(data) {
+                // unbind the current model or collection
+                this[typeData.type + 'Off'](data.ev, data.cb, data.ctx, preModelOrCollection);
+                // rebind the new model or collection
+                modelOrCollectionnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
+            }, this);
+            // if this is coming from a props update, no need to set the state
+            if (_suppressState !== true) {
+                setState(typeData.type, modelOrCollection);
+            }
+        };
+        React.mixins.add(typeData.type + 'Aware', typeAware, 'state');
+
+        /**
+         * Exposes model binding registration functions that will
+         * be cleaned up when the component is unmounted and not actually registered
+         * until the component is mounted.  The context will be "this" if not provided.
+         *
+         * This is similar to the "listenTo" mixin but model event bindings here will
+         * be transferred to another model if a new one is set on the props.
+         */
+        var typeEvents = {
+            getInitialState: function() {
+                // model sanity check
+                var modelOrCollection = getModelOrCollection(typeData.type, this);
+                if (modelOrCollection) {
+                    if (!modelOrCollection.off || !modelOrCollection.on) {
+                        console.error('the model/collection does not implement on/off functions - you will see problems');
+                        console.log(modelOrCollection);
+                    }
+                }
+                return {};
+            },
+
+            componentWillReceiveProps: function(props) {
+                // watch for model or collection changes by property so it can be un/rebound
+                var preModelOrCollection = getModelOrCollection(typeData.type, this);
+                var postModelOrCollection = getModelOrCollection(typeData.type, this, props);
+                if (preModelOrCollection !== postModelOrCollection) {
+                    this['set' + typeData.capType](postModelOrCollection, true);
+                }
+            },
+        };
+        typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
+            modelOrCollectionnOrOnce(typeData.type, 'on', arguments, this);
+        };
+        typeEvents[typeData.type + 'Once'] = function( /* ev, callback, context */ ) {
+            modelOrCollectionnOrOnce(typeData.type, 'once', arguments, this);
+        };
+        typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
+            var modelEvents = getModelAndCollectionEvents(this);
+            delete modelEvents[ev];
+            this.stopListening(targetModelOrCollection(typeData.type, this, _modelOrCollection), ev, callback, context);
+        };
+        React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
+
+        /**
+         * Mixin used to force render any time the model has changed
+         */
+        var changeAware = {
+            getInitialState: function() {
+                _.each(typeData.changeEvents, function(eventName) {
+                    this[typeData.type + 'On'](eventName, function() {
+                        this.deferUpdate();
+                    }, this);
+                }, this);
+            }
+        };
+        React.mixins.add(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
+
+        // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
+
+        var xhrFactory = {
+            getInitialState: function(keys, self) {
+                function whenXHRActivityHappens(xhrEvents) {
+                    var modelOrCollection = getModelOrCollection(typeData.type, self);
+                    pushLoadingState(xhrEvents, modelOrCollection, self);
+                }
+
+                if (!keys) {
+                    self[typeData.type + 'On'](xhrEventName, function(method, xhrEvents) {
+                        whenXHRActivityHappens(xhrEvents);
+                    });
+                } else {
+                    modelOrCollectionEventHandler(typeData.type, keys, self, xhrEventName + ':{key}', whenXHRActivityHappens);
+                }
+                return {};
+            },
+
+            componentWillMount: function(keys, self) {
+                // make sure the model didn't get into a non-loading state before mounting
+                var modelOrCollection = getModelOrCollection(typeData.type, self);
+                if (modelOrCollection) {
+                    // we may bind an extra for any getInitialState bindings but
+                    // the cleanup logic will deal with duplicate bindings
+                    if (!keys) {
+                        joinCurrentModelActivity(keys, modelOrCollection, self);
+                    } else {
+                        var _keys = _.isArray(keys) ? keys : self.props[keys];
+                        if (!_keys) {
+                            return;
+                        } else if (!_.isArray(_keys)) {
+                            _keys = [_keys];
+                        }
+                        _.each(_keys, function(key) {
+                            joinCurrentModelActivity(key, modelOrCollection, self);
+                        });
+                    }
+                }
+            }
+        };
+
+        /**
+         * If the model executes *any* XHR activity, the internal state "loading" attribute
+         * will be set to true and, if an error occurs with loading, the "error" state attribute
+         * will be set with the error contents
+         */
+        var xhrAware = {
+            getInitialState: function() {
+                return xhrFactory.getInitialState(undefined, this);
+            },
+
+            componentWillMount: function() {
+                return xhrFactory.componentWillMount(undefined, this);
+            }
+        };
+        React.mixins.add(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
+
+        /**
+         * Gives any comonent the ability to mark the "loading" attribute in the state as true
+         * when any async event of the given type (defined by the "key" property) occurs.
+         */
+        var loadOn = function() {
+            var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+            return {
+                getInitialState: function() {
+                    return xhrFactory.getInitialState(keys || 'loadOn', this);
+                },
+
+                componentWillMount: function() {
+                    return xhrFactory.componentWillMount(keys || 'loadOn', this);
+                }
+            };
+        };
+        React.mixins.add(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
+
+        /**
+         * Gives any comonent the ability to force an update when an event is fired
+         */
+        var updateOn = function() {
+            var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
+            return {
+                getInitialState: function() {
+                    modelOrCollectionEventHandler(typeData.type, keys || 'updateOn', this, '{key}', function() {
+                        this.deferUpdate();
+                    });
+                }
+            };
+        };
+        React.mixins.add(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
+
+        /**
+         * Support the "model:{event name}" event, for example:
+         * events {
+         *   'model:something-happened': 'onSomethingHappened'
+         * }
+         * ...
+         * onSomethingHappened: function() { ... }
+         *
+         * When using these model events, you *must* include the "model/collectionEvents" mixin
+         */
+        var _modelOrCollctionPattern = new RegExp('^' + typeData.type + '(\\[.+\\])?$');
+        React.events.handle(_modelOrCollctionPattern, function(options, callback) {
+            return {
+                on: function() {
+                    if (!this[typeData.type + 'On']) {
+                        throw new Error('use the ' + typeData.type + ' "Events" mixin instead of "events"');
+                    }
+                    this[typeData.type + 'On'](options.path, callback);
+                },
+                off: function() { /* NOP, modelOn will clean up */ }
+            };
+        });
+
+    });
+
+    // add helper methods to include both model and collection mixins using a single mixin
+    _.each({
+        'XHRAware': 'XHRAware',
+        'changeAware': 'ChangeAware',
+        'loadOn': 'LoadOn',
+        'updateOn': 'UpdateOn'
+    }, function(modelCollectionSuffix, mixinName) {
+        React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+    });
+
+    /**
+     * Iterate through the provided list of components (or use this.refs if components were not provided) and
+     * return a set of attributes.  If a callback is provided as the 2nd parameter and this component includes
+     * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
+     */
+    React.mixins.add('modelPopulate', {
+        modelPopulate: function() {
+            var components, callback, options, model, drillDown;
+            // determine the function args
+            _.each(arguments, function(value) {
+                if (value instanceof Backbone.Model) {
+                    model = value;
+                } else if (_.isBoolean(value)) {
+                    drillDown = true;
+                    model = false;
+                } else if (_.isArray(value)) {
+                    components = value;
+                } else if (_.isFunction(value)) {
+                    callback = value;
+                } else {
+                    options = value;
+                }
+            });
+            if (_.isUndefined(model) && this.getModel) {
+                model = this.getModel();
+            }
+
+            var attributes = {};
+            if (!components) {
+                // if not components were provided, use "refs" (http://facebook.github.io/react/docs/more-about-refs.html)
+                components = _.map(this.refs, function(value) {
+                    return value;
+                });
+            }
+
+            _.each(components, function(component) {
+                // the component *must* implement getValue or modelPopulate to participate
+                if (component.getValue) {
+                    var key = getKey(component);
+                    if (key) {
+                        var value = component.getValue();
+                        attributes[key] = value;
+                    }
+                } else if (component.modelPopulate && component.getModel) {
+                    if (!model && !drillDown) {
+                        // if we aren't populating to models, this is not necessary
+                        return;
+                    }
+                    var _model = component.getModel();
+                    var testModel = model || (options && options.populateModel);
+                    if (_model === testModel) {
+                        var _attributes = component.modelPopulate(_.extend({
+                            populateModel: testModel
+                        }, options), true);
+                        _.defaults(attributes, _attributes);
+                    }
+                }
+            });
+
+            if (model) {
+                if (model.set(attributes, {
+                        validate: true
+                    })) {
+                    callback.call(this, model);
+                }
+            }
+
+            return attributes;
+        }
+    }, 'modelAware');
+
+    /**
+     * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
+     * the state once the callback has completed
+     */
+    React.mixins.add('loadWhile', {
+        loadWhile: function(options) {
+            options = options || {};
+            var self = this;
+
+            function wrap(type) {
+                var _callback = options[type];
+                options[type] = function() {
+                    setState({
+                        loading: false
+                    }, self);
+                    if (_callback) {
+                        _callback.apply(this, arguments);
+                    }
+                };
+            }
+            wrap('error');
+            wrap('success');
+            setState({
+                loading: true
+            }, this);
+            return options;
+        }
+    });
+
+    /**
+     * Expose a "modelValidate(attributes, options)" method which will run the backbone model validation
+     * against the provided attributes.  If invalid, a truthy value will be returned containing the
+     * validation errors.
+     */
+    React.mixins.add('modelValidator', {
+        modelValidate: function(attributes, options) {
+            var model = this.getModel();
+            if (model && model.validate) {
+                return modelIndexErrors(model.validate(attributes, options), this) || false;
+            }
+        }
+    }, 'modelAware');
+
+    /**
+     * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
+     * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
+     * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
+     */
+    React.mixins.add('modelInvalidAware', {
+        getInitialState: function() {
+            var key = getKey(this);
+            if (key) {
+                this.modelOn('invalid', function(model, errors) {
+                    var _errors = modelIndexErrors(errors, this) || {};
+                    var message = _errors && _errors[key];
+                    if (message) {
+                        setState({
+                            invalid: message
+                        }, this);
+                    }
+                });
+            }
+            return {};
+        }
+    }, 'modelEvents');
+
+    var specials = React.events.specials;
+    if (specials) {
+        // add underscore wrapped special event handlers
+        var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
+        _.each(reactEventSpecials, function(name) {
+            specials[name] = specials[name] || function(callback, args) {
+                args = parseArgs(args);
+                args.splice(0, 0, callback);
+                return _[name].apply(_, args);
+            };
+        });
+    }
+
+    // Standard input components that implement react-backbone model awareness
+    var _inputClass = function(type, attributes, isCheckable, classAttributes) {
+        return React.createClass(_.extend({
+            mixins: ['modelAware'],
+            render: function() {
+                var props = {};
+                var defaultValue = getModelValue(this);
+                if (isCheckable) {
+                    props.defaultChecked = defaultValue;
+                } else {
+                    props.defaultValue = defaultValue;
+                }
+                return React.DOM[type](_.extend(props, attributes, this.props), this.props.children);
+            },
+            getValue: function() {
+                if (this.isMounted()) {
+                    if (isCheckable) {
+                        var el = this.getDOMNode();
+                        return (el.checked && (el.value || true)) || false;
+                    } else {
+                        return $(this.getDOMNode()).val();
+                    }
+                }
+            },
+            getDOMValue: function() {
+                if (this.isMounted()) {
+                    return $(this.getDOMNode()).val();
+                }
+            }
+        }, classAttributes));
+    };
+
+    Backbone.input = Backbone.input || {};
+    _.defaults(Backbone.input, {
+        Text: _inputClass('input', {
+            type: 'text'
+        }),
+        TextArea: _inputClass('textarea'),
+        Select: _inputClass('select', undefined, undefined),
+        CheckBox: _inputClass('input', {
+            type: 'checkbox'
+        }, true),
+        RadioGroup: React.createClass({
+            render: function() {
+                var props = this.props;
+                props.ref = 'input';
+                return React.DOM[props.tag || 'span'](props, props.children);
+            },
+            componentDidMount: function() {
+                // select the appropriate radio button
+                var value = getModelValue(this);
+                if (value) {
+                    var selector = 'input[value="' + value.replace('"', '\\"') + '"]';
+                    var el = $(this.getDOMNode()).find(selector);
+                    el.attr('checked', 'checked');
+                }
+            },
+            getValue: function() {
+                if (this.isMounted()) {
+                    var selector = 'input[type="radio"]';
+                    var els = $(this.getDOMNode()).find(selector);
+                    for (var i = 0; i < els.length; i++) {
+                        if (els[i].checked) {
+                            return els[i].value;
+                        }
+                    }
+                }
+            },
+            getDOMValue: function() {
+                if (this.isMounted()) {
+                    return $(this.getDOMNode()).val();
+                }
+            }
+        })
+    });
+  
 })();
 
 });

@@ -261,6 +261,11 @@
             return model.get(key);
         });
     };
+    Backbone.input.setModelValue = function(component, value, options) {
+        return ifModelAndKey(component, function(key, model) {
+            return model.set(key, value, options);
+        });
+    };
 
     // create mixins that are duplicated for both models and collections
     _.each([{
@@ -542,8 +547,8 @@
 
             if (model) {
                 if (model.set(attributes, {
-                        validate: true
-                    })) {
+                    validate: true
+                })) {
                     callback.call(this, model);
                 }
             }
@@ -616,7 +621,7 @@
             }
             return {};
         }
-    }, 'modelEventAware');
+    }, 'modelEvents');
 
     var specials = React.events.specials;
     if (specials) {
