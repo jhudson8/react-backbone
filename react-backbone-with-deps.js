@@ -25,10 +25,10 @@
 
 /*
   Container script which includes the following:
-  https://github.com/jhudson8/backbone-xhr-events v0.9.2
-  https://github.com/jhudson8/react-mixin-manager v0.9.2
-  https://github.com/jhudson8/react-events v0.7.7
-  https://github.com/jhudson8/react-backbone v0.14.2
+    jhudson8/backbone-xhr-events 0.9.4
+    jhudson8/react-mixin-manager 0.9.3
+    jhudson8/react-events 0.7.8
+    jhudson8/react-backbone 0.14.2
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -51,11 +51,8 @@
 })(function(React, Backbone, _) {
 
 
+// jhudson8/backbone-xhr-events
 (function() {
-/*******************
- * backbone-xhr-events
- * https://github.com/jhudson8/backbone-xhr-events
-********************/
 
   // ANY OVERRIDES MUST BE DEFINED BEFORE LOADING OF THIS SCRIPT
   // Backbone.xhrCompleteEventName: event triggered on models when all XHR requests have been completed
@@ -146,7 +143,8 @@
   }
 
   // forward all or some XHR events from the source object to the dest object
-  Backbone.forwardXhrEvents = function (source, dest, typeOrCallback) {
+  // FIXME remove humpback case names after next minor release
+  Backbone.forwardXhrEvents = Backbone.forwardXHREvents = function (source, dest, typeOrCallback) {
     var handler = handleForwardedEvents(!_.isFunction(typeOrCallback) && typeOrCallback);
     if (_.isFunction(typeOrCallback)) {
       // forward the events *only* while the function is executing wile keeping "this" as the context
@@ -162,7 +160,8 @@
     }
   }
 
-  Backbone.stopXhrForwarding = function (source, dest, type) {
+  // FIXME remove humpback case names after next minor release
+  Backbone.stopXhrForwarding = Backbone.stopXHRForwarding = function (source, dest, type) {
     var handler = handleForwardedEvents(type),
       eventName = type ? (xhrEventName + ':') + type : xhrEventName;
     source.off(xhrEventName, handler, dest);
@@ -292,17 +291,11 @@
     }
   });
 
-/*******************
- * end of backbone-xhr-events
-********************/
 })();
 
 
+// jhudson8/react-mixin-manager
 (function() {
-/*******************
- * react-mixin-manager
- * https://github.com/jhudson8/react-mixin-manager
-********************/
 
   var _dependsOn = {};
   var _dependsInjected = {};
@@ -466,7 +459,9 @@
     if (!override && _mixins[name]) {
       return;
     }
-    _dependsOn[name] = depends.length && depends;
+    if (depends.length) {
+      _dependsOn[name] = depends;
+    }
     _mixins[name] = mixin;
 
     if (initiatedOnce) {
@@ -610,18 +605,11 @@
   React.mixins.setState = setState;
   React.mixins.getState = getState;
 
-/*******************
- * end of react-mixin-manager
-********************/
 })();
 
 
-
+// jhudson8/react-events
 (function() {
-/*******************
- * react-events
- * https://github.com/jhudson8/react-events
-********************/
 
   var handlers = {},
     patternHandlers = [],
@@ -1152,17 +1140,11 @@
     }
   });
 
-/*******************
- * end of react-events
-********************/
 })();
 
 
+// jhudson8/react-backbone
 (function() {
-/*******************
- * react-backbone
- * https://github.com/jhudson8/react-backbone
-********************/
 
   // create local references to existing vars
   var xhrEventName = Backbone.xhrEventName;
@@ -1851,9 +1833,6 @@
     })
   });
 
-/*******************
- * end of react-backbone
-********************/
 })();
 
 });
