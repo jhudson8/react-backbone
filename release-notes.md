@@ -2,7 +2,14 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.3...master)
+
+## v0.14.3 - December 11th, 2014
+- update dependencies (patch releases) - b2411a6
+- code cleanup - 83dad97
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.2...v0.14.3)
 
 ## v0.14.2 - December 9th, 2014
 - keep track of monitored xhr activity as state truthy value - 7bf735c
