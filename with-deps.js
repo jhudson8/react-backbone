@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.9.5
     jhudson8/react-mixin-manager 0.9.4
     jhudson8/react-events 0.7.9
-    jhudson8/react-backbone 0.14.2
+    jhudson8/react-backbone 0.14.3
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1384,6 +1384,11 @@
             return model.get(key);
         });
     };
+    Backbone.input.setModelValue = function(component, value, options) {
+        return ifModelAndKey(component, function(key, model) {
+            return model.set(key, value, options);
+        });
+    };
 
     // create mixins that are duplicated for both models and collections
     _.each([{
@@ -1665,8 +1670,8 @@
 
             if (model) {
                 if (model.set(attributes, {
-                        validate: true
-                    })) {
+                    validate: true
+                })) {
                     callback.call(this, model);
                 }
             }
