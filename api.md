@@ -80,6 +80,14 @@ Low level backbone model-aware input components are provided.  These will
 * set the correct value from the model if the *name* property matches the model attribute to be used
 * contribute to [modelPopulate](#snippet/package/modelPopulate)
 
+Each input component also has the following methods
+* getValue: returns the input field value as it should be set on the model
+* getDOMValue: returns the actual value attribute of the input field
+
+In most cases, ```getValue``` and ```getDOMValue``` are the same.  But, for checkboxes, ```getValue``` will return an actual boolean representing whether the field is checked or not and ```getDOMValue``` will return the html ```value``` attribute.
+
+The ```name``` property should be used on input components representing the model key the field should be initialized with (and what attribute key to use with modelPopulate).
+
 This simple example shows how to use these components to get and set the model appropriately
 
 ```
