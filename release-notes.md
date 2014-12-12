@@ -2,7 +2,26 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.15.0...master)
+
+## v0.15.0 - December 12th, 2014
+- null check on modelPopulate callback - 8362f80
+- requre jquery as last factory param - 6db6460
+- rename composite mixins to use a "backbone" prefix - 0f9fc42
+
+Compatibility notes:
+If you are using the input components (Backbone.input) you must add the jquery as an additional argument to the react-backbone method (see install instructions for details)
+```
+require('react-backbone')(React, Backbone, _, $);
+```
+
+The following mixin names have changed
+"XHRAware" is now "backboneXHRAware"
+"changeAware" is now "backboneChangeAware"
+"loadOn" is now "backboneLoadOn"
+"updateOn" is now "backboneUpdateOn"
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.14.3...v0.15.0)
 
 ## v0.14.3 - December 11th, 2014
 - update dependencies (patch releases) - b2411a6
