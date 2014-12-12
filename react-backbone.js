@@ -544,7 +544,9 @@
                 if (model.set(attributes, {
                     validate: true
                 })) {
-                    callback.call(this, model);
+                    if (callback) {
+                        callback.call(this, model);
+                    }
                 }
             }
 
