@@ -81,6 +81,7 @@ Low level backbone model-aware input components are provided.  These will
 * contribute to [modelPopulate](#snippet/package/modelPopulate)
 
 Each input component also has the following methods
+
 * getValue: returns the input field value as it should be set on the model
 * getDOMValue: returns the actual value attribute of the input field
 
