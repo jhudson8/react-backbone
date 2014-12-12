@@ -35,20 +35,20 @@
     define([], function() {
       // with AMD
       //  require(
-      //    ['react', 'backbone', 'underscore', react-backbone/with-deps'],
-      //    function(React, Backbone, underscore, reactBackbone) {
-      //      reactBackbone(React, Backbone, _); 
+      //    ['react', 'backbone', 'underscore', 'jquery', react-backbone/with-deps'],
+      //    function(React, Backbone, underscore, $, reactBackbone) {
+      //      reactBackbone(React, Backbone, _, $); 
       //  });
       return main;
     });
   } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
     // with CommonJS
-    // require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'));
+    // require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'), require('jquery'));
     module.exports = main;
   } else {
-    main(React, Backbone, _);
+    main(React, Backbone, _, $);
   }
-})(function(React, Backbone, _) {
+})(function(React, Backbone, _, $) {
 
 
 // jhudson8/backbone-xhr-events
@@ -1600,13 +1600,8 @@
     });
 
     // add helper methods to include both model and collection mixins using a single mixin
-    _.each({
-        'XHRAware': 'XHRAware',
-        'changeAware': 'ChangeAware',
-        'loadOn': 'LoadOn',
-        'updateOn': 'UpdateOn'
-    }, function(modelCollectionSuffix, mixinName) {
-        React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+    _.each(['XHRAware', 'ChangeAware', 'LoadOn', 'UpdateOn'], function(mixinKey) {
+        React.mixins.alias('backbone' + mixinKey, 'model' + mixinKey, 'collection' + mixinKey);
     });
 
     /**
@@ -1672,7 +1667,9 @@
                 if (model.set(attributes, {
                     validate: true
                 })) {
-                    callback.call(this, model);
+                    if (callback) {
+                        callback.call(this, model);
+                    }
                 }
             }
 
