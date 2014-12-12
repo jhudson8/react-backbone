@@ -39,35 +39,36 @@ or separate
 #### CommonJS
 with dependencies together
 ```
-require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'));
+require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'), require('jquery'));
 ```
 or separate
 ```
+var $ = require('jquery');
 var React = require('react');
 var Backbone = require('backbone');
 var _ = require('underscore');
 require('react-mixin-manager')(React);
 require('react-events')(React);
-require('react-backbone')(React, Backbone, _);
+require('react-backbone')(React, Backbone, _, $);
 ```
 
 #### AMD
 with dependencies together
 ```
 require(
-  ['react', 'backbone', 'underscore', react-backbone/with-deps'],
-  function(React, Backbone, underscore, reactBackbone) {
-    reactBackbone(React, Backbone, _); 
+  ['react', 'backbone', 'underscore', 'jquery', react-backbone/with-deps'],
+  function(React, Backbone, _, $, reactBackbone) {
+    reactBackbone(React, Backbone, _, $); 
 });
 ```
 or separate
 ```
 require(
-  ['react', 'backbone', 'underscore', 'react-mixin-manager', 'react-events', 'react-backbone'],
-  function(React, Backbone, _, reactMixinManager, reactEvents, reactBackbone) {
+  ['react', 'backbone', 'underscore', 'jquery', 'react-mixin-manager', 'react-events', 'react-backbone'],
+  function(React, Backbone, _, $, reactMixinManager, reactEvents, reactBackbone) {
     reactMixinManager(React); 
     reactEvents(React); 
-    reactBackbone(React, Backbone, _); 
+    reactBackbone(React, Backbone, _, $); 
 });
 ```
 

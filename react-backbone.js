@@ -27,19 +27,19 @@
         define([], function() {
             // with AMD
             //  require(
-            //    ['react', 'backbone', 'underscore', 'react-backbone'], function(React, Backbone, _, reactBackbone) {
-            //    reactBackbone(React, Backbone, _); 
+            //    ['react', 'backbone', 'underscore', 'jquery', react-backbone'], function(React, Backbone, _, $, reactBackbone) {
+            //    reactBackbone(React, Backbone, _, $); 
             //  });
             return main;
         });
     } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
         // with CommonJS
-        // require('react-backbone')(require('react'), require('backbone'), require('underscore'));
+        // require('react-backbone')(require('react'), require('backbone'), require('underscore')), require('jquery'));
         module.exports = main;
     } else {
-        main(React, Backbone, _);
+        main(React, Backbone, _, $);
     }
-})(function(React, Backbone, _) {
+})(function(React, Backbone, _, $) {
 
     // main body start
     // create local references to existing vars
