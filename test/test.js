@@ -516,7 +516,7 @@ describe('react-backbone', function() {
     });
   });
 
-  describe('changeAware', function() {
+  describe('backboneChangeAware', function() {
     var clock;
     beforeEach(function() {
       clock = sinon.useFakeTimers();
@@ -528,7 +528,7 @@ describe('react-backbone', function() {
     it('should work with both model and collection change events', function() {
       var model = new Backbone.Model(),
           collection = new Collection(),
-          obj = newComponent({props: {model: model, collection: collection}}, ['changeAware']),
+          obj = newComponent({props: {model: model, collection: collection}}, ['backboneChangeAware']),
           spy = sinon.spy();
       obj.forceUpdate = spy;
 
@@ -601,7 +601,7 @@ describe('react-backbone', function() {
   });
 
 
-  describe('modelUpdateOn', function() {
+  describe('backboneUpdateOn', function() {
     var clock;
     beforeEach(function() {
       clock = sinon.useFakeTimers();
@@ -613,7 +613,7 @@ describe('react-backbone', function() {
     it('should work for models and collections', function() {
       var model = new Backbone.Model(),
           collection = new Backbone.Collection(),
-          obj = newComponent({props: {model: model, collection: collection, updateOn: 'foo'}}, ['updateOn']),
+          obj = newComponent({props: {model: model, collection: collection, updateOn: 'foo'}}, ['backboneUpdateOn']),
           spy = sinon.spy();
       obj.forceUpdate = spy;
 
@@ -744,11 +744,11 @@ describe('react-backbone', function() {
 
   // THE FOLLING TESTS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
-  describe('modelLoadOn', function() {
+  describe('backboneLoadOn', function() {
     it('should loadOn with models and collections', function() {
       var model = new Backbone.Model(),
           collection = new Backbone.Collection(),
-          obj = newComponent({props: {model: model, collection: collection, loadOn: 'foo'}}, ['loadOn']);
+          obj = newComponent({props: {model: model, collection: collection, loadOn: 'foo'}}, ['backboneLoadOn']);
 
       obj.mount();
       Backbone.sync('foo', model, {url: 'foo'});
@@ -930,11 +930,11 @@ describe('react-backbone', function() {
   });
 
 
-  describe('XHRAware', function() {
+  describe('backboneXHRAware', function() {
     it('should include modelXHRAware and collectionXHRAware', function() {
       var model = new Backbone.Model(),
           collection = new Backbone.Collection(),
-          obj = newComponent({props: {model: model, collection: collection}}, ['XHRAware']);
+          obj = newComponent({props: {model: model, collection: collection}}, ['backboneXHRAware']);
       obj.mount();
 
       expect(obj.setState.callCount).to.eql(0);
@@ -957,7 +957,7 @@ describe('react-backbone', function() {
     it('should keep track of multiple requests and loading: false should only appear when all are done', function() {
       var model = new Backbone.Model(),
           collection = new Backbone.Collection(),
-          obj = newComponent({props: {model: model, collection: collection}}, ['XHRAware']);
+          obj = newComponent({props: {model: model, collection: collection}}, ['backboneXHRAware']);
       obj.mount();
 
       expect(obj.setState.callCount).to.eql(0);

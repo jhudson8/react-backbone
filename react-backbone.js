@@ -477,13 +477,8 @@
     });
 
     // add helper methods to include both model and collection mixins using a single mixin
-    _.each({
-        'XHRAware': 'XHRAware',
-        'changeAware': 'ChangeAware',
-        'loadOn': 'LoadOn',
-        'updateOn': 'UpdateOn'
-    }, function(modelCollectionSuffix, mixinName) {
-        React.mixins.alias(mixinName, 'model' + modelCollectionSuffix, 'collection' + modelCollectionSuffix);
+    _.each(['XHRAware', 'ChangeAware', 'LoadOn', 'UpdateOn'], function(mixinKey) {
+        React.mixins.alias('backbone' + mixinKey, 'model' + mixinKey, 'collection' + mixinKey);
     });
 
     /**
