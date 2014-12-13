@@ -516,9 +516,7 @@ When these occur, normalize the error payload using ```React.mixins.modelIndexEr
 
 
 ### backboneChangeAware
-*depends on modelChangeAware and collectionChangeAware*
-
-Convienance mixin to include the ```modelChangeAware``` and ```collectionChangeAware``` mixins.  Refer to those mixins for more details.
+Convienance mixin to include the [modelChangeAware](#snippet/package/modelChangeAware) and [collectionChangeAware](#snippet/package/collectionChangeAware) mixins.  Refer to those mixins for more details.
 
 
 ### modelChangeAware
@@ -536,9 +534,7 @@ If you want to force a render only on specific collection events, see *collectio
 
 
 ### backboneUpdateOn
-*depends on modelUpdateOn and collectionUpdateOn*
-
-Convienance mixin to include the ```modelUpdateOn``` and ```collectionUpdateOn``` mixins.  Refer to those mixins for more details.
+Convienance mixin to include the [modelUpdateOn](#snippet/package/modelUpdateOn) and [collectionUpdateOn](#snippet/package/collectionUpdateOn) mixins.  Refer to those mixins for more details.
 
 
 ### modelUpdateOn
@@ -622,9 +618,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 
 
 ### backboneLoadOn
-*depends on modelLoadOn and collectionLoadOn*
-
-Convienance mixin to include the ```modelLoadOn``` and ```collectionLoadOn``` mixins.  Refer to those mixins for more details.
+Convienance mixin to include the [modelLoadOn](#snippet/package/modelLoadOn) and [collectionLoadOn](#snippet/package/collectionLoadOn) mixins.  Refer to those mixins for more details.
 
 
 ### modelLoadOn
@@ -725,9 +719,7 @@ Set the state of the component with ```{loading: true}``` when this method is ex
 
 
 ### backboneXHRAware
-*depends on modelXHRAware and collectionXHRAware*
-
-Convienance mixin to include the ```modelXHRAware``` and ```collectionXHRAware``` mixins.  Refer to those mixins for more details.
+Convienance mixin to include the [modelXHRAware](#snippet/package/modelXHRAware) and [collectionXHRAware](#snippet/package/collectionXHRAware) mixins.  Refer to those mixins for more details.
 
 
 ### modelXHRAware
