@@ -304,7 +304,7 @@ Associate the collection with the current React component which can be retrieved
 
 
 ### modelPopulate
-*depends on modelAware*
+*depends on [modelAware](#snippet/package/modelAware)*
 
 Utility mixin used to iterate child components and have their associated value set on a Backbone.Model.
 
@@ -482,7 +482,7 @@ Remove the provided collectionOn / collectionOnce event bindings.
 
 
 ### modelValidator
-*depends on modelAware*
+*depends on [modelAware](#snippet/package/modelAware)*
 
 #### modelValidate(attributes, options)
 * ***attributes***: the model attributes
@@ -492,7 +492,7 @@ Remove the provided collectionOn / collectionOnce event bindings.
 
 
 ### modelInvalidAware
-*depends on modelEvents*
+*depends on [modelEvents](#snippet/package/modelEvents)*
 
 Allow components to be aware of field specific validation errors.  The ```name``` property must be provide to tell this mixin which model attribute to listen to for ```invalid``` events.  When the event is triggered, the ```invalid``` state attribute will be set as the error message provided to the ```invalid``` event.  The state will not be unset by this mixin (as there is no ```valid``` model event).
 
@@ -520,14 +520,14 @@ Convienance mixin to include the [modelChangeAware](#snippet/package/modelChange
 
 
 ### modelChangeAware
-*depends on modelEvents*
+*depends on [modelEvents](#snippet/package/modelEvents)*
 
 Will force a render if the associated model fires the "change" event.
 If you want to force a render only on specific model events, see [modelUpdateOn](#snippet/package/modelUpdateOn).
 
 
 ### collectionChangeAware
-*depends on modelEvents*
+*depends on [modelEvents](#snippet/package/modelEvents)*
 
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
 If you want to force a render only on specific collection events, see [collectionUpdateOn](#snippet/package/collectionUpdateOn).
@@ -538,7 +538,7 @@ Convienance mixin to include the [modelUpdateOn](#snippet/package/modelUpdateOn)
 
 
 ### modelUpdateOn
-*depends on modelEvents*
+*depends on [modelEvents](#snippet/package/modelEvents)*
 
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
@@ -578,7 +578,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 
 
 ### collectionUpdateOn
-*depends on modelEvents*
+*depends on [modelEvents](#snippet/package/modelEvents)*
 
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
