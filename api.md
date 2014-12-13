@@ -523,14 +523,14 @@ Convienance mixin to include the [modelChangeAware](#snippet/package/modelChange
 *depends on modelEvents*
 
 Will force a render if the associated model fires the "change" event.
-If you want to force a render only on specific model events, see *modelUpdateOn*.
+If you want to force a render only on specific model events, see [modelUpdateOn](#snippet/package/modelUpdateOn).
 
 
 ### collectionChangeAware
 *depends on modelEvents*
 
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
-If you want to force a render only on specific collection events, see *collectionUpdateOn*.
+If you want to force a render only on specific collection events, see [collectionUpdateOn](#snippet/package/collectionUpdateOn).
 
 
 ### backboneUpdateOn
