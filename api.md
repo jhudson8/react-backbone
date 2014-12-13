@@ -20,16 +20,12 @@ Installation
 #### Browser:
 with dependencies together
 ```
-<script src=".../react[-min].js"></script>
-<script src=".../underscore[-min].js"></script>
-<script src=".../backbone[-min].js"></script>
+... include jquery, backbone, underscore, react ...
 <script src=".../react-backbone-with-deps[-min].js"></script>
 ```
 or separate
 ```
-<script src=".../react[-min].js"></script>
-<script src=".../underscore[-min].js"></script>
-<script src=".../backbone[-min].js"></script>
+... include jquery, backbone, underscore, react ...
 <script src=".../react-mixin-manager[-min].js"></script>
 <script src=".../react-events[-min].js"></script>
 <script src=".../backbone-xhr-events[-min].js"></script> (optional)
@@ -39,14 +35,20 @@ or separate
 #### CommonJS
 with dependencies together
 ```
-require('react-backbone/with-deps')(require('react'), require('backbone'), require('underscore'), require('jquery'));
+var React = require('react');
+var _ = require('underscore');
+var Backbone = require('backbone');
+var $ = require('jquery');
+
+require('react-backbone/with-deps')(React, Backbone, _, $);
 ```
 or separate
 ```
-var $ = require('jquery');
 var React = require('react');
-var Backbone = require('backbone');
 var _ = require('underscore');
+var Backbone = require('backbone');
+var $ = require('jquery');
+
 require('react-mixin-manager')(React);
 require('react-events')(React);
 require('react-backbone')(React, Backbone, _, $);
@@ -553,9 +555,9 @@ Listen to a specific event (or array of events).  When this event is fired, the 
       ...
     });
     ...
-    new MyComponent({updateOn: 'foo'});
+    <MyComponent updateOn="foo" model={myModel}/>
     // or
-    new MyComponent({updateOn: ['foo', 'bar']});
+    <MyComponent updateOn{['foo', 'bar']} model={myModel}/>
 ```
 
 * when the child/declaring component provides the event name(s) as mixin parameters*
@@ -568,7 +570,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
     // equivalent to
 
     var MyComponent = React.createClass({
-      mixins: ['events'],
+      mixins: ['modelEvents'],
 
       events: {
         model: {
@@ -593,9 +595,9 @@ Listen to a specific event (or array of events).  When this event is fired, the 
       ...
     });
     ...
-    new MyComponent({updateOn: 'foo'});
+    <MyComponent updateOn="foo" collection={myCollection}/>
     // or
-    new MyComponent({updateOn: ['foo', 'bar']});
+    <MyComponent updateOn{['foo', 'bar']} collection={myCollection}/>
 ```
 
 * when the child/declaring component provides the event name(s) as mixin parameters*
@@ -608,10 +610,10 @@ Listen to a specific event (or array of events).  When this event is fired, the 
     // equivalent to
 
     var MyComponent = React.createClass({
-      mixins: ['events'],
+      mixins: ['collectionEvents'],
 
       events: {
-        model: {
+        collection: {
           foo: 'forceUpdate',
           bar: 'forceUpdate'
         }
@@ -650,9 +652,9 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
       }
     });
     ...
-    new MyComponent({loadOn: 'read'});
+    <MyComponent loadOn="read" model={myModel}/>
     // or
-    new MyComponent({loadOn: ['read', 'update']});
+    <MyComponent loadOn={['read', 'update']} model={myModel}/>
 ```
 
 When the XHR event name(s) are statically defined by the owning component
@@ -689,9 +691,9 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
       }
     });
     ...
-    new MyComponent({loadOn: 'read'});
+    <MyComponent loadOn="read" collection={myCollection}/>
     // or
-    new MyComponent({loadOn: ['read', 'update']});
+    <MyComponent loadOn={['read', 'update']} collection={myCollection}/>
 ```
 
 When the XHR event name(s) are statically defined by the owning component
