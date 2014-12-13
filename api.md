@@ -346,6 +346,8 @@ If a model is provided, the attributes will be set on it as long as they pass mo
 
 
 ### modelEvents
+*depends on [modelAware](#snippet/package/modelAware), [listen](#snippet/package/listen), [events](#snippet/package/events)*
+
 Utility mixin to support declarative model event bindings as well as expose managed model binding functions which are cleaned up when the component is unmounted.
 
 This mixin should be included (instead of the "events" mixin) if any declarative model event bindings are used.
@@ -414,6 +416,8 @@ Remove the provided modelOn / modelOnce event bindings.
 
 
 ### collectionEvents
+*depends on [collectionAware](#snippet/package/collectionAware), [listen](#snippet/package/listen), [events](#snippet/package/events)*
+
 Utility mixin to support declarative collection event bindings as well as expose managed collection binding functions which are cleaned up when the component is unmounted.
 
 This mixin should be included (instead of the "events" mixin) if any declarative collection event bindings are used.
@@ -527,7 +531,7 @@ If you want to force a render only on specific model events, see [modelUpdateOn]
 
 
 ### collectionChangeAware
-*depends on [modelEvents](#snippet/package/modelEvents)*
+*depends on [collectionEvents](#snippet/package/collectionEvents)*
 
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
 If you want to force a render only on specific collection events, see [collectionUpdateOn](#snippet/package/collectionUpdateOn).
@@ -622,7 +626,7 @@ Convienance mixin to include the [modelLoadOn](#snippet/package/modelLoadOn) and
 
 
 ### modelLoadOn
-*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [modelEvents](#snippet/package/modelEvents)*
 
 Gives any comonent the ability to listen to a specific async event(s).
 
@@ -661,7 +665,7 @@ When the XHR event name(s) are statically defined by the owning component
 
 
 ### collectionLoadOn
-*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [collectionEvents](#snippet/package/collectionEvents)*
 
 Gives any comonent the ability to listen to a specific async event(s).
 
@@ -723,7 +727,7 @@ Convienance mixin to include the [modelXHRAware](#snippet/package/modelXHRAware)
 
 
 ### modelXHRAware
-*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [modelEvents](#snippet/package/modelEvents)*
 
 Gives any comonent the ability to listen to ***all*** async events.
 
@@ -747,7 +751,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 
 
 ### collectionXHRAware
-*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)*
+*depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [collectionEvents](#snippet/package/collectionEvents)*
 
 Gives any comonent the ability to listen to ***all*** async events.
 
