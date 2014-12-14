@@ -831,6 +831,8 @@ And the collection that is bound to the component (using the ```collection``` pr
 
 
 ### *memoize
+*include the [events](#snippet/package/events) mixin*
+
 Memoizes a given function by caching the computed result.  see [_.memoize](http://underscorejs.org/#memoize) for more details
 
 ```
@@ -840,6 +842,8 @@ events: {
 ```
 
 ### *delay
+*include the [events](#snippet/package/events) mixin*
+
 Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/#delay) for more details
 
 ```
@@ -849,6 +853,8 @@ events: {
 ```
 
 ### *defer
+*include the [events](#snippet/package/events) mixin*
+
 Defers invoking the function until the current call stack has cleared.  see [_.defer](http://underscorejs.org/#defer) for more details
 
 ```
@@ -859,6 +865,8 @@ events: {
 
 
 ### *throttle
+*include the [events](#snippet/package/events) mixin*
+
 Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds.  see [_.throttle](http://underscorejs.org/#throttle) for more details
 
 ```
@@ -869,6 +877,8 @@ events: {
 
 
 ### *debounce
+*include the [events](#snippet/package/events) mixin*
+
 Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked.  see [_.debounce](http://underscorejs.org/#debounce) for more details
 
 ```
@@ -879,6 +889,8 @@ events: {
 
 
 ### *once
+*include the [events](#snippet/package/events) mixin*
+
 Creates a version of the function that can only be called one time. Repeated calls to the modified function will have no effect, returning the value from the original call.  see [_.once](http://underscorejs.org/#once) for more details
 
 ```
@@ -889,6 +901,8 @@ events: {
 
 
 ### *after
+*include the [events](#snippet/package/events) mixin*
+
 Creates a version of the function that will only be run after first being called count times.  see [_.after](http://underscorejs.org/#after) for more details
 
 ```
@@ -899,6 +913,8 @@ events: {
 
 
 ### *before
+*include the [events](#snippet/package/events) mixin*
+
 Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
 
 ```
