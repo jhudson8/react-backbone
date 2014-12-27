@@ -10,3 +10,10 @@ Give [Backbone](http://backbonejs.org/) awareness to your [React](http://faceboo
 * includes managed event bindings which will clean up when the React component is unmounted
 
 [View the installation and API docs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
+
+## Support me
+
+If you like this project you may support me by donating something on Gittip, starring this repository or reporting bugs and ideas in the issue section.
+
+[![gittip](https://raw.githubusercontent.com/FezVrasta/bootstrap-material-design/master/demo/imgs/gittip-button.jpg)](https://gratipay.com/jhudson8/)
+
