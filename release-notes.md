@@ -2,7 +2,27 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.15.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.16.0...master)
+
+## v0.16.0 - December 30th, 2014
+- add multiple model/collection bindings to a single component - 4aa9be5
+
+Compatibility notes:
+This is backwards compatible with the previous release but you can now have multiple managed models/collections for a single component.  This can be useful if you want to monitor model changes or listen for XHR activity for more than 1 model/collection.  See the docs for details but, an example is below
+
+```
+    React.createClass({
+                                           // will update the component when either the "foo" or "bar" triggers a "change" event
+      mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
+      events: {
+        'model:bar': function() {
+          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+        }
+      }
+    });
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.15.0...v0.16.0)
 
 ## v0.15.0 - December 12th, 2014
 - null check on modelPopulate callback - 8362f80
