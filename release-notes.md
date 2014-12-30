@@ -8,11 +8,11 @@
 - add multiple model/collection bindings to a single component - 4aa9be5
 
 Compatibility notes:
-This is backwards compatible with the previous release but you can now have multiple managed models/collections for a single component.  This can be useful if you want to monitor model changes or listen for XHR activity for more than 1 model/collection.  See the docs for details but, an example is below
+This is backwards compatible with the previous release but you can now have multiple managed models/collections for a single component.  This can be useful if you want to monitor model changes or listen for XHR activity for more than 1 model/collection (or if you just don't like using the "model/collection" property and want a more custom property name for each component).  See the docs for details but, an example is below
 
 ```
     React.createClass({
-     // "modelChangeAware" will update the component when either the "foo" or "bar" triggers a "change" event
+     // "modelChangeAware" will update the component when either the "foo" or "bar" models trigger a "change" event
       mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
       events: {
         'model:theEvent': function() {
