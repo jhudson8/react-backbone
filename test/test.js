@@ -1,4 +1,4 @@
-/* global, describe, it, beforeEach, afterEach */
+/* global require, describe, it, beforeEach, afterEach */
 
 var chai = require('chai'),
     sinon = require('sinon'),
@@ -19,11 +19,15 @@ var chai = require('chai'),
         },
         success: function(data) {
           var options = this.options.pop();
-          options.success && options.success(data);
+          if (options.success) {
+            options.success(data);
+          }
         },
         error: function(error) {
           var options = this.options.pop();
-          options.error && options.error(error);
+          if (options.error) {
+            options.error(error);
+          }
         }
       };
 chai.use(sinonChai);
@@ -36,8 +40,6 @@ require('react-events')(React);
 // add react-backbone mixins
 require('../index')(React, Backbone, _);
 
-// just make sure the "with-deps" file is not hosed since it is a copy
-require('../with-deps')(_.clone(React), _.clone(Backbone), _);
 
 function newComponent(attributes, mixins) {
 
@@ -80,9 +82,9 @@ function newComponent(attributes, mixins) {
     }
   };
   if (attributes) {
-    for (var name in attributes) {
-      obj[name] = attributes[name];
-    }
+    _.each(attributes, function(value, name) {
+      obj[name] = value;
+    });
   }
   obj.props = obj.props || {};
 
@@ -127,7 +129,6 @@ describe('react-backbone', function() {
     });
   });
 
-
   describe('modelAware', function() {
 
     it('should get the model using props.model', function() {
@@ -166,7 +167,6 @@ describe('react-backbone', function() {
       expect(obj.getCollection()).to.eql(collection2);
     });
   });
-
 
   describe('modelPopulate', function() {
 
@@ -229,7 +229,7 @@ describe('react-backbone', function() {
           // just return something so it looks like validation failed
           return 'fail';
         })
-      })
+      });
       var model = new Model(),
           obj = newComponent({props: {model: model}}, ['modelAware', 'modelPopulate']);
       var component = {
@@ -279,7 +279,7 @@ describe('react-backbone', function() {
       validate: function(attributes, options) {
         return options && options.rtn;
       }
-    })
+    });
 
     it('should return undefined if no model exists or the model does not implement "validate"', function() {
       var model = new Backbone.Model(),
@@ -402,8 +402,41 @@ describe('react-backbone', function() {
       model2.trigger('foo');
       expect(spy.callCount).to.eql(2);
 
+      // ensure the previous trigger *did not* call the handler
       model1.trigger('foo');
-      expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
+      expect(spy.callCount).to.eql(2); 
+    });
+
+    it('should accomodate multiple models', function() {
+      var model1a = new Backbone.Model(),
+          model1b = new Backbone.Model(),
+          model2a = new Backbone.Model(),
+          model2b = new Backbone.Model(),
+          obj = newComponent({props: {foo: model1a, bar: model1b}}, ['modelAware("foo", "bar")', 'modelEvents']),
+          spy = sinon.spy();
+
+      obj.modelOn('theEvent', spy);
+      obj.mount();
+      model1a.trigger('theEvent');
+      expect(spy.callCount).to.eql(1);
+      model1b.trigger('theEvent');
+      expect(spy.callCount).to.eql(2);
+
+      // set another model and ensure the first was unbound
+      obj.setProps({foo: model2a, bar: model2b});
+      clock.tick(1);
+
+      // ensure the new model is bound
+      model2a.trigger('theEvent');
+      expect(spy.callCount).to.eql(3);
+      model2b.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
+
+      // ensure the previous trigger *did not* call the handler
+      model1a.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
+      model1b.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
     });
   });
 
@@ -511,8 +544,41 @@ describe('react-backbone', function() {
       collection2.trigger('foo');
       expect(spy.callCount).to.eql(2);
 
+      // ensure the previous trigger *did not* call the handler
       collection1.trigger('foo');
-      expect(spy.callCount).to.eql(2); // ensure the previous trigger *did not* call the handler
+      expect(spy.callCount).to.eql(2);
+    });
+
+    it('should accomodate multiple collections', function() {
+      var collection1a = new Backbone.Collection(),
+          collection1b = new Backbone.Collection(),
+          collection2a = new Backbone.Collection(),
+          collection2b = new Backbone.Collection(),
+          obj = newComponent({props: {foo: collection1a, bar: collection1b}}, ['collectionAware("foo", "bar")', 'collectionEvents']),
+          spy = sinon.spy();
+
+      obj.collectionOn('theEvent', spy);
+      obj.mount();
+      collection1a.trigger('theEvent');
+      expect(spy.callCount).to.eql(1);
+      collection1b.trigger('theEvent');
+      expect(spy.callCount).to.eql(2);
+
+      // set another model and ensure the first was unbound
+      obj.setProps({foo: collection2a, bar: collection2b});
+      clock.tick(1);
+
+      // ensure the new model is bound
+      collection2a.trigger('theEvent');
+      expect(spy.callCount).to.eql(3);
+      collection2b.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
+
+      // ensure the previous trigger *did not* call the handler
+      collection1a.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
+      collection1b.trigger('theEvent');
+      expect(spy.callCount).to.eql(4);
     });
   });
 
@@ -1130,5 +1196,10 @@ describe('react-backbone', function() {
       expect(spy1.callCount).to.eql(1);
       expect(spy2.callCount).to.eql(1);
     });
+  });
+
+  describe('with-deps', function() {
+    // just make sure the "with-deps" file is not hosed since it is a copy
+    require('../with-deps')(_.clone(React), _.clone(Backbone), _);
   });
 });

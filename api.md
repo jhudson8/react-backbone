@@ -257,19 +257,34 @@ These mixins can be referenced by their alias (see mixin examples) because they 
 Utility methods which allows other mixins to depend on ```getModel``` and ```setModel``` methods.  This provides an single overridable mixin should you have non-standard model population requirements.
 
 #### getModel()
-*return the model associated with the current React component.*
+*return the single model associated with the current React component.*
 
 The model can be set using the ```model``` property or by explicitely calling ```setModel```.
-
 
 ```
     React.createClass({
       mixins: ['modelAware']
     });
     ...
-    <MyClass ref="myClass" model={model} key="foo"/>
+    <MyClass model={model}/>
     ...
-    var model = this.refs.myClass.getModel();
+    // get the single (or first) model bound to this component
+    var model = myClass.getModel();
+```
+
+There can actually be multiple models bound to a single component.  To access all bound models, a iterator callback method can be provided.
+
+```
+    React.createClass({
+      mixins: ['modelAware("foo", "bar")']
+    });
+    ...
+    <MyClass foo={model1} bar={model2}/>
+    ...
+    // iterate all models bound to this component
+    myClass.getModel(function(model, propName) {
+      // will be called twice with (model1, "foo") and (model2, "bar")
+    });
 ```
 
 #### setModel(model)
@@ -284,20 +299,36 @@ will be automatically transferred to the new model.
 Utility methods which allows other mixins to depend on ```getCollection``` and ```setCollection``` methods.  This provides an single overridable mixin should you have non-standard collection population requirements.
 
 #### getCollection()
-*return the collection associated with the current React component.*
+*return the single collection associated with the current React component.*
 
-The collection can be set using the ```collection``` property or by explicitely calling ```setCollection```.
-
+The model can be set using the ```collection``` property or by explicitely calling ```setCollection```.
 
 ```
     React.createClass({
       mixins: ['collectionAware']
     });
     ...
-    <MyClass ref="myClass" collection={collection} key="foo"/>
+    <MyClass collection={collection}/>
     ...
-    var collection = this.refs.myClass.getCollection();
+    // get the single (or first) collection bound to this component
+    var collection = myClass.getCollection();
 ```
+
+There can actually be multiple collections bound to a single component.  To access all bound collections, a iterator callback method can be provided.
+
+```
+    React.createClass({
+      mixins: ['collectionAware("foo", "bar")']
+    });
+    ...
+    <MyClass foo={collection1} bar={collection2}/>
+    ...
+    // iterate all collection bound to this component
+    myClass.getCollection(function(model, propName) {
+      // will be called twice with (collection1, "foo") and (collection2, "bar")
+    });
+```
+
 
 #### setCollection(collection)
 * ***collection***: the Backbone collection to set
@@ -950,3 +981,35 @@ to a single object
 ```
     { field1Key: errorMessage, field2Key: errorMessage, ... }
 ```
+
+
+Sections
+--------------
+### Multiple models and collections / overriding property name
+React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
+
+If you wanted to have a component that use the ```foo``` property for component model bindings
+```
+    React.createClass({
+      mixins: ['modelAware("foo")', 'modelEvents'],
+      events: {
+        'model:bar': function() {
+          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+        }
+      }
+    });
+```
+
+Or, if you want to have 2 components (identified by the ```foo``` and ```bar``` property names) that, for example, you want to listen to change events on
+```
+    React.createClass({
+      mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
+      events: {
+        'model:bar': function() {
+          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+        }
+      }
+    });
+```
+
+The same functionality works with collection events as well.

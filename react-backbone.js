@@ -51,11 +51,17 @@
     // use Backbone.Events as the events impl if none is already defined
     React.events.mixin = React.events.mixin || Backbone.Events;
 
-    function getModelOrCollection(type, context, props) {
+    function firstModel(component) {
+        if (component.getModel) {
+            return component.getModel();
+        }
+    }
+
+    function getModelOrCollections(type, context, callback, props) {
         if (type === 'collection') {
-            return context.getCollection(props);
+            return context.getCollection(callback, props);
         } else {
-            return context.getModel(props);
+            return context.getModel(callback, props);
         }
     }
 
@@ -76,12 +82,12 @@
     /**
      * Return a callback function that will provide the model or collection
      */
-    function targetModelOrCollection(type, context, modelOrCollectionToUse) {
+    function targetModelOrCollections(type, context, modelOrCollectionToUse) {
         return function() {
             if (modelOrCollectionToUse) {
                 return modelOrCollectionToUse;
             }
-            return getModelOrCollection(type, context);
+            return getModelOrCollections(type, context);
         };
     }
 
@@ -127,12 +133,10 @@
      * and the model key is available
      */
     function ifModelAndKey(component, callback) {
-        if (component.getModel) {
+        var model = firstModel(component);
+        if (model) {
             var key = getKey(component);
-            var model = component.getModel();
-            if (model) {
-                return callback(key, model);
-            }
+            return callback(key, model);
         }
     }
 
@@ -157,8 +161,8 @@
      * Provide modelOn and modelOnce argument with proxied arguments
      * arguments are event, callback, context
      */
-    function modelOrCollectionnOrOnce(modelType, type, args, _this, _modelOrCollection) {
-        var modelEvents = getModelAndCollectionEvents(_this);
+    function modelOrCollectionOnOrOnce(modelType, type, args, _this, _modelOrCollection) {
+        var modelEvents = getModelAndCollectionEvents(modelType, _this);
         var ev = args[0];
         var cb = args[1];
         var ctx = args[2];
@@ -168,22 +172,47 @@
             cb: cb,
             ctx: ctx
         };
-        var modelOrCollection = _modelOrCollection || getModelOrCollection(modelType, _this);
-        if (modelOrCollection) {
+
+        function _on(modelOrCollection) {
             _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
+        }
+        if (_modelOrCollection) {
+            _on(_modelOrCollection);
+        } else {
+            getModelOrCollections(modelType, _this, _on);
+        }
+    }
+
+    function unbindAndRebind(type, unbindModel, bindModel, context) {
+        if (unbindModel === bindModel) {
+            // nothing to do
+            return;
+        }
+        var events = getModelAndCollectionEvents(type, context);
+        if (unbindModel) {
+            // turn off models that will be replaced
+            _.each(events, function(eventData) {
+                this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
+            }, context);
+        }
+        if (bindModel) {
+            _.each(events, function(eventData) {
+                modelOrCollectionOnOrOnce(type, eventData.type, [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
+            }, context);
         }
     }
 
     /**
      * Return all bound model events
      */
-    function getModelAndCollectionEvents(context) {
-        var modelEvents = getState('__modelEvents', context);
+    function getModelAndCollectionEvents(type, context) {
+        var key = '__' + type + 'Events',
+            modelEvents = getState(key, context);
         if (!modelEvents) {
             modelEvents = {};
-            setState({
-                __modelEvents: modelEvents
-            }, context);
+            var stateVar = {};
+            stateVar[key] = modelEvents;
+            setState(stateVar, context);
         }
         return modelEvents;
     }
@@ -270,38 +299,74 @@
     // create mixins that are duplicated for both models and collections
     _.each([{
         type: 'model',
+        defaultParams: [['model']],
         capType: 'Model',
         changeEvents: ['change']
     }, {
         type: 'collection',
+        defaultParams: [['collection']],
         capType: 'Collection',
         changeEvents: ['add', 'remove', 'reset', 'sort']
     }], function(typeData) {
+        var getThings = 'get' + typeData.capType;
 
         /**
          * Simple overrideable mixin to get/set models or collections.  Model/Collection can
-         * be set on props or by calling setModel or setCollection
+         * be set on props or by calling setModel or setCollection.
+         * This will return the *first* model (if there are multiple models) but a callback method
+         * can be provided as the first parameter function(model, propName) which will be called
+         * for every available model.
          */
-        var typeAware = {};
-        typeAware['get' + typeData.capType] = function(props) {
-            props = props || this.props;
-            return getState(typeData.type, this) || props[typeData.type];
+        var typeAware = function(referenceArgs) {
+            // use initiatedOnce format so model prop names can be changed (or multiple can be used)
+            // for example, to get all model change monitoring with models set as "foo" and "bar" props, simply use
+            // mixins: ['modelAware("foo", "bar")', 'modelChangeAware']
+            var rtn = {};
+            rtn[getThings] = function(callback, props) {
+                var _referenceArgs = referenceArgs,
+                    propsProvided = !!props;
+                props = props || this.props;
+                if (!_referenceArgs || _referenceArgs.length === 0) {
+                    _referenceArgs = typeData.defaultParams;
+                }
+
+                var firstModel, singleReferenceArgs, obj;
+                for (var i=0; i<_referenceArgs.length; i++) {
+                    singleReferenceArgs = _referenceArgs[i];
+                    for (var j=0; j<singleReferenceArgs.length; j++) {
+                        var propName = singleReferenceArgs[j];
+                        obj = getState(propName, this) || props[propName];
+                        if (obj) {
+                            firstModel = firstModel || obj;
+                            if (callback) {
+                                callback.call(this, obj, propName);
+                            } else {
+                                return obj;
+                            }
+                        } else if (propsProvided && callback) {
+                            // make callback anyway to let callers know of the prop transition
+                            callback.call(this, undefined, propName);
+                        }
+                    }
+                }
+                return firstModel;
+            };
+            rtn['set' + typeData.capType] = function(model, key) {
+                key = key || typeData.type;
+                var stateData = {};
+                var prevModel;
+                this.getModel(function(model, _key) {
+                    if (_key === key) {
+                        prevModel = model;
+                    }
+                });
+                // unbind previous model
+                unbindAndRebind(typeData.type, prevModel, model, this);
+                stateData[key] = model;
+            };
+            return rtn;
         };
-        typeAware['set' + typeData.capType] = function(modelOrCollection, _suppressState) {
-            var preModelOrCollection = getModelOrCollection(typeData.type, this, this.props);
-            var modelEvents = getModelAndCollectionEvents(this);
-            _.each(modelEvents, function(data) {
-                // unbind the current model or collection
-                this[typeData.type + 'Off'](data.ev, data.cb, data.ctx, preModelOrCollection);
-                // rebind the new model or collection
-                modelOrCollectionnOrOnce(typeData.type, data.type, [data.ev, data.cb, data.ctx], this, modelOrCollection);
-            }, this);
-            // if this is coming from a props update, no need to set the state
-            if (_suppressState !== true) {
-                setState(typeData.type, modelOrCollection);
-            }
-        };
-        React.mixins.add(typeData.type + 'Aware', typeAware, 'state');
+        React.mixins.add({ name: typeData.type + 'Aware', initiatedOnce: true }, typeAware, 'state');
 
         /**
          * Exposes model binding registration functions that will
@@ -314,35 +379,33 @@
         var typeEvents = {
             getInitialState: function() {
                 // model sanity check
-                var modelOrCollection = getModelOrCollection(typeData.type, this);
-                if (modelOrCollection) {
-                    if (!modelOrCollection.off || !modelOrCollection.on) {
+                getModelOrCollections(typeData.type, this, function(obj) {
+                    if (!obj.off || !obj.on) {
                         console.error('the model/collection does not implement on/off functions - you will see problems');
-                        console.log(modelOrCollection);
+                        console.log(obj);
                     }
-                }
+                });
                 return {};
             },
 
             componentWillReceiveProps: function(props) {
                 // watch for model or collection changes by property so it can be un/rebound
-                var preModelOrCollection = getModelOrCollection(typeData.type, this);
-                var postModelOrCollection = getModelOrCollection(typeData.type, this, props);
-                if (preModelOrCollection !== postModelOrCollection) {
-                    this['set' + typeData.capType](postModelOrCollection, true);
-                }
+                getModelOrCollections(typeData.type, this, function(obj, propName) {
+                    var currentObj = this.props[propName];
+                    unbindAndRebind(typeData.type, currentObj, obj, this);
+                }, props);
             },
         };
         typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
-            modelOrCollectionnOrOnce(typeData.type, 'on', arguments, this);
+            modelOrCollectionOnOrOnce(typeData.type, 'on', arguments, this);
         };
         typeEvents[typeData.type + 'Once'] = function( /* ev, callback, context */ ) {
-            modelOrCollectionnOrOnce(typeData.type, 'once', arguments, this);
+            modelOrCollectionOnOrOnce(typeData.type, 'once', arguments, this);
         };
         typeEvents[typeData.type + 'Off'] = function(ev, callback, context, _modelOrCollection) {
-            var modelEvents = getModelAndCollectionEvents(this);
-            delete modelEvents[ev];
-            this.stopListening(targetModelOrCollection(typeData.type, this, _modelOrCollection), ev, callback, context);
+            var events = getModelAndCollectionEvents(typeData.type, this);
+            delete events[ev];
+            this.stopListening(targetModelOrCollections(typeData.type, this, _modelOrCollection), ev, callback, context);
         };
         React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
 
@@ -365,8 +428,9 @@
         var xhrFactory = {
             getInitialState: function(keys, self) {
                 function whenXHRActivityHappens(xhrEvents) {
-                    var modelOrCollection = getModelOrCollection(typeData.type, self);
-                    pushLoadingState(xhrEvents, modelOrCollection, self);
+                    getModelOrCollections(typeData.type, self, function(modelOrCollection) {
+                        pushLoadingState(xhrEvents, modelOrCollection, self);
+                    });
                 }
 
                 if (!keys) {
@@ -381,8 +445,7 @@
 
             componentWillMount: function(keys, self) {
                 // make sure the model didn't get into a non-loading state before mounting
-                var modelOrCollection = getModelOrCollection(typeData.type, self);
-                if (modelOrCollection) {
+                getModelOrCollections(typeData.type, self, function(modelOrCollection) {
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
                     if (!keys) {
@@ -398,7 +461,7 @@
                             joinCurrentModelActivity(key, modelOrCollection, self);
                         });
                     }
-                }
+                });
             }
         };
 
@@ -489,6 +552,7 @@
     React.mixins.add('modelPopulate', {
         modelPopulate: function() {
             var components, callback, options, model, drillDown;
+
             // determine the function args
             _.each(arguments, function(value) {
                 if (value instanceof Backbone.Model) {
@@ -504,8 +568,8 @@
                     options = value;
                 }
             });
-            if (_.isUndefined(model) && this.getModel) {
-                model = this.getModel();
+            if (_.isUndefined(model)) {
+                model = firstModel(this);
             }
 
             var attributes = {};
@@ -524,12 +588,12 @@
                         var value = component.getValue();
                         attributes[key] = value;
                     }
-                } else if (component.modelPopulate && component.getModel) {
+                } else if (component.modelPopulate && component.getModels) {
                     if (!model && !drillDown) {
                         // if we aren't populating to models, this is not necessary
                         return;
                     }
-                    var _model = component.getModel();
+                    var _model = firstModel(component);
                     var testModel = model || (options && options.populateModel);
                     if (_model === testModel) {
                         var _attributes = component.modelPopulate(_.extend({
@@ -590,7 +654,7 @@
      */
     React.mixins.add('modelValidator', {
         modelValidate: function(attributes, options) {
-            var model = this.getModel();
+            var model = firstModel(this);
             if (model && model.validate) {
                 return modelIndexErrors(model.validate(attributes, options), this) || false;
             }

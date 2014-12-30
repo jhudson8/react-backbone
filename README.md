@@ -16,4 +16,3 @@ Give [Backbone](http://backbonejs.org/) awareness to your [React](http://faceboo
 If you like this project you may support me by donating something on Gittip, starring this repository or reporting bugs and ideas in the issue section.
 
 [![gittip](http://jhudson8.github.io/react-mixin-manager/gittip-button.jpg)](https://gratipay.com/jhudson8/)
-

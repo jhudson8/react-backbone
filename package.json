@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "underscore": "~1.7",
-    "react-mixin-manager": "~0.9",
+    "react-mixin-manager": "~0.10",
     "react": "~0.12",
     "backbone": "~1.1",
     "chai": "~1.10",
