@@ -12,11 +12,11 @@ This is backwards compatible with the previous release but you can now have mult
 
 ```
     React.createClass({
-                                           // will update the component when either the "foo" or "bar" triggers a "change" event
+     // "modelChangeAware" will update the component when either the "foo" or "bar" triggers a "change" event
       mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
       events: {
-        'model:bar': function() {
-          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+        'model:theEvent': function() {
+          // will be executed when either the model assigned to the "foo" or the "bar" property triggers the "theEvent" event
         }
       }
     });
