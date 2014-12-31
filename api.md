@@ -562,6 +562,18 @@ Convienance mixin to include the [modelChangeAware](#snippet/package/modelChange
 Will force a render if the associated model fires the "change" event.
 If you want to force a render only on specific model events, see [modelUpdateOn](#snippet/package/modelUpdateOn).
 
+```
+    var MyClass React.createClass({
+      mixins: ['modelChangeAware'],
+
+      render: function() {
+        // will be executed if the associated model changes
+      }
+    });
+```
+
+*multiple models can be associated with the component for change-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
+
 
 ### collectionChangeAware
 *depends on [collectionEvents](#snippet/package/collectionEvents)*
@@ -569,6 +581,17 @@ If you want to force a render only on specific model events, see [modelUpdateOn]
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
 If you want to force a render only on specific collection events, see [collectionUpdateOn](#snippet/package/collectionUpdateOn).
 
+```
+    var MyClass React.createClass({
+      mixins: ['collectionChangeAware'],
+
+      render: function() {
+        // will be executed if the associated model changes
+      }
+    });
+```
+
+*multiple collections can be associated with the component for change-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
 ### backboneUpdateOn
 Convienance mixin to include the [modelUpdateOn](#snippet/package/modelUpdateOn) and [collectionUpdateOn](#snippet/package/collectionUpdateOn) mixins.  Refer to those mixins for more details.
@@ -782,6 +805,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
     });
 ```
 
+*multiple models can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
 ### collectionXHRAware
 *depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [collectionEvents](#snippet/package/collectionEvents)*
@@ -806,6 +830,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
     });
 ```
 
+*multiple collections can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
 API: Event Binding Definitions
 --------------
@@ -985,29 +1010,40 @@ to a single object
 
 Sections
 --------------
-### Multiple models and collections / overriding property name
+### Multiple models and collections
 React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
 
+The ```modelAware```/```collectionAware``` mixin is not required if you want to have only a single model/collection bound using the ```model```/```collection``` property.
+
+#### Overriding the default model/collection keys
 If you wanted to have a component that use the ```foo``` property for component model bindings
 ```
     React.createClass({
       mixins: ['modelAware("foo")', 'modelEvents'],
       events: {
         'model:bar': function() {
-          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+          // this will be executed when the model assigned to the
+          // "foo" property triggers the "bar" event
         }
       }
     });
 ```
 
+#### Multiple object bindings
 Or, if you want to have 2 components (identified by the ```foo``` and ```bar``` property names) that, for example, you want to listen to change events on
 ```
     React.createClass({
       mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
       events: {
-        'model:bar': function() {
-          // this will be executed when the model assigned to the "foo" property triggers the "bar" event
+        'model:theEvent': function() {
+          // this will be executed when the model assigned to the
+          // "foo" or "bar" property triggers the "theEvent" event
         }
+      },
+      render: function() {
+        // this will be executed when the model assigned to the
+        // "foo" or "bar" property triggers the "change" event
+        // because of the "modelChangeAware" mixin
       }
     });
 ```
