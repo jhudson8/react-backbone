@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.9.5
     jhudson8/react-mixin-manager 0.10.0
     jhudson8/react-events 0.7.9
-    jhudson8/react-backbone 0.17.0
+    jhudson8/react-backbone 0.17.1
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1838,10 +1838,10 @@
     function twoWayBinding(context) {
         var props = context.props,
             bind = props.bind;
-        if (!bind) {
+        if (!bind || bind === 'false') {
             return props.onChange;
         } else {
-            var options = (bind === true) ? {twoWayBinding: true} : bind;
+            var options = (_.isString(bind) || bind === true) ? {twoWayBinding: true} : bind;
             return function(ev) {
                 var model = context.getModel(),
                     key = getKey(context);
@@ -1899,8 +1899,9 @@
             type: 'checkbox'
         }, true),
         RadioGroup: React.createClass({
+            mixins: ['modelAware'],
             render: function() {
-                var props = _.defaults({onChange: twoWayBinding(this)}, this.props);
+                var props = _.clone(this.props);
                 props.ref = 'input';
                 return React.DOM[props.tag || 'span'](props, props.children);
             },
@@ -1911,6 +1912,20 @@
                     var selector = 'input[value="' + value.replace('"', '\\"') + '"]';
                     var el = $(this.getDOMNode()).find(selector);
                     el.attr('checked', 'checked');
+                }
+
+                if (!this.state) {
+                    this.state = {};
+                }
+                var changeHandler = this.state.changeHandler = twoWayBinding(this);
+                if (changeHandler) {
+                    $(this.getDOMNode()).on('change', 'input', changeHandler);
+                }
+            },
+            componentWillUnmount: function() {
+                var changeHandler = this.state && this.state.changeHandler;
+                if (changeHandler) {
+                    $(this.getDOMNode()).off('change', changeHandler);
                 }
             },
             getValue: function() {
