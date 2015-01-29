@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.1...master)
+
+## v0.17.1 - January 29th, 2015
+- fix 2 way binding for composite RadioGroup component - 62f4c3c
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.0...v0.17.1)
 
 ## v0.17.0 - January 28th, 2015
 - add 2 way input field binding (using the bind={true} option) - 476ef03
