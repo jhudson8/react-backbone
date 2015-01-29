@@ -1219,18 +1219,52 @@ describe('react-backbone', function() {
   });
 
   describe('input fields', function() {
-    it('should do two way binding', function() {
-      var TextBox = React.createFactory(Backbone.input.Text),
-          model = new Backbone.Model();
-      model.set('foo', 'bar');
-      var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model, bind: true}));
-      expect(component.getValue()).to.eql('bar');
-      var spy = sinon.spy();
-      model.on('change:foo', spy);
-      component.getDOMNode().value = 'a';
-      TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
-      expect(spy.callCount).to.eql(1);
-      expect(spy.getCall(0).args[1]).to.eql('a');
+    describe('two way binding', function() {
+      it('should not do it if the bind property is not provided', function() {
+        var TextBox = React.createFactory(Backbone.input.Text),
+            model = new Backbone.Model();
+        model.set('foo', 'bar');
+        var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model}));
+        expect(component.getValue()).to.eql('bar');
+        var spy = sinon.spy();
+        model.on('change:foo', spy);
+        component.getDOMNode().value = 'a';
+        TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
+        expect(spy.callCount).to.eql(0);
+      });
+      it('should do two way binding for standard input fields', function() {
+        var TextBox = React.createFactory(Backbone.input.Text),
+            model = new Backbone.Model();
+        model.set('foo', 'bar');
+        var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model, bind: true}));
+        expect(component.getValue()).to.eql('bar');
+        var spy = sinon.spy();
+        model.on('change:foo', spy);
+        component.getDOMNode().value = 'a';
+        TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
+        expect(spy.callCount).to.eql(1);
+        expect(spy.getCall(0).args[1]).to.eql('a');
+      });
+      it.only('should do two way binding for the radio button container', function() {
+        var RadioGroup = React.createFactory(Backbone.input.RadioGroup),
+            model = new Backbone.Model();
+        model.set('foo', 'bar');
+        var component = TestUtils.renderIntoDocument(new RadioGroup({name: 'foo', model: model, bind: true},
+          React.createElement('input', {type:'radio', value: 'aaa'}),
+          React.createElement('input', {type:'radio', value: 'bar'})
+        ));
+        expect(component.getValue()).to.eql('bar');
+
+        var spy = sinon.spy();
+        model.on('change:foo', spy);
+        jquery(component.getDOMNode()).find('input[value="bar"]')[0].checked = false;
+        var inputEl = jquery(component.getDOMNode()).find('input[value="aaa"]');
+        inputEl[0].checked = true;
+        inputEl.trigger('change');
+        // TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
+        expect(spy.callCount).to.eql(1);
+        expect(spy.getCall(0).args[1]).to.eql('aaa');
+      });
     });
   });
 

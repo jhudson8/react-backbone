@@ -85,102 +85,19 @@ Low level backbone model-aware input components are provided.  These will
 
 Each input component also has the following methods
 
-* getValue: returns the input field value as it should be set on the model
-* getDOMValue: returns the actual value attribute of the input field
+* ***getValue***: returns the input field value as it should be set on the model
+* ***getDOMValue***: returns the actual value attribute of the input field
 
 In most cases, ```getValue``` and ```getDOMValue``` are the same.  But, for checkboxes, ```getValue``` will return an actual boolean representing whether the field is checked or not and ```getDOMValue``` will return the html ```value``` attribute.
 
-The ```name``` property should be used on input components representing the model key the field should be initialized with (and what attribute key to use with modelPopulate).
+Each input component can accept the following properties (in addition to the standard DOM element properties)
+* ***name***: should be used on input components representing the model key the field should be initialized with (and what attribute key to use with modelPopulate).
+* **bind**: ```true``` to initiate 2-way binding (when the input field is updated, the model will be updated to match)
 
-The ```bind``` property can be used to initiate 2-way binding so the model will be updated when the UI is changed.
-
-This simple example shows how to use these components to get and set the model appropriately
-
-```
-    var Text = Backbone.input.Text;
-    var TextArea = Backbone.input.TextArea;
-    var Select = Backbone.input.Select;
-    var CheckBox = Backbone.input.CheckBox;
-    var RadioGroup = Backbone.input.RadioGroup;
-
-    module.exports = React.createClass({
-      mixins: ['modelPopulate'],
-
-      getDefaultProps: function() {
-        var model = new Backbone.Model({
-          isBoy: true,
-          firstName: 'John',
-          lastName: 'Doe',
-          hairColor: 'blonde',
-          eyeColor: 'brown'
-        });
-        return {
-          model: model
-        };
-      },
-
-      render: function() {
-
-        // the "getModel" method exists because the "modelPopulate" depends on the "modelAware" mixin which contains this method
-        // note: the "name" property is used to retrieve the correct model value for the input field and the "ref" property is
-        //    used to allow the input field to contribute to the modelPopulate command (the ref name does not matter... just need to get into "this.refs")
-        var model = this.getModel();
-
-        return (
-          <form onSubmit={this.onSubmit}>
-            Name:
-            <Text ref="name" name="name" model={model}/>
-            <br/>
-
-            Summary:
-            <TextArea ref="summary" name="summary" model={model}/>
-            <br/>
-
-            Accept Terms and Conditions?:
-            <CheckBox ref="acceptTOC" name="acceptTOC" model={model}/>
-            <br/>
-
-            Hair Color:
-            <Select ref="hairColor" name="hairColor" model={model}>
-              <option value="black">black</option>
-              <option value="blonde">blonde</option>
-              <option value="brown">brown</option>
-            </Select>
-            <br/>
-
-            Eye Color:
-            <RadioGroup ref="eyeColor" name="eyeColor" model={model}>
-              <input type="radio" name="eyeColor" value="blue"/> blue
-              <input type="radio" name="eyeColor" value="brown"/> brown
-              <input type="radio" name="eyeColor" value="green"/> green
-            </RadioGroup>
-            <br/>
-
-            <button>Submit</button>
-          </form>
-        );
-      },
-
-      onSubmit: function(event) {
-        event.preventDefault();
-        var model = this.getModel();
-
-        // the "modelPopulate" method exists because we included the "modelPopulate" mixin
-        this.modelPopulate(function(model) {
-          // if this callback fires, all inputs (identified with a ref) set the appropriate values on the model,
-          // and the model validation passed
-          console.log(model);
-        });
-      }
-    });
-```
-
-*note: these components can still be set (will override model values) just like their wrapped components (```value``` and ```defaultValue```) and all other properties will be pushed through as well```
 
 ### Text
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
-Nested content is N/A.
 
 ```
     var Text = Backbone.input.Text;
@@ -363,7 +280,41 @@ If a model is provided, the attributes will be set on it as long as they pass mo
       mixins: ['modelPopulate'],
 
       render: function() {
-        // return a form with react-backbone input fields
+        var model = this.props.model;
+
+        return (
+          <form onSubmit={this.onSubmit}>
+            Name:
+            <Text ref="name" name="name" model={model}/>
+            <br/>
+
+            Summary:
+            <TextArea ref="summary" name="summary" model={model}/>
+            <br/>
+
+            Accept Terms and Conditions?:
+            <CheckBox ref="acceptTOC" name="acceptTOC" model={model}/>
+            <br/>
+
+            Hair Color:
+            <Select ref="hairColor" name="hairColor" model={model}>
+              <option value="black">black</option>
+              <option value="blonde">blonde</option>
+              <option value="brown">brown</option>
+            </Select>
+            <br/>
+
+            Eye Color:
+            <RadioGroup ref="eyeColor" name="eyeColor" model={model}>
+              <input type="radio" name="eyeColor" value="blue"/> blue
+              <input type="radio" name="eyeColor" value="brown"/> brown
+              <input type="radio" name="eyeColor" value="green"/> green
+            </RadioGroup>
+            <br/>
+
+            <button>Submit</button>
+          </form>
+        );
       },
       onFormSubmit: function() {
         // use this.refs automatically to get the components that will populate the model
