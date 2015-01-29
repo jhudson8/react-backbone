@@ -2,7 +2,18 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.16.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.0...master)
+
+## v0.17.0 - January 28th, 2015
+- add 2 way input field binding (using the bind={true} option) - 476ef03
+
+you can now use the ```bind``` attribute for any Backbone.input.* component to include 2-way binding support so the model will be updated as the input field is changed
+```
+  var Text = Backbone.input.Text;
+  <Text name="foo" model={model} bind={true}/>
+``
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.16.0...v0.17.0)
 
 ## v0.16.0 - December 30th, 2014
 - add multiple model/collection bindings to a single component - 4aa9be5
