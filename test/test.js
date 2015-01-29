@@ -1245,7 +1245,7 @@ describe('react-backbone', function() {
         expect(spy.callCount).to.eql(1);
         expect(spy.getCall(0).args[1]).to.eql('a');
       });
-      it.only('should do two way binding for the radio button container', function() {
+      it('should do two way binding for the radio button container', function() {
         var RadioGroup = React.createFactory(Backbone.input.RadioGroup),
             model = new Backbone.Model();
         model.set('foo', 'bar');
