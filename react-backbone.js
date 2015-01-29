@@ -320,6 +320,7 @@
         var typeAware = function(referenceArgs) {
             // use initiatedOnce format so model prop names can be changed (or multiple can be used)
             // for example, to get all model change monitoring with models set as "foo" and "bar" props, simply use
+            // this will not render as a result of 2 way binding (unless the bind attribute is not === true)
             // mixins: ['modelAware("foo", "bar")', 'modelChangeAware']
             var rtn = {};
             rtn[getThings] = function(callback, props) {
@@ -415,8 +416,10 @@
         var changeAware = {
             getInitialState: function() {
                 _.each(typeData.changeEvents, function(eventName) {
-                    this[typeData.type + 'On'](eventName, function() {
-                        this.deferUpdate();
+                    this[typeData.type + 'On'](eventName, function(model, options) {
+                        if (!options || !options.twoWayBinding) {
+                            this.deferUpdate();
+                        }
                     }, this);
                 }, this);
             }
@@ -697,6 +700,26 @@
         });
     }
 
+    function twoWayBinding(context) {
+        var props = context.props,
+            bind = props.bind;
+        if (!bind) {
+            return props.onChange;
+        } else {
+            var options = (bind === true) ? {twoWayBinding: true} : bind;
+            return function(ev) {
+                var model = context.getModel(),
+                    key = getKey(context);
+                if (model && key) {
+                    model.set(key, context.getValue(), options);
+                }
+                if (context.props.onChange) {
+                    context.props.onChange(ev);
+                }
+            };
+        }
+    }
+
     // Standard input components that implement react-backbone model awareness
     var _inputClass = function(type, attributes, isCheckable, classAttributes) {
         return React.createClass(_.extend({
@@ -709,7 +732,8 @@
                 } else {
                     props.defaultValue = defaultValue;
                 }
-                return React.DOM[type](_.extend(props, attributes, this.props), this.props.children);
+                return React.DOM[type](_.extend(props, attributes, this.props,
+                    {onChange: twoWayBinding(this)}), this.props.children);
             },
             getValue: function() {
                 if (this.isMounted()) {
@@ -741,7 +765,7 @@
         }, true),
         RadioGroup: React.createClass({
             render: function() {
-                var props = this.props;
+                var props = _.defaults({onChange: twoWayBinding(this)}, this.props);
                 props.ref = 'input';
                 return React.DOM[props.tag || 'span'](props, props.children);
             },

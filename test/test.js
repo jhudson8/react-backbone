@@ -1,10 +1,28 @@
-/* global require, describe, it, beforeEach, afterEach */
+/*global require, describe, it, beforeEach, afterEach */
+/*
+var jsdom = require("jsdom").jsdom;
+global.document = jsdom('<html><body></body></html>');
+global.window = document.parentWindow;
+global.navigator = {
+  userAgent: 'Mozilla/5.0'
+};
+*/
+var jsdom = require('jsdom');
+ 
+// move into beforeEach and flip global.window.close on to improve
+// cleaning of environment during each test and prevent memory leaks
+global.document = jsdom.jsdom('<html><body></body></html>', jsdom.level(1, 'core'));
+global.window = document.parentWindow;
+global.navigator = {
+  userAgent: 'Mozilla/5.0'
+};
+var jquery = require('jquery');
 
 var chai = require('chai'),
     sinon = require('sinon'),
     sinonChai = require('sinon-chai'),
     expect = chai.expect,
-    React = require('react'),
+    React = require('react/addons'),
     Backbone = require('backbone'),
     _ = require('underscore'),
     $ = {
@@ -32,13 +50,14 @@ var chai = require('chai'),
       };
 chai.use(sinonChai);
 Backbone.$ = $;
+var TestUtils = React.addons.TestUtils;
 
 // intitialize dependencies
 require('react-mixin-manager')(React);
 require('backbone-xhr-events')(Backbone, _);
 require('react-events')(React);
 // add react-backbone mixins
-require('../index')(React, Backbone, _);
+require('../index')(React, Backbone, _, jquery);
 
 
 function newComponent(attributes, mixins) {
@@ -111,6 +130,7 @@ var Model = Backbone.Model.extend({
 var Collection = Backbone.Collection.extend({
   url: 'foo'
 });
+
 
 describe('react-backbone', function() {
 
@@ -1195,6 +1215,22 @@ describe('react-backbone', function() {
       collection.trigger('bar');
       expect(spy1.callCount).to.eql(1);
       expect(spy2.callCount).to.eql(1);
+    });
+  });
+
+  describe('input fields', function() {
+    it('should do two way binding', function() {
+      var TextBox = React.createFactory(Backbone.input.Text),
+          model = new Backbone.Model();
+      model.set('foo', 'bar');
+      var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model, bind: true}));
+      expect(component.getValue()).to.eql('bar');
+      var spy = sinon.spy();
+      model.on('change:foo', spy);
+      component.getDOMNode().value = 'a';
+      TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
+      expect(spy.callCount).to.eql(1);
+      expect(spy.getCall(0).args[1]).to.eql('a');
     });
   });
 

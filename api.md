@@ -79,6 +79,7 @@ API: Input Components
 -------------
 Low level backbone model-aware input components are provided.  These will
 
+* provide an option for 2-way binding
 * set the correct value from the model if the *name* property matches the model attribute to be used
 * contribute to [modelPopulate](#snippet/package/modelPopulate)
 
@@ -90,6 +91,8 @@ Each input component also has the following methods
 In most cases, ```getValue``` and ```getDOMValue``` are the same.  But, for checkboxes, ```getValue``` will return an actual boolean representing whether the field is checked or not and ```getDOMValue``` will return the html ```value``` attribute.
 
 The ```name``` property should be used on input components representing the model key the field should be initialized with (and what attribute key to use with modelPopulate).
+
+The ```bind``` property can be used to initiate 2-way binding so the model will be updated when the UI is changed.
 
 This simple example shows how to use these components to get and set the model appropriately
 
