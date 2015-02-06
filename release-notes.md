@@ -2,7 +2,17 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.2...master)
+
+## v0.17.2 - February 5th, 2015
+- react-mixin-manager 0.10 -> 0.11 - 0bebe92
+
+All react-backbone mixins use the deferUpdate mixin from react-mixin-manager.  deferUpdate has been updated to allow more explicit control of how long a forceRender is called after the component update request occurs.  The default is 0 which should be good in most situations because most changes that would cause an update from model events would be within the same event loop.  However, this provides additional global and component level options.
+
+[See more details](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager/method/deferUpdate/deferUpdate?focus=outline)
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.1...v0.17.2)
 
 ## v0.17.1 - January 29th, 2015
 - fix 2 way binding for composite RadioGroup component - 62f4c3c
