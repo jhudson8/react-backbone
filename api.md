@@ -2,16 +2,17 @@ react-backbone
 ==============
 Give [Backbone](http://backbonejs.org/) awareness to your [React](http://facebook.github.io/react/) components and so much more.
 
-All react-model bindings is accomplished using mixins.  The general concept is to provide very atomic mixins to do specific things that work well together.  Depending on the needs of your react component, you can include as many mixins as you need.
+All react-model bindings is accomplished using mixins.  The general concept is to provide very atomic mixins to do specific things that work well together.  Depending on the needs of your react component, you can include as many mixins as appropriate.
 
 The general features of this project are
 
-* mixins to force update components on model change events, be aware of XHR activity and model validation events and much more
-* add Backbone.View like declaritive events to your React components
-* add dependency management to your React mixins for better reuse
-* provide low level Backbone.Model-aware input components
-* includes managed event bindings which will clean up when the React component is unmounted
-* enhance available declarative events by adding callback wrappers like ```debounce```
+* many mixins to force update components on model change events, be aware of XHR activity, model validation events and much more
+* add Backbone.View like declaritive events for [models](#project/jhudson8/react-backbone/snippet/package/model%20events) and [collections](#project/jhudson8/react-backbone/snippet/package/collection%20events) to your React components
+* add [dependency management](#project/jhudson8/react-backbone/bundle/jhudson8/react-mixin-manager) to your React mixins for better reuse
+* provide low level Backbone.Model-aware [input components](#project/jhudson8/react-backbone/api/Input%20Components)
+* add [managed event bindings](#project/jhudson8/react-backbone/bundle/jhudson8/react-events) which will clean up when the React component is unmounted
+* enhance available declarative events by adding [callback wrappers](#project/jhudson8/react-backbone/api/Event%20Binding%20Definitions) like ```debounce```
+* enhance Backbone.sync to provide [rich XHR awareness](#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events) using Backbone Events
 
 See the step-by-step [usage tutorials](#project/jhudson8/react-backbone/section/Usage%20tutorials) to help get started.
 
