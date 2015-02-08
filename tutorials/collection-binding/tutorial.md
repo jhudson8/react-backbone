@@ -144,7 +144,7 @@ remove the getInitialState code and add the ```events``` hash
 
 ### Step 5: Use the collectionChangeAware mixin
 
-But wait, this could be even easier... just include the ```collectionChangeAware``` event instead of the ```collectionEvents``` mixin.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency on the ```collectionChangeAware``` mixin).
+But wait, this could be even easier... just include the ```collectionChangeAware``` mixin instead of the ```collectionEvents``` mixin.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency on the ```collectionChangeAware``` mixin).
 
 remove the getInitialState code and add the ```events``` hash
 ```
