@@ -97,7 +97,7 @@ Notice how we have to manually call ```forceUpdate``` after we fetch the next/pr
 
 We will incrementally make thigs better with ```react-backbone``` while demonstrating different usages.
 
-Use the ```collectionEvents``` mixin with the ```collectionOn``` method to bind to the ```add``` collection event to force a render.
+Use the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) mixin with the [collectionOn](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/method/collectionEvents/collectionOn?focus=outline) method to bind to the ```add``` collection event to force a render.
 
 ```
 var RepositoriesView = React.createClass({
@@ -132,7 +132,7 @@ React.render(<RepositoriesView collection={repositories}/>, document.body);
 
 ### Step 4: Use declarative events
 
-Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of model/collection event declarations.
+Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
 remove the getInitialState code and add the ```events``` hash
 ```
@@ -144,7 +144,7 @@ remove the getInitialState code and add the ```events``` hash
 
 ### Step 5: Use the collectionChangeAware mixin
 
-But wait, this could be even easier... just include the ```collectionChangeAware``` mixin instead of the ```collectionEvents``` mixin.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency on the ```collectionChangeAware``` mixin).
+But wait, this could be even easier... just include the [collectionChangeAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionChangeAware?focus=outline) mixin instead of the ```collectionEvents``` mixin.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency of ```collectionChangeAware```).
 
 remove the getInitialState code and add the ```events``` hash
 ```
@@ -154,7 +154,7 @@ remove the getInitialState code and add the ```events``` hash
 
 ### Step 6: Show a loading indicator while fetching
 
-We can use the ```collectionXHRAware``` mixin to set the ```state.loading``` property when any collection bound to the component is fetching.
+We can use the [collectionXHRAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) mixin to set the ```state.loading``` property when any collection bound to the component is performing any XHR activity (in this case a fetch).
 
 Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute when rendering
 ```
@@ -168,3 +168,5 @@ var RepositoriesView = React.createClass({
 ```
 The githum API is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
+
+All done.  Check out the [other mixins](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/api/Mixins?focus=outline) to see what all you can do.
