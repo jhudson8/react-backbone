@@ -97,7 +97,7 @@ Notice how we have to manually call ```forceUpdate``` after we fetch the next/pr
 
 We will incrementally make thigs better with ```react-backbone``` while demonstrating different usages.
 
-Use the ```collectionEvents``` mixin with the ```collectionOn``` method to bind to the ```reset``` collection event to force a render.
+Use the ```collectionEvents``` mixin with the ```collectionOn``` method to bind to the ```add``` collection event to force a render.
 
 ```
 var RepositoriesView = React.createClass({
