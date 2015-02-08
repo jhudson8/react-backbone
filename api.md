@@ -964,6 +964,12 @@ to a single object
 
 Sections
 --------------
+### Usage tutorials
+
+* [Handling model/collection changes and notifying of XHR activity](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding)
+
+more to come...
+
 ### Multiple models and collections
 React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
 
