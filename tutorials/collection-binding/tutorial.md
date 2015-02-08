@@ -169,4 +169,24 @@ var RepositoriesView = React.createClass({
 The githum API is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
 
-All done.  Check out the [other mixins](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/api/Mixins?focus=outline) to see what all you can do.
+### Step 7: Change collection property name
+
+By default, you must use the ```collection``` or ```model``` property name if you want proper binding support but you can change that to use a different property name or even support multiple collection/model bindings to a single react component.
+
+All collection mixins depend on the [collectionAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionAware?focus=outline) mixin (and all model mixins depend on the [modelAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelAware?focus=outline)).
+
+We can use the [mixin parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) to override the supported property name from ```collection``` to ```repositories```
+
+```
+mixins: ['collectionAware("repositories")', 'collectionChangeAware', 'collectionXHRAware'],
+```
+And then change the reference
+```
+React.render(<RepositoriesView repositories={repositories}/>, document.body);
+```
+And change all references from ```props.collection``` to ```props.repositories```
+
+
+### All done
+
+All done but there is so much more you can do.  Check out some of the [other mixins](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/api/Mixins?focus=outline).

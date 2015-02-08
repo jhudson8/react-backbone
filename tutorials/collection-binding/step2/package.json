@@ -11,11 +11,10 @@
   "author": "Joe Hudson",
   "dependencies": {
     "backbone": "^1.1.2",
-    "backbone-validation": "*",
     "jquery": "~2.1",
     "react": "^0.12.2",
-    "react-backbone": "^0.15.0",
-    "underscore": "~1.7"
+    "underscore": "~1.7",
+    "react-backbone": "*"
   },
   "devDependencies": {
     "css-loader": "~0.9",
