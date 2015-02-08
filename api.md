@@ -2,18 +2,26 @@ react-backbone
 ==============
 Give [Backbone](http://backbonejs.org/) awareness to your [React](http://facebook.github.io/react/) components and so much more.
 
-* give Backbone.Model / Backbone.Collection awareness to your React components
-* mixins for updating on model change events, be aware of model xhr activity and model validation events and more
+All react-model bindings is accomplished using mixins.  The general concept is to provide very atomic mixins to do specific things that work well together.  Depending on the needs of your react component, you can include as many mixins as you need.
+
+The general features of this project are
+
+* mixins to force update components on model change events, be aware of XHR activity and model validation events and much more
 * add Backbone.View like declaritive events to your React components
-* add dependency management to your React mixins
-* use Backbone.Model-aware input components
+* add dependency management to your React mixins for better reuse
+* provide low level Backbone.Model-aware input components
 * includes managed event bindings which will clean up when the React component is unmounted
+* enhance available declarative events by adding callback wrappers like ```debounce```
+
+See the step-by-step [usage tutorials](#project/jhudson8/react-backbone/section/Usage%20tutorials) to help get started.
+
 
 Dependencies
 --------------
 * [jhudson8/react-mixin-manager](https://github.com/jhudson8/react-mixin-manager)
 * [jhudson8/react-events](https://github.com/jhudson8/react-events)
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events) (optional)
+
 
 Installation
 --------------
@@ -73,6 +81,56 @@ require(
     reactBackbone(React, Backbone, _, $); 
 });
 ```
+
+
+Sections
+--------------
+### Usage tutorials
+
+* [Handling model/collection changes and notifying of XHR activity](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding)
+
+more to come...
+
+### Multiple models and collections
+React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
+
+The ```modelAware```/```collectionAware``` mixin is not required if you want to have only a single model/collection bound using the ```model```/```collection``` property.
+
+#### Overriding the default model/collection keys
+If you wanted to have a component that use the ```foo``` property for component model bindings
+```
+    React.createClass({
+      mixins: ['modelAware("foo")', 'modelEvents'],
+      events: {
+        'model:bar': function() {
+          // this will be executed when the model assigned to the
+          // "foo" property triggers the "bar" event
+        }
+      }
+    });
+```
+
+#### Multiple object bindings
+Or, if you want to have 2 components (identified by the ```foo``` and ```bar``` property names) that, for example, you want to listen to change events on
+```
+    React.createClass({
+      mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
+      events: {
+        'model:theEvent': function() {
+          // this will be executed when the model assigned to the
+          // "foo" or "bar" property triggers the "theEvent" event
+        }
+      },
+      render: function() {
+        // this will be executed when the model assigned to the
+        // "foo" or "bar" property triggers the "change" event
+        // because of the "modelChangeAware" mixin
+      }
+    });
+```
+
+The same functionality works with collection events as well.
+
 
 
 API: Input Components
@@ -961,51 +1019,3 @@ to a single object
     { field1Key: errorMessage, field2Key: errorMessage, ... }
 ```
 
-
-Sections
---------------
-### Usage tutorials
-
-* [Handling model/collection changes and notifying of XHR activity](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding)
-
-more to come...
-
-### Multiple models and collections
-React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
-
-The ```modelAware```/```collectionAware``` mixin is not required if you want to have only a single model/collection bound using the ```model```/```collection``` property.
-
-#### Overriding the default model/collection keys
-If you wanted to have a component that use the ```foo``` property for component model bindings
-```
-    React.createClass({
-      mixins: ['modelAware("foo")', 'modelEvents'],
-      events: {
-        'model:bar': function() {
-          // this will be executed when the model assigned to the
-          // "foo" property triggers the "bar" event
-        }
-      }
-    });
-```
-
-#### Multiple object bindings
-Or, if you want to have 2 components (identified by the ```foo``` and ```bar``` property names) that, for example, you want to listen to change events on
-```
-    React.createClass({
-      mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
-      events: {
-        'model:theEvent': function() {
-          // this will be executed when the model assigned to the
-          // "foo" or "bar" property triggers the "theEvent" event
-        }
-      },
-      render: function() {
-        // this will be executed when the model assigned to the
-        // "foo" or "bar" property triggers the "change" event
-        // because of the "modelChangeAware" mixin
-      }
-    });
-```
-
-The same functionality works with collection events as well.
