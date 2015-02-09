@@ -1,11 +1,17 @@
-This is a simple progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.  All mixins referenced have similar model-oriented siblings which can be used by replacing "collection" with "model".  For example "collectionChangeAware" to "modelChangeAware".
+This is a simple progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.
 
+All mixins referenced have similar model-oriented siblings which can be used by replacing "collection" with "model".  For example "collectionChangeAware" to "modelChangeAware".
+
+
+### Running the examples
 The source code can be found for each step in this tutorial in the current directory.  To run each example, download the code and ```cd``` into an individual step and run
+
 ```
-npm install
-webpack-dev-server
+  npm install
+  webpack-dev-server
 ```
-the browse to [http://localhost:8080](http://localhost:8080)
+
+then browse to [http://localhost:8080](http://localhost:8080)
 
 
 ### Step 1: baseline
@@ -143,6 +149,9 @@ As a baseline, we'll create a small app that has a model with a validation funct
 
 
 ## Step 2: Use Backbone.input.Text to populate form fields with model values automatically
+
+[view source](./step2/example.js)
+
 Replace out the standard React ```input``` component with [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline).
 
 Update the InputWithLabel component so we only provide the model and keys and the Text component figures out the values.
@@ -181,6 +190,9 @@ Now, if the model value changes and the input field has not been modified by the
 
 
 ## Step 3: Use modelPopulate
+
+[view source](./step3/example.js)
+
 Since our input component implements the getValue method and a name property is provided, we can use the [modelPopulate](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelPopulate?focus=outline) mixin to quickly populate the model from the input fields.
 
 Simply our form submit code using ```modelPopulate```.  The function argument will only be called if the model is valid after applying the form field attributes.
@@ -195,6 +207,9 @@ Simply our form submit code using ```modelPopulate```.  The function argument wi
 
 
 ## Step 4: 2 way binding
+
+[view source](./step4/example.js)
+
 Depending on your needs, you can use 2 way binding so the model will be continually updated as the user makes input field changes.
 
 Add the bind={true} Text attribute
@@ -219,6 +234,9 @@ Right now, the model validate will not be called when the model is updated so yo
 
 
 ## Step 5: Validate the model as you type
+
+[view source](./step5/example.js)
+
 It is possible to validate input field values as the user types using the model validate functionality.  To do so, pass ```{validateField: true}``` as the ```bind``` parameter.
 
 Note: you could also just pass ```{validate: true}``` but that will always validate ***all*** current model attributes rather than just the attributes that were changed.
@@ -247,6 +265,9 @@ Now the error message will be cleared when the field passes validation;
 
 
 ## Step 6: Field error messages
+
+[view source](./step6/example.js)
+
 Use the [modelInvalidAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) to allow the component to listen for ***field specific*** ```invalid``` events to display field level validation messages.
 
 We have no need for our form level validation messages anymore so we will be removing the code we added in the last step and a lot more.
@@ -323,7 +344,7 @@ and
       {errorComponent}
 ```
 
-We don't need to listen for invalid events at the form level so remove
+The ```onInvalid``` method won't be called anymore so remove that
 
 ```
     onInvalid: function(model, errors) {

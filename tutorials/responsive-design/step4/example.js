@@ -6,7 +6,7 @@ var $ = require('jquery');
 require('react-backbone/with-deps')(React, Backbone, _, $);
 
 
-// create a function for this mixin so we can reuse it in this function
+// simple function to return the state object that contains the "profile" value
 function getStateValues (size, self) {
   var width = $(self.getDOMNode()).width();
   return {
@@ -14,17 +14,24 @@ function getStateValues (size, self) {
   };
 }
 
+// instead of using a standard object for the mixin attributes, we can use a function
+// which returns the object to allow us to reference the function parameters in our mixin functions
 React.mixins.add('responsive', function(size) {
   size = size || 600;
+
   return {
+    // the "manageEvents" method is available because we import the "events" mixin
     mixins: ['events'],
 
     getInitialState: function() {
+
+      // throttle an event handler every 300 ms which is bound to the "resize" window event
       this.manageEvents({
         '*throttle(300)->window:resize': function() {
           this.setState(getStateValues(size, this));
         }
       });
+
       // make a guess which will be replaced when the component is mounted
       return { profile: 'large' };
     },
