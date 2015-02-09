@@ -21,13 +21,16 @@ As a baseline, we'll create a small app that has a model with a validation funct
 [view source](./step1/example.js)
 
 
-## Step 2: Use Backbone.input.Text to populate form fields with model values automatically
+## Step 2: Use Backbone.input.Text components
 
 [view source](./step2/example.js)
 
-Replace out the standard React ```input``` component with [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline).
+We can use [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline) components to populate form fields with model values automatically.
+
+Replace out the standard React ```input``` component with ```Backbone.input.Text```.
 
 Update the InputWithLabel component so we only provide the model and keys and the Text component figures out the values.
+
 ```
     var Text = Backbone.input.Text;
     var InputWithLabel = React.createClass({
