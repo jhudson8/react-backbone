@@ -71,6 +71,14 @@ Now, if the model value changes and the input field has not been modified by the
 
 Since our input component implements the getValue method and a name property is provided, we can use the [modelPopulate](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelPopulate?focus=outline) mixin to quickly populate the model from the input fields.
 
+Include the ```modelPopulate``` mixin
+
+```
+    var TestComponent = React.createClass({
+      mixins: ['modelPopulate'],
+      ...
+```
+
 Simply our form submit code using ```modelPopulate```.  The function argument will only be called if the model is valid after applying the form field attributes.
 
 ```
