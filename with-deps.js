@@ -26,8 +26,8 @@
 /*
   Container script which includes the following:
     jhudson8/backbone-xhr-events 0.9.5
-    jhudson8/react-mixin-manager 0.11.1
-    jhudson8/react-events 0.7.9
+    jhudson8/react-mixin-manager 0.11.2
+    jhudson8/react-events 0.8.0
     jhudson8/react-backbone 0.17.2
 */
  (function(main) {
@@ -385,12 +385,20 @@
                     if (checkAgain) {
                         get([mixin], index, initiatedOnce, rtn);
                     } else if (!skip) {
+                        checkForInlineMixins(mixin, rtn);
                         rtn.push(mixin);
                     }
 
                 } else {
                     throw new Error('invalid mixin "' + name + '"');
                 }
+            }
+        }
+
+        // if the mixin has a "mixins" attribute, clone and add those dependencies first
+        function checkForInlineMixins(mixin, rtn) {
+            if (mixin.mixins) {
+                get(mixin.mixins, index, initiatedOnce, rtn);
             }
         }
 
@@ -403,21 +411,7 @@
                     // add the named mixin and all of it's dependencies
                     addTo(mixin);
                 } else {
-                    // if the mixin has a "mixins" attribute, clone and add those dependencies first
-                    if (mixin.mixins) {
-                        get(mixin.mixins, index, initiatedOnce, rtn);
-                        var _mixin = _mixins[mixin];
-                        if (!_mixin) {
-                            _mixin = {};
-                            for (var key in mixin) {
-                                if (key !== 'mixins') {
-                                    _mixin[key] = mixin[key];
-                                }
-                            }
-                        }
-                        _mixins[mixin] = _mixin;
-                        mixin = _mixin;
-                    }
+                    checkForInlineMixins(mixin, rtn);
 
                     // just add the mixin normally
                     rtn.push(mixin);
@@ -520,10 +514,25 @@
         get: function() {
             var rtn = [],
                 index = {},
-                initiatedOnce = {};
+                initiatedOnce = {},
+                _toClone, _mixin;
 
             get(Array.prototype.slice.call(arguments), index, initiatedOnce, rtn);
             applyInitiatedOnceArgs(initiatedOnce, rtn);
+            // clone any mixins with a .mixins attribute and remove the attribute
+            // because it has already been extracted out
+            for (var i=0; i<rtn.length; i++) {
+                if (rtn[i].mixins) {
+                    _toClone = rtn[i];
+                    _mixin = {};
+                    for (var key in _toClone) {
+                        if (_toClone.hasOwnProperty(key) && key !== 'mixins') {
+                            _mixin[key] = _toClone[key];
+                        }
+                    }
+                    rtn[i] = _mixin;
+                }
+            }
             return rtn;
         },
 
@@ -1060,6 +1069,24 @@
         };
     });
 
+    function handleEvents(events, context, initialize) {
+        var handlers = getState('_eventHandlers', context) || [], handler;
+        events = normalizeEvents(events);
+        for (var ev in events) {
+            if (events.hasOwnProperty(ev)) {
+                handler = createHandler(ev, events[ev], context);
+                if (handler.initialize) {
+                    handler.initialize.call(context);
+                }
+                handlers.push(handler);
+                if (initialize && context.isMounted()) {
+                    handler.on.call(this);
+                }
+            }
+        }
+        return handlers;
+    }
+
     //// REGISTER THE REACT MIXIN
     React.mixins.add('events', function() {
         var rtn = [{
@@ -1085,23 +1112,15 @@
                 };
             },
 
+            manageEvents: function(events) {
+                setState({
+                    '_eventHandlers': handleEvents(events, this, true)
+                }, this);
+            },
+
             getInitialState: function() {
-                var handlers = [];
-                if (this.events) {
-                    var events = normalizeEvents(this.events);
-                    var handler;
-                    for (var ev in events) {
-                        if (events.hasOwnProperty(ev)) {
-                            handler = createHandler(ev, events[ev], this);
-                            if (handler.initialize) {
-                                handler.initialize.call(this);
-                            }
-                            handlers.push(handler);
-                        }
-                    }
-                }
                 return {
-                    _eventHandlers: handlers
+                    _eventHandlers: handleEvents(this.events, this)
                 };
             },
 
@@ -1432,25 +1451,6 @@
                 }
             });
         }
-    }
-
-    // parse the arguments and convert string values into their native counterparts
-    function parseArgs(args) {
-        var arg;
-        for (var i = 0; i < args.length; i++) {
-            arg = args[i];
-            if (arg === 'true') {
-                arg = true;
-            } else if (arg === 'false') {
-                arg = false;
-            } else if (arg.match(/^[0-9]+$/)) {
-                arg = parseInt(arg);
-            } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
-                arg = parseFloat(arg);
-            }
-            args[i] = arg;
-        }
-        return args;
     }
 
     // helpers to get and set a model value when only the component is known
@@ -1852,6 +1852,12 @@
                         }, this);
                     }
                 });
+                this.modelOn('change:' + key, function() {
+                    // if the change was successful, assume we are no longer invalid
+                    setState({
+                        invalid: undefined
+                    }, this);
+                });
             }
             return {};
         }
@@ -1863,7 +1869,6 @@
         var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
         _.each(reactEventSpecials, function(name) {
             specials[name] = specials[name] || function(callback, args) {
-                args = parseArgs(args);
                 args.splice(0, 0, callback);
                 return _[name].apply(_, args);
             };
@@ -1879,9 +1884,21 @@
             var options = (_.isString(bind) || bind === true) ? {twoWayBinding: true} : bind;
             return function(ev) {
                 var model = context.getModel(),
-                    key = getKey(context);
+                    key = getKey(context),
+                    toSet = {};
+                toSet[key] = context.getValue();
                 if (model && key) {
-                    model.set(key, context.getValue(), options);
+                    if (options.validateField) {
+                        // special validation which won't include all model attributes when validating
+                        var error = model.validate(toSet, options);
+                        if (error) {
+                            model.trigger('invalid', model, error, _.extend(options, {validationError: error}));
+                        } else {
+                            model.set(toSet, options);
+                        }
+                    } else {
+                        model.set(toSet, options);
+                    }
                 }
                 if (context.props.onChange) {
                     context.props.onChange(ev);
