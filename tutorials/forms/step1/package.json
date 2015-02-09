@@ -1,0 +1,26 @@
+{
+  "name": "foo",
+  "version": "0.0.1",
+  "description": "foo",
+  "scripts": {
+    "clean": "rm -rf ./node_modules/ ./bower_components/",
+    "test": "rm -rf ./test/dist; gulp prepare-test; mocha ./test/test.js",
+    "start": "webpack-dev-server ./js/entry.js ./dist/bundle.js --watch"
+  },
+  "keywords": [],
+  "author": "Joe Hudson",
+  "dependencies": {
+    "backbone": "^1.1.2",
+    "jquery": "~2.1",
+    "react": "^0.12.2",
+    "underscore": "~1.7",
+    "react-backbone": "*"
+  },
+  "devDependencies": {
+    "css-loader": "~0.9",
+    "html-webpack-plugin": "^1.1.0",
+    "jsx-loader": "^0.12.2",
+    "webpack": "^1.5.3",
+    "webpack-dev-server": "^1.7.0"
+  }
+}
