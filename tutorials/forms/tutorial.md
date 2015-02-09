@@ -21,7 +21,7 @@ As a baseline, we'll create a small app that has a model with a validation funct
 [view source](./step1/example.js)
 
 
-## Step 2: Use Backbone.input.Text components
+### Step 2: Use Backbone.input.Text components
 
 [view source](./step2/example.js)
 
