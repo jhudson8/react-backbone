@@ -9,6 +9,9 @@ the browse to [http://localhost:8080](http://localhost:8080)
 
 
 ### Step 1: baseline
+
+[view source](./step1/example.js)
+
 As a baseline, we'll create a small app that has a model with a validation function and a form which will have input fields with default values from the model values and will message the user when the form is invalid (after a form submit).
 
 ```
