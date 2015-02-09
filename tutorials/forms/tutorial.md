@@ -4,7 +4,7 @@ All mixins referenced have similar model-oriented siblings which can be used by 
 
 
 ### Running the examples
-The source code can be found for each step in this tutorial in the current directory.  To run each example, download the code and ```cd``` into an individual step and run
+The source code can be found for each step in this tutorial in the [current directory](./).  To run each example, download the code and ```cd``` into an individual step and run
 
 ```
   npm install
