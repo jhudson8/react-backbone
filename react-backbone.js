@@ -264,25 +264,6 @@
         }
     }
 
-    // parse the arguments and convert string values into their native counterparts
-    function parseArgs(args) {
-        var arg;
-        for (var i = 0; i < args.length; i++) {
-            arg = args[i];
-            if (arg === 'true') {
-                arg = true;
-            } else if (arg === 'false') {
-                arg = false;
-            } else if (arg.match(/^[0-9]+$/)) {
-                arg = parseInt(arg);
-            } else if (arg.match(/^[0-9]+\.[0-9]+/)) {
-                arg = parseFloat(arg);
-            }
-            args[i] = arg;
-        }
-        return args;
-    }
-
     // helpers to get and set a model value when only the component is known
     Backbone.input = Backbone.input || {};
     var getModelValue = Backbone.input.getModelValue = function(component) {
@@ -699,7 +680,6 @@
         var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
         _.each(reactEventSpecials, function(name) {
             specials[name] = specials[name] || function(callback, args) {
-                args = parseArgs(args);
                 args.splice(0, 0, callback);
                 return _[name].apply(_, args);
             };
