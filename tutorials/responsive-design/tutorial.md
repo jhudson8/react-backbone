@@ -1,4 +1,4 @@
-In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.
+In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.  We will create a mixin which will set a state attribute called "profile" which will either be "large" or "small" based on the width of the component.
 
 The source code can be found for each step in this tutorial in the current directory.  To run each example, download the code and ```cd``` into an individual step and run
 ```
@@ -166,7 +166,9 @@ Provide the mixin parameter when we create our component class
 
 ```
 var TestComponent = React.createClass({
-  mixins: ['responsive(300)'],
+  // now the component width breakpoint will be at 500px
+  mixins: ['responsive(500)'],
+
   render: function() {
     return <div>{this.state.profile}</div>
   }

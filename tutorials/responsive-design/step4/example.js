@@ -37,7 +37,9 @@ React.mixins.add('responsive', function(size) {
 
 
 var TestComponent = React.createClass({
-  mixins: ['responsive(300)'],
+  // now the component width breakpoint will be at 500px
+  mixins: ['responsive(500)'],
+
   render: function() {
     return <div>{this.state.profile}</div>
   }
