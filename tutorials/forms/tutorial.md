@@ -152,7 +152,7 @@ Now the error message will be cleared when the field passes validation;
 
 [view source](./step6/example.js)
 
-Use the [modelInvalidAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) to allow the component to listen for ***field specific*** ```invalid``` events to display field level validation messages.
+Use the [modelInvalidAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) mixin to allow the component to listen for ***field specific*** ```invalid``` events to display field level validation messages.
 
 We have no need for our form level validation messages anymore so we will be removing the code we added in the last step and a lot more.
 
