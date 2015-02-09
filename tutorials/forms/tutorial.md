@@ -181,6 +181,7 @@ When rendering, show the error message using ```this.state.invalid```
 We don't need to listen for the model change events to clear out the state so remove the included mixins and events hash
 
 ```
+      // remove this
       mixins: ['modelEvents'],
 
       events: {
@@ -193,7 +194,7 @@ We don't need to listen for the model change events to clear out the state so re
 We don't need to listen for the ```invalid``` event in our form component anymore
 
 ```
-    // listen for the invalid event so we can message when the data is bad
+    // remove this
     componentDidMount: function() {
       this.props.model.on('invalid', this.onInvalid);
     },
@@ -202,33 +203,35 @@ We don't need to listen for the ```invalid``` event in our form component anymor
     },
 ```
 
-We don't need to render the form level error message so remove all that
+We don't need to render the form level error message
 
 ```
-  render: function() {
-    var model = this.props.model,
-        error = this.state.error;
+    // remove this
+    render: function() {
+      var model = this.props.model,
+          error = this.state.error;
 
-    // if we've got an error, show it
-    var errorComponent = error && (
-      <div>
-        Error: {error}
-        <br/><br/>
-      </div>
-    );
+      // if we've got an error, show it
+      var errorComponent = error && (
+        <div>
+          Error: {error}
+          <br/><br/>
+        </div>
+      );
 ```
 
 and
 
 ```
-    // don't use {errorComponent} when rendering
+    // remove the {errorComponent} reference
     return <form onSubmit={this.onSubmit}>
       {errorComponent}
 ```
 
-The ```onInvalid``` method won't be called anymore so remove that
+The ```onInvalid``` method won't be called anymore
 
 ```
+    // remove this
     onInvalid: function(model, errors) {
       // for simplicity, we'll just show the first error
       var errorStr = [];
