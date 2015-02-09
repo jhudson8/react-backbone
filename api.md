@@ -92,7 +92,6 @@ Sections
 * [Forms validation and input field binding](https://github.com/jhudson8/react-backbone/tree/master/tutorials/forms/tutorial.md)
 * [Using managed events and mixin dependencies to create a responsive component](https://github.com/jhudson8/react-backbone/tree/master/tutorials/responsive-design/tutorial.md)
 
-more to come...
 
 ### Multiple models and collections
 React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
