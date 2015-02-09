@@ -102,7 +102,7 @@ Add the bind={true} Text attribute
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={true}/>
 ```
 
-No need to call modelPopulate anymore, just check to see if the model is valid
+No need to call modelPopulate anymore, just check to see if the model is valid and remove the ```modelPopulate``` mixin we included in the previous step.
 
 ```
     onSubmit: function(ev) {

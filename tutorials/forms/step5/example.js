@@ -53,7 +53,7 @@ var InputWithLabel = React.createClass({
 
 // and here is the overall form component
 var TestComponent = React.createClass({
-  mixins: ['modelPopulate', 'modelEvents'],
+  mixins: ['modelEvents'],
 
   events: {
     'model:change': function() {
