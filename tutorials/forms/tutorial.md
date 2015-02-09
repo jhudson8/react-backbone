@@ -178,8 +178,6 @@ When rendering, show the error message using ```this.state.invalid```
   },
 ```
 
-Remove a lot of code...
-
 We don't need to listen for the model change events to clear out the state so remove (but keep the "modelPopulate" mixin)
 
 ```
