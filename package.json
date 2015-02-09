@@ -2,7 +2,7 @@
   "name": "react-backbone",
   "version": "0.18.0",
   "author": "Joe Hudson <joehud@gmail.com>",
-  "description": "backbone-aware mixins for React",
+  "description": "backbone-aware mixins for React and a whole lot more",
   "repository": {
     "type": "git",
     "url": "https://github.com/jhudson8/react-backbone.git"
