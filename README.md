@@ -25,15 +25,16 @@ This project indludes/depends on the following other projects
 * [Using managed events and mixin dependencies to create a responsive component](https://github.com/jhudson8/react-backbone/tree/master/tutorials/responsive-design/tutorial.md)
 
 
+### Other React projects that may interest you
+
+* [jhudson8/react-semantic-ui](https://github.com/jhudson8/react-semantic-ui)
+* [jhudson8/react-css-builder](https://github.com/jhudson8/react-css-builder)
+* [jhudson8/gulp-mocha-tdd](https://github.com/jhudson8/gulp-mocha-tdd) (React friendly)
+
+
 ## Support me
 
 If you like this project you may support me by donating something on Gittip, starring this repository or reporting bugs and ideas in the issue section.
 
 [![gittip](http://jhudson8.github.io/react-mixin-manager/gittip-button.jpg)](https://gratipay.com/jhudson8/)
 
-
-### Other React projects that may interest you
-
-* [jhudson8/react-semantic-ui](https://github.com/jhudson8/react-semantic-ui)
-* [jhudson8/react-css-builder](https://github.com/jhudson8/react-css-builder)
-* [jhudson8/gulp-mocha-tdd](https://github.com/jhudson8/gulp-mocha-tdd) (React friendly)
