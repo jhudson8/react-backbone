@@ -178,10 +178,10 @@ When rendering, show the error message using ```this.state.invalid```
   },
 ```
 
-We don't need to listen for the model change events to clear out the state so remove (but keep the "modelPopulate" mixin)
+We don't need to listen for the model change events to clear out the state so remove the included mixins and events hash
 
 ```
-      mixins: ['modelPopulate', 'modelEvents'],
+      mixins: ['modelEvents'],
 
       events: {
         'model:change': function() {
