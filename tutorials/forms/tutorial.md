@@ -135,7 +135,7 @@ Add the ```modelEvents``` mixin and the events hash
 
 ```
     var TestComponent = React.createClass({
-      mixins: ['modelPopulate', 'modelEvents'],
+      mixins: ['modelEvents'],
 
       events: {
         'model:change': function() {
