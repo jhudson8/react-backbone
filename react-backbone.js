@@ -682,6 +682,12 @@
                         }, this);
                     }
                 });
+                this.modelOn('change:' + key, function() {
+                    // if the change was successful, assume we are no longer invalid
+                    setState({
+                        invalid: undefined
+                    }, this);
+                });
             }
             return {};
         }
