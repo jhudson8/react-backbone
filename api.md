@@ -89,6 +89,8 @@ Sections
 ### Usage tutorials
 
 * [Handling model/collection changes and notifying of XHR activity](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding)
+* [Forms validation and input field binding](https://github.com/jhudson8/react-backbone/tree/master/tutorials/forms)
+* [Managed events used to implement a "responsive design" mixin](https://github.com/jhudson8/react-backbone/tree/master/tutorials/responsive-design)
 
 more to come...
 
