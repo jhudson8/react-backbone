@@ -148,7 +148,7 @@ Add the ```modelEvents``` mixin and the events hash
 Now the error message will be cleared when the field passes validation;
 
 
-## Step 6: Field error messages
+## Step 6: Field level error messages
 
 [view source](./step6/example.js)
 
