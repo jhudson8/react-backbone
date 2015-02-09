@@ -20,7 +20,7 @@ As a baseline, we'll create a component which contains all the code to listen fo
 
 [view source](./step1/example.js)
 
-In this first pass, the ```onResize``` callback will be execute any time the resize event is triggered.  This is not ideal so we will handle that in the next step.
+In this first pass, the ```onResize``` callback will be executed any time the resize event is triggered.  This is not ideal so we will handle that in the next step.
 
 While this isn't an extreme amount of code, it clouds the component logic, is cumbersome and has potential for memory leaks with the manual window event bindings.
 
