@@ -46,7 +46,7 @@ Update the InputWithLabel component so we only provide the model and keys and th
       ...
 ```
 
-This ```Backbone.input.Text``` component already has a ```getValue``` function so just use it 
+This ```Backbone.input.Text``` component already has a ```getValue``` function so just use it in our ```InputWithLabel``` component.
 
 ```
     // allow the value of the input component to be retrieved
