@@ -2,7 +2,31 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.0...master)
+
+## v0.18.0 - February 9th, 2015
+- update dependencies - e1eb0dd
+
+* react-mixin-manager 0.11.1 -> 0.11.2
+* react-events 0.7.9 -> 0.8.0
+
+Take a look at the [new tutorials](https://github.com/jhudson8/react-backbone/tree/master/tutorials) to help get the most out of react-backbone
+
+- add the responsive design tutorial - ac983da
+- add the forms tutorial - f5a4f4f
+- add collection handling / XHR totirial - dabc288
+
+- add the "validateField" 2 way binding option - aed43d9
+- make the "modelInvalidAware" mixin to reset state when the model changes - 6d8ee5b
+
+The bind input field can be the folling values
+
+* ```true``` to initiate 2-way binding (when the input field is updated, the model will be updated to match)
+* ```{validate: true}``` to validate the entire model when the field is updated
+* ```{validateField: true}``` to validate *just* the updated field
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.17.2...v0.18.0)
 
 ## v0.17.2 - February 5th, 2015
 - react-mixin-manager 0.10 -> 0.11 - 0bebe92
