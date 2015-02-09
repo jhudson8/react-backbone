@@ -1,0 +1,179 @@
+In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.
+
+The source code can be found for each step in this tutorial in the current directory.  To run each example, download the code and ```cd``` into an individual step and run
+```
+npm install
+webpack-dev-server
+```
+the browse to [http://localhost:8080](http://localhost:8080)
+
+
+### Step 1: baseline
+As a baseline, we'll create a component which contains all the code to listen for window resize events and set a state value accordingly so that the component will render when the window resizes.
+
+```
+// initialize react-backbone
+var React = require('react');
+var Backbone = require('backbone');
+var _ = require('underscore');
+var $ = require('jquery');
+require('react-backbone/with-deps')(React, Backbone, _, $);
+
+
+var TestComponent = React.createClass({
+
+  getInitialState: function() {
+    // give a default value so the initial render has a value to reference
+    return { profile: 'small' };
+  },
+
+  componentDidMount: function() {
+    window.addEventListener('resize', this.onResize);
+  },
+
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.onResize);
+  },
+
+  render: function() {
+    return <div>{this.state.profile}</div>
+  },
+
+  onResize: function() {
+    var width = $(this.getDOMNode()).width();
+    this.setState({
+      profile: width > 600 ? 'large' : 'small'
+    })
+  }
+});
+
+
+// INITIAL RENDER
+React.render(<TestComponent/>, document.body);
+
+```
+In this first pass, the ```onResize``` callback will be execute any time the resize event is triggered.  This is not ideal so we will handle that in the next step.
+
+While this isn't an extreme amount of code, it clouds the component logic, is cumbersome and has potential for memory leaks with the manual window event bindings.
+
+
+### Step 2: Throttle the resize listener
+
+We aren't yet using react-backbone but we need to first throttle the resize event listener to reduce callback executions.
+
+throttle the resize handler and keep a reference to the throttled callback so we can properly unbind
+```
+  componentDidMount: function() {
+    var resizeListener = _.throttle(this.onResize, 300);
+    window.addEventListener('resize', resizeListener);
+    // so we can keep a reference to the callback to unbind
+    this.state.resizeListener = resizeListener;
+  },
+```
+and unbind our throttled listener callback
+```
+  componentWillUnmount: function() {
+    window.removeEventListener('resize', this.state.resizeListener);
+  },
+```
+
+
+### Step 3: Create a mixin using react-backbone managed event bindings
+
+We are now going to [register a mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager?focus=outline) using [managed events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-events?focus=outline).  We no longer have to worry about whether we unbound our resize listener.  We will also be using the [throttle callback wrapper](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/*throttle?focus=outline).
+
+Managed mixins are handled slightly differently depndending on if a component or a mixin is including them.  We're referencing managed events from a mixin but as a component you only need to include the ```events``` mixin and add an ```events``` hash attribute on the component.
+
+```
+// create a function for this mixin so we can reuse it
+function getStateValues (self) {
+  var width = $(self.getDOMNode()).width();
+  return {
+    profile: width > 600 ? 'large' : 'small'
+  };
+}
+
+// while this mixin is in place here, it would not normally live with the component code (simplifying things)
+React.mixins.add('responsive', {
+
+  // we depend on the "events" mixin to expose the "manageEvents" function
+  mixins: ['events'],
+
+  getInitialState: function() {
+
+    // this is how mixins add managed events
+    this.manageEvents({
+
+      // throttle the function callback and bind to the window resize event
+      '*throttle(300)->window:resize': function() {
+        this.setState(getStateValues(this));
+      }
+    });
+
+    // make a guess which will be replaced when the component is mounted
+    return { profile: 'large' };
+  },
+
+  componentDidMount: function() {
+    // set the value initially
+    this.setState(getStateValues(this));
+  }
+});
+
+
+// MEANINGFUL COMPONENT CODE
+// notice how easy it is to see what this component is doing now
+var TestComponent = React.createClass({
+  mixins: ['responsive'],
+  render: function() {
+    return <div>{this.state.profile}</div>
+  }
+});
+```
+
+
+### Step 4: Allow components to set the responsive breakpoint
+
+react-backbone mixins have the ability to [accept parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) defined by the components that reference them.
+
+Refactor our utility function to allow the width to be provided
+```
+function getStateValues (size, self) {
+  var width = $(self.getDOMNode()).width();
+  return {
+    profile: width > size ? 'large' : 'small'
+  };
+}
+```
+
+Wrap the mixin definition in a function callback which accepts a paramter (the responsive breakpoint width).
+
+```
+React.mixins.add('responsive', function(size) {
+  size = size || 600;
+  return {
+    mixins: ['events'],
+
+    getInitialState: function() {
+      this.manageEvents({
+        '*throttle(300)->window:resize': function() {
+          this.setState(getStateValues(size, this));
+        }
+    ...
+```
+
+Provide the mixin parameter when we create our component class
+
+```
+var TestComponent = React.createClass({
+  mixins: ['responsive(300)'],
+  render: function() {
+    return <div>{this.state.profile}</div>
+  }
+});
+```
+
+
+### All done
+
+All done but there is so much more you can do.  Check out some of the [other managed events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-events/api/Event%20Binding%20Definitions?focus=outline) or [event callback wrappers](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/api/Event%20Binding%20Definitions?focus=outline).
