@@ -695,9 +695,21 @@
             var options = (_.isString(bind) || bind === true) ? {twoWayBinding: true} : bind;
             return function(ev) {
                 var model = context.getModel(),
-                    key = getKey(context);
+                    key = getKey(context),
+                    toSet = {};
+                toSet[key] = context.getValue();
                 if (model && key) {
-                    model.set(key, context.getValue(), options);
+                    if (options.validateField) {
+                        // special validation which won't include all model attributes when validating
+                        var error = model.validate(toSet, options);
+                        if (error) {
+                            model.trigger('invalid', model, error, _.extend(options, {validationError: error}));
+                        } else {
+                            model.set(toSet, options);
+                        }
+                    } else {
+                        model.set(toSet, options);
+                    }
                 }
                 if (context.props.onChange) {
                     context.props.onChange(ev);

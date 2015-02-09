@@ -151,7 +151,7 @@ In most cases, ```getValue``` and ```getDOMValue``` are the same.  But, for chec
 
 Each input component can accept the following properties (in addition to the standard DOM element properties)
 * ***name***: should be used on input components representing the model key the field should be initialized with (and what attribute key to use with modelPopulate).
-* **bind**: ```true``` to initiate 2-way binding (when the input field is updated, the model will be updated to match)
+* **bind**: ```true``` to initiate 2-way binding (when the input field is updated, the model will be updated to match), ```{validate: true}``` to validate the entire model when the field is updated, ```{validateField: true}``` to validate *just* the updated field
 
 
 ### Text
