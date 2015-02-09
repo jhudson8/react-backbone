@@ -32,7 +32,7 @@ This project indludes/depends on the following other projects
 * [jhudson8/gulp-mocha-tdd](https://github.com/jhudson8/gulp-mocha-tdd) (React friendly)
 
 
-## Support me
+### Support me
 
 If you like this project you may support me by donating something on Gittip, starring this repository or reporting bugs and ideas in the issue section.
 
