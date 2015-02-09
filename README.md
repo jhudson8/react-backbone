@@ -14,7 +14,7 @@ Give [Backbone](http://backbonejs.org/) awareness to your [React](http://faceboo
 
 ## Tutorials
 
-* [Handling model/collection changes and notifying of XHR activity](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding/tutorial.md)
+* [Handling model/collection changes and XHR loading indicators](https://github.com/jhudson8/react-backbone/tree/master/tutorials/collection-binding/tutorial.md)
 * [Forms validation and input field binding](https://github.com/jhudson8/react-backbone/tree/master/tutorials/forms/tutorial.md)
 * [Using managed events and mixin dependencies to create a responsive component](https://github.com/jhudson8/react-backbone/tree/master/tutorials/responsive-design/tutorial.md)
 
