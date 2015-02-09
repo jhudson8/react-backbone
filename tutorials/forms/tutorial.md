@@ -46,12 +46,12 @@ Update the InputWithLabel component so we only provide the model and keys and th
       ...
 ```
 
-This component already have a ```getValue``` function so just use that
+This component already has a ```getValue``` function so just use it 
 
 ```
     // allow the value of the input component to be retrieved
     getValue: function() {
-      return $(this.refs.input.getDOMNode()).val();
+      return this.refs.input.getValue();
     }
 ```
 
