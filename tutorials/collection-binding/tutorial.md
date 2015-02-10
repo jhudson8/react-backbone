@@ -140,7 +140,7 @@ But wait, this could be even easier... just include the [collectionChangeAware](
 
 [view source](./step6/example.js)
 
-We can use the [collectionXHRAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) mixin to set the ```state.loading``` property when any collection bound to the component is performing any XHR activity (in this case a fetch).
+We can use the [collectionXHRAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) mixin which will set the ```state.loading``` property to a truthy value when any collection bound to the component is performing any XHR activity (in this case a fetch operation).
 
 Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute when rendering
 
