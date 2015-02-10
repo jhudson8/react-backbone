@@ -62,20 +62,17 @@ var Component1Child = React.createClass({
 
 // ComponentB will trigger the "b:clicked" global event (with an event parameter) that ComponentA will consume
 var ComponentB = React.createClass({
+  mixins: ['events'],
+
   render: function() {
 
     // call our scoped function on click so we can reference our "foo" parameter
     return (
       <div>
-        <button type="button" onClick={this.triggerGlobalEvent}>Click me: ComponentB</button>
+        <button type="button" onClick={this.triggerWith(EventBus, 'b:clicked')}>Click me: ComponentB</button>
       </div>
     );
-  },
-
-  triggerGlobalEvent: function() {
-    // this will be triggered when this component's button is clicked
-    EventBus.trigger('b:clicked');
-  },
+  }
 });
 
 

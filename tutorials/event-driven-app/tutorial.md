@@ -82,6 +82,22 @@ Use triggerWith to trigger the event and provide a scoped parameter in the rende
     <button type="button" onClick={this.triggerWith('clicked', 'foo')}>click me: Component1Child</button>
 ```
 
+Use triggerWith to trigger the ```ComponentB``` global event (notice ```EventBus``` is the additional first parameter)
+
+```
+    <button type="button" onClick={this.triggerWith(EventBus, 'b:clicked')}>Click me: ComponentB</button>
+```
+
+And we have no need for the ```triggerGlobalEvent``` method in ```ComponentB``` so remove it
+
+```
+    // remove this
+    triggerGlobalEvent: function() {
+      // this will be triggered when this component's button is clicked
+      EventBus.trigger('b:clicked');
+    },
+```
+
 
 The ```events mixin``` will also provide implementations of ```on```, ```once```, ```off``` and ```trigger``` so remove the following code from ```Component1Child```
 
