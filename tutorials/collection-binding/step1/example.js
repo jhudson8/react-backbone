@@ -34,7 +34,7 @@ var RepositoriesView = React.createClass({
       return <RepositoryRow model={model}/>
     });
 
-    return <table><tr><th>name</th><th>description</th></tr>{rows}</table>
+    return <table><tr><th>name</th><th>description</th></tr>{rows}</table>;
   }
 });
 

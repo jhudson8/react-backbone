@@ -37,12 +37,13 @@ Update the Collection URL to support paging attributes
 Update the repositories view to show page navigation
 
 ```
-    ...
-    return (
-        <div>
-          <table><tr><th>name</th><th>description</th></tr>{rows}</table>
-          <button onClick={this.nextPage} type="button">Next Page</button>
-        </div>);
+        ...
+        return (
+          <div>
+            <table><tr><th>name</th><th>description</th></tr>{rows}</table>
+            <button onClick={this.nextPage} type="button">Next Page</button>
+          </div>
+        );
       },
 
       nextPage: function() {

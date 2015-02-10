@@ -37,10 +37,11 @@ var RepositoriesView = React.createClass({
     });
 
     return (
-    <div>
-      <table><tr><th>name</th><th>description</th></tr>{rows}</table>
-      <button onClick={this.nextPage} type="button">Next Page</button>
-    </div>);
+      <div>
+        <table><tr><th>name</th><th>description</th></tr>{rows}</table>
+        <button onClick={this.nextPage} type="button">Next Page</button>
+      </div>
+    );
   },
 
   nextPage: function() {
