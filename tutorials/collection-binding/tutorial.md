@@ -155,7 +155,7 @@ Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute
         ...
 ```
 
-The githum API is pretty fast but if you watch closely you'll be able to see the loading indicator.
+The github API is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
 
 ### Step 7: Change collection property name
