@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.1...master)
+
+## v0.18.1 - February 10th, 2015
+- bump react-events 0.8.0 -> 0.8.1 - fdf4b09
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.0...v0.18.1)
 
 ## v0.18.0 - February 9th, 2015
 - update dependencies - e1eb0dd
