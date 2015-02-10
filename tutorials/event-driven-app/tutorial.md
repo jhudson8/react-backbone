@@ -117,7 +117,7 @@ The ```events mixin``` will also provide implementations of ```on```, ```once```
 
 ### Step 4: Create a custom global managed event
 
-[view source](./step3/example.js)
+[view source](./step4/example.js)
 
 We can enhance what is available in the ```events object``` using [React.events.handle](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/React.events/handle?focus=outline).  We will create a handler to trigger global event bus methods so we can use "app:{event name}" shorthand in our ```events object```.
 
