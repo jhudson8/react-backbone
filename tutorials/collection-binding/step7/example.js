@@ -31,6 +31,7 @@ var RepositoryRow = React.createClass({
 
 var RepositoriesView = React.createClass({
   mixins: ['collectionAware("repositories")', 'collectionChangeAware', 'collectionXHRAware'],
+
   render: function() {
     if (this.state.loading) {
       return <div>'Loading...'</div>;

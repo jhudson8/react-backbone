@@ -109,12 +109,16 @@ and when we start the app
 
 Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
-remove the getInitialState code and add the ```events``` hash
+remove the getInitialState code, include the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) mixin and the ```events``` hash
 
 ```
-    events: {
-      'collection:add': 'forceUpdate'
-    }
+    var RepositoriesView = React.createClass({
+      mixins: ['collectionEvents'],
+
+      events: {
+        'collection:add': 'forceUpdate'
+      },
+      ...
 ```
 
 
@@ -124,10 +128,11 @@ remove the getInitialState code and add the ```events``` hash
 
 But wait, this could be even easier... just include the [collectionChangeAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionChangeAware?focus=outline) mixin instead of the ```collectionEvents``` mixin.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency of ```collectionChangeAware```).
 
-remove the getInitialState code and add the ```events``` hash
 
 ```
-    mixins: ['collectionChangeAware'],
+    var RepositoriesView = React.createClass({
+      mixins: ['collectionChangeAware'],
+      ...
 ```
 
 
@@ -142,6 +147,7 @@ Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute
 ```
     var RepositoriesView = React.createClass({
       mixins: ['collectionChangeAware', 'collectionXHRAware'],
+
       render: function() {
         if (this.state.loading) {
           return 'Loading...';

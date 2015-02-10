@@ -32,6 +32,7 @@ var RepositoryRow = React.createClass({
 
 var RepositoriesView = React.createClass({
   mixins: ['collectionChangeAware'],
+
   render: function() {
     var rows = this.props.collection.map(function(model) {
       return <RepositoryRow model={model}/>

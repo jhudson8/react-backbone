@@ -32,9 +32,11 @@ var RepositoryRow = React.createClass({
 
 var RepositoriesView = React.createClass({
   mixins: ['collectionEvents'],
+
   events: {
     'collection:add': 'forceUpdate'
   },
+
   render: function() {
     var rows = this.props.collection.map(function(model) {
       return <RepositoryRow model={model}/>
