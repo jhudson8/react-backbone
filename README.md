@@ -15,6 +15,9 @@ This project indludes/depends on the following other projects
 * [jhudson8/react-events](https://github.com/jhudson8/react-events)
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
+
+## Docs
+
 [View the installation and API docs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
 
 
