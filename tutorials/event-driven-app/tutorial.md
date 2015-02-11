@@ -117,7 +117,7 @@ The ```events mixin``` will also provide implementations of ```on```, ```once```
 ```
 
 
-### Step 4: Create a custom global managed event
+### Step 4: Create a custom event handler for the global event bus
 
 [view source](./step4/example.js)
 
