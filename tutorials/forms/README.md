@@ -233,13 +233,15 @@ The ```onInvalid``` method won't be called anymore
 ```javascript
     // remove this
     onInvalid: function(model, errors) {
-      // for simplicity, we'll just show the first error
+
+      // just join the errors as a string value for demo purposes
       var errorStr = [];
       _.each(errors, function(error) {
         _.each(error, function(message, key) {
           errorStr.push(message);
         })
       });
+
       this.setState({error: errorStr.join(', ')});
     }
 ```
