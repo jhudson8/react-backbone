@@ -111,7 +111,7 @@ And when we start the app, remove the success handler and just render synchronou
 
 Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
-remove the ```getInitialState``` code, include the [collectionEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) and the ```events``` object
+Remove the ```getInitialState``` code and the ```events``` object.
 
 ```javascript
     var RepositoriesView = React.createClass({
@@ -146,7 +146,7 @@ And remove the ```events``` object that we added in the previous step.
 
 We can use the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) which will set ```state.loading``` to a truthy value when any collection bound to the component is performing any XHR activity ([by listening to enhanced XHR events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events?focus=outline)).
 
-Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute when rendering
+Add the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) and use the ```state.loading``` attribute when rendering
 
 ```javascript
     var RepositoriesView = React.createClass({
@@ -170,7 +170,7 @@ By default, you must use the ```collection``` or ```model``` property name if yo
 
 All collection mixins depend on the [collectionAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionAware?focus=outline) (and all model mixins depend on the [modelAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelAware?focus=outline)).
 
-We can use [mixin parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) to override the supported property name from ```collection``` to ```repositories```
+We can use [mixin parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) of the [collectionAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionAware?focus=outline) to override the supported property name from ```collection``` to ```repositories```
 
 ```javascript
     mixins: ['collectionAware("repositories")', 'collectionChangeAware', 'collectionXHRAware'],
@@ -182,6 +182,8 @@ And change all references from ```props.collection``` to ```props.repositories``
     React.render(<RepositoriesView repositories={repositories}/>, document.body);
     ...
 ```
+
+There are more to replace out... above is an example of a single replacement.
 
 
 ### All done
