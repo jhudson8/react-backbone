@@ -27,9 +27,9 @@ As a baseline, we'll create a small app that has a model with a validation funct
 
 We can use [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline) components to populate form fields with model values automatically.
 
-Replace out the standard React ```input``` component with ```Backbone.input.Text```.
+Replace out the standard React ```input``` component with [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline).
 
-Update the InputWithLabel component so we only provide the model and keys and the Text component figures out the values.
+Update the ```InputWithLabel``` component so we only provide the model and keys (the [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline) component will figure out the values).
 
 ```javascript
     var Text = Backbone.input.Text;
@@ -46,7 +46,7 @@ Update the InputWithLabel component so we only provide the model and keys and th
       ...
 ```
 
-This ```Backbone.input.Text``` component already has a ```getValue``` function so just use it in our ```InputWithLabel``` component.
+This [Backbone.input.Text](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/Text?focus=outline) component already has a ```getValue``` function so just use it in our ```InputWithLabel``` component.
 
 ```javascript
     // allow the value of the input component to be retrieved
@@ -55,7 +55,7 @@ This ```Backbone.input.Text``` component already has a ```getValue``` function s
     }
 ```
 
-And now we provide label, key and model to the component instead of label and value
+And now we provide ```key``` and ```model``` to the component instead of ```value```
 
 ```javascript
     <InputWithLabel ref="firstName" name="firstName" label="First Name" model={this.props.model}/>
@@ -69,7 +69,7 @@ Now, if the model value changes and the input field has not been modified by the
 
 [view source](./step3/example.js)
 
-Since our input component implements the getValue method and a name property is provided, we can use the [modelPopulate](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelPopulate?focus=outline) mixin to quickly populate the model from the input fields.
+Since our input component implements the ```getValue``` method and a name property is provided, we can use the [modelPopulate mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelPopulate?focus=outline) to populate the model from the input fields.
 
 Include the ```modelPopulate``` mixin
 
@@ -79,7 +79,7 @@ Include the ```modelPopulate``` mixin
       ...
 ```
 
-Simply our form submit code using ```modelPopulate```.  The function argument will only be called if the model is valid after applying the form field attributes.
+Simply our form submit code using the [modelPopulate function](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/method/modelPopulate/modelPopulate?focus=outline).  The provided argument will only be called if the model is valid after setting the attributes retrieved from the form input.
 
 ```javascript
     ev.preventDefault();
@@ -96,13 +96,13 @@ Simply our form submit code using ```modelPopulate```.  The function argument wi
 
 Depending on your needs, you can use 2 way binding so the model will be continually updated as the user makes input field changes.
 
-Add the bind={true} Text attribute
+Add the ```bind={true}``` Text attribute
 
 ```javascript
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={true}/>
 ```
 
-No need to call modelPopulate anymore, just check to see if the model is valid and remove the ```modelPopulate``` mixin we included in the previous step.
+No need to call [modelPopulate](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/method/modelPopulate/modelPopulate?focus=outline) anymore, just check to see if the model is valid and remove the [modelPopulate mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelPopulate?focus=outline) we included in the previous step.
 
 ```javascript
     onSubmit: function(ev) {
@@ -129,9 +129,9 @@ Note: you could also just pass ```{validate: true}``` but that will always valid
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={{validateField: true}}/>
 ```
 
-Now you will see error messages as you type but, notice that the error message isn't removed when the input field becomes valid.  This is because there is no ```valid``` event to listen to.  Let's listen to any ```change``` event using [modelEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and clear the validation state when the model is sucessfully changed.
+Now you will see error messages as you type but, notice that the error message isn't removed when the input field becomes valid.  This is because there is no ```valid``` event to listen to.  Let's listen to any ```change``` event using the [modelEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and clear the validation state when the model is sucessfully changed.
 
-Add the ```modelEvents``` mixin and the events hash
+Add the [modelEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and the ```events``` object
 
 ```javascript
     var TestComponent = React.createClass({
@@ -152,11 +152,11 @@ Now the error message will be cleared when the field passes validation;
 
 [view source](./step6/example.js)
 
-Use the [modelInvalidAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) mixin to allow the component to listen for ***field specific*** ```invalid``` events to display field level validation messages.
+Use the [modelInvalidAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) to allow the component to listen for ***field specific*** ```invalid``` events to display field level validation messages.
 
 We have no need for our form level validation messages anymore so we will be removing the code we added in the last step and a lot more.
 
-Add the ```modelInvalidAware``` mixin to the ```InputWithLabel``` component.
+Add the [modelInvalidAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelInvalidAware?focus=outline) mixin to the ```InputWithLabel``` component.
 
 ```javascript
     var InputWithLabel = React.createClass({
@@ -178,7 +178,7 @@ When rendering, show the error message using ```this.state.invalid```
   },
 ```
 
-We don't need to listen for the model change events to clear out the state so remove the included mixins and events hash
+We don't need to listen for the model change events to clear out the state so remove the included mixins and ```events``` object
 
 ```javascript
       // remove this
