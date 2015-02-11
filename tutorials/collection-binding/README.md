@@ -1,4 +1,4 @@
-This is a simple progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.
+This is a progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.
 
 All mixins referenced have similar model-oriented siblings which can be used by replacing "collection" with "model".  For example "collectionChangeAware" to "modelChangeAware".
 
@@ -15,20 +15,20 @@ then browse to [http://localhost:8080](http://localhost:8080)
 
 ### Step 1: baseline
 
-As a baseline, we'll create a small app that has no paging, no react-backbone integration that displays repositories from github using the ```react``` search term.
+As a baseline, we'll create a small app that displays repositories from github using the ```react``` search term but has no pagination and no react-backbone integration.
 
 [view source](./step1/example.js)
 
 Notice that we have to wait until the collection has finished fetching before we render because the react component will not know that it needs to re-render if the collection changes after the component renders.
 
 
-### Step 2: add paging
+### Step 2: add pagination
 
 [view source](./step2/example.js)
 
-Update the Collection URL to support paging attributes
+Update the Collection URL to support pagination attributes
 
-```
+```javascript
     url: function() {
       return 'https://api.github.com/search/repositories?q=react&per_page=10&page=' + (this.page || 1);
     },
@@ -36,7 +36,7 @@ Update the Collection URL to support paging attributes
 
 Update the repositories view to show page navigation
 
-```
+```javascript
         ...
         return (
           <div>
@@ -71,7 +71,7 @@ We will incrementally make thigs better with ```react-backbone``` while demonstr
 
 Use the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) mixin with the [collectionOn](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/method/collectionEvents/collectionOn?focus=outline) method to bind to the ```add``` collection event to force a render.
 
-```
+```javascript
     var RepositoriesView = React.createClass({
       mixins: ['collectionEvents'],
       getInitialState: function() {
@@ -86,7 +86,7 @@ Use the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#projec
 
 We don't need to wait for the collection to fully fetch before rendering the component anymore so remove that code.
 
-```
+```javascript
     goToPage: function(increment) {
       var collection = this.props.collection,
           currentPage = collection.page || 1;
@@ -97,7 +97,7 @@ We don't need to wait for the collection to fully fetch before rendering the com
 
 and when we start the app
 
-```
+```javascript
     var repositories = new Repositories();
     repositories.fetch();
     React.render(<RepositoriesView collection={repositories}/>, document.body);
@@ -110,9 +110,9 @@ and when we start the app
 
 Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
-remove the getInitialState code, include the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) mixin and the ```events``` hash
+remove the getInitialState code, include the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) mixin and the ```events``` object
 
-```
+```javascript
     var RepositoriesView = React.createClass({
       mixins: ['collectionEvents'],
 
@@ -130,7 +130,7 @@ remove the getInitialState code, include the [collectionEvents](http://jhudson8.
 But wait, this could be even easier... just include the [collectionChangeAware](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionChangeAware?focus=outline) mixin instead of the ```collectionEvents``` mixin to automatically render the component when the collection changes.  (note: you will still have ```collectionEvents``` mixin functions available because it is a dependency of ```collectionChangeAware```).
 
 
-```
+```javascript
     var RepositoriesView = React.createClass({
       mixins: ['collectionChangeAware'],
       ...
@@ -145,7 +145,7 @@ We can use the [collectionXHRAware](http://jhudson8.github.io/fancydocs/index.ht
 
 Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute when rendering
 
-```
+```javascript
     var RepositoriesView = React.createClass({
       mixins: ['collectionChangeAware', 'collectionXHRAware'],
 
@@ -169,13 +169,13 @@ All collection mixins depend on the [collectionAware](http://jhudson8.github.io/
 
 We can use the [mixin parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) to override the supported property name from ```collection``` to ```repositories```
 
-```
+```javascript
     mixins: ['collectionAware("repositories")', 'collectionChangeAware', 'collectionXHRAware'],
 ```
 
 And then change the reference
 
-```
+```javascript
     React.render(<RepositoriesView repositories={repositories}/>, document.body);
 ```
 

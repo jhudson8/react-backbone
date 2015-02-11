@@ -1,4 +1,4 @@
-This is a simple, progressive tutorial demonstrating managed events and mixin dependencies.
+This is a progressive tutorial demonstrating managed events and mixin dependencies.
 
 In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.  We will create a mixin which will set a state attribute called "profile" which will either be "large" or "small" based on the width of the component.
 
@@ -32,7 +32,8 @@ While this isn't an extreme amount of code, it clouds the component logic, is cu
 We aren't yet using react-backbone but we need to first throttle the resize event listener to reduce callback executions.
 
 throttle the resize handler and keep a reference to the throttled callback so we can properly unbind
-```
+
+```javascript
     componentDidMount: function() {
       var resizeListener = _.throttle(this.onResize, 300);
       window.addEventListener('resize', resizeListener);
@@ -43,7 +44,7 @@ throttle the resize handler and keep a reference to the throttled callback so we
 
 and unbind our throttled listener callback
 
-```
+```javascript
     componentWillUnmount: function() {
       window.removeEventListener('resize', this.state.resizeListener);
     },
@@ -60,7 +61,7 @@ We no longer have to worry about whether we unbound our resize listener.  We wil
 
 FYI, managed mixins are handled slightly differently depndending on if a component or a mixin is including them.  We're referencing managed events from a mixin but as a component you only need to include the ```events``` mixin and add an ```events``` hash attribute on the component.
 
-```
+```javascript
     // simple function to return the state object that contains the "profile" value
     function getStateValues (self) {
       var width = $(self.getDOMNode()).width();
@@ -113,7 +114,7 @@ react-backbone mixins have the ability to [accept parameters](http://jhudson8.gi
 
 Refactor our utility function to allow the width to be provided
 
-```
+```javascript
     function getStateValues (size, self) {
       var width = $(self.getDOMNode()).width();
       return {
@@ -124,7 +125,7 @@ Refactor our utility function to allow the width to be provided
 
 Wrap the mixin definition in a function callback which accepts a paramter (the responsive breakpoint width).
 
-```
+```javascript
     // instead of using a standard object for the mixin attributes, we can use a function
     // which returns the object to allow us to reference the function parameters in our mixin functions
     React.mixins.add('responsive', function(size) {
@@ -143,7 +144,7 @@ Wrap the mixin definition in a function callback which accepts a paramter (the r
 
 Provide the mixin parameter when we create our component class
 
-```
+```javascript
     var TestComponent = React.createClass({
       // now the component width breakpoint will be at 500px
       mixins: ['responsive(500)'],

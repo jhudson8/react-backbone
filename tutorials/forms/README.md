@@ -1,4 +1,4 @@
-This is a simple progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.
+This is a progressive tutorial to get familiar with some of react-backbone collection handling mixins and functionality.
 
 All mixins referenced have similar model-oriented siblings which can be used by replacing "collection" with "model".  For example "collectionChangeAware" to "modelChangeAware".
 
@@ -31,7 +31,7 @@ Replace out the standard React ```input``` component with ```Backbone.input.Text
 
 Update the InputWithLabel component so we only provide the model and keys and the Text component figures out the values.
 
-```
+```javascript
     var Text = Backbone.input.Text;
     var InputWithLabel = React.createClass({
       getInitialState: function() {
@@ -48,7 +48,7 @@ Update the InputWithLabel component so we only provide the model and keys and th
 
 This ```Backbone.input.Text``` component already has a ```getValue``` function so just use it in our ```InputWithLabel``` component.
 
-```
+```javascript
     // allow the value of the input component to be retrieved
     getValue: function() {
       return this.refs.input.getValue();
@@ -57,7 +57,7 @@ This ```Backbone.input.Text``` component already has a ```getValue``` function s
 
 And now we provide label, key and model to the component instead of label and value
 
-```
+```javascript
     <InputWithLabel ref="firstName" name="firstName" label="First Name" model={this.props.model}/>
     <InputWithLabel ref="lastName" name="lastName" label="Last Name" model={this.props.model}/>
 ```
@@ -73,7 +73,7 @@ Since our input component implements the getValue method and a name property is 
 
 Include the ```modelPopulate``` mixin
 
-```
+```javascript
     var TestComponent = React.createClass({
       mixins: ['modelPopulate'],
       ...
@@ -81,7 +81,7 @@ Include the ```modelPopulate``` mixin
 
 Simply our form submit code using ```modelPopulate```.  The function argument will only be called if the model is valid after applying the form field attributes.
 
-```
+```javascript
     ev.preventDefault();
     this.modelPopulate(function(model) {
       this.setState({error: undefined});
@@ -98,13 +98,13 @@ Depending on your needs, you can use 2 way binding so the model will be continua
 
 Add the bind={true} Text attribute
 
-```
+```javascript
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={true}/>
 ```
 
 No need to call modelPopulate anymore, just check to see if the model is valid and remove the ```modelPopulate``` mixin we included in the previous step.
 
-```
+```javascript
     onSubmit: function(ev) {
       ev.preventDefault();
       if (model.isValid()) {
@@ -125,7 +125,7 @@ It is possible to validate input field values as the user types using the model 
 
 Note: you could also just pass ```{validate: true}``` but that will always validate ***all*** current model attributes rather than just the attributes that were changed.
 
-```
+```javascript
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={{validateField: true}}/>
 ```
 
@@ -133,7 +133,7 @@ Now you will see error messages as you type but, notice that the error message i
 
 Add the ```modelEvents``` mixin and the events hash
 
-```
+```javascript
     var TestComponent = React.createClass({
       mixins: ['modelEvents'],
 
@@ -158,7 +158,7 @@ We have no need for our form level validation messages anymore so we will be rem
 
 Add the ```modelInvalidAware``` mixin to the ```InputWithLabel``` component.
 
-```
+```javascript
     var InputWithLabel = React.createClass({
       mixins: ['modelInvalidAware'],
   ...
@@ -166,7 +166,7 @@ Add the ```modelInvalidAware``` mixin to the ```InputWithLabel``` component.
 
 When rendering, show the error message using ```this.state.invalid```
 
-```
+```javascript
     render: function() {
       return <div>
         <label htmlFor={this.state.id}>{this.props.label}</label>
@@ -180,7 +180,7 @@ When rendering, show the error message using ```this.state.invalid```
 
 We don't need to listen for the model change events to clear out the state so remove the included mixins and events hash
 
-```
+```javascript
       // remove this
       mixins: ['modelEvents'],
 
@@ -193,7 +193,7 @@ We don't need to listen for the model change events to clear out the state so re
 
 We don't need to listen for the ```invalid``` event in our form component anymore
 
-```
+```javascript
     // remove this
     componentDidMount: function() {
       this.props.model.on('invalid', this.onInvalid);
@@ -205,7 +205,7 @@ We don't need to listen for the ```invalid``` event in our form component anymor
 
 We don't need to render the form level error message
 
-```
+```javascript
     // remove this
     render: function() {
       var model = this.props.model,
@@ -222,7 +222,7 @@ We don't need to render the form level error message
 
 and
 
-```
+```javascript
     // remove the {errorComponent} reference
     return <form onSubmit={this.onSubmit}>
       {errorComponent}
@@ -230,7 +230,7 @@ and
 
 The ```onInvalid``` method won't be called anymore
 
-```
+```javascript
     // remove this
     onInvalid: function(model, errors) {
       // for simplicity, we'll just show the first error
