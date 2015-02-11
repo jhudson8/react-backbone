@@ -1,4 +1,4 @@
-This is a progressive tutorial to get familiar with some of react-backbone event handling capabilities.
+This is a progressive tutorial to get familiar with some of the ```react-backbone``` event handling capabilities.
 
 
 ### Running the examples
@@ -14,9 +14,9 @@ then browse to [http://localhost:8080](http://localhost:8080)
 
 ### Step 1: baseline
 
-As a baseline, we'll create a small app that has no react-backbone integration.  This app renders 2 components that are decoupled but communicate by firing events on a global event bus.  One of the components also listens for events on a child component that it renders out.
+As a baseline, we'll create a small app that has no ```react-backbone``` integration.  This app renders 2 components that are decoupled but communicate by firing events on a global event bus.  One of the components also listens for events on a child component that it renders out.
 
-This is an alternate strategy as compared to passing callback functions to child components as properties.  Both work and it just depends on your individual development style and needs.
+This is an alternate strategy to passing callback functions to child components as properties.  Both work and it just depends on your individual development style and needs.
 
 [view source](./step1/example.js)
 
@@ -25,7 +25,7 @@ This is an alternate strategy as compared to passing callback functions to child
 
 [view source](./step2/example.js)
 
-Parent-child events are supported out of the box.  You simply need to use the [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) and add an ```events``` object.  In this case, we are using the [ref event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/component%20by%20ref%20events?focus=outline) so we need to make sure the child component has the [ref property](http://facebook.github.io/react/docs/more-about-refs.html) of ```child``` (if the event key was ```ref:foo:clicked```, the child component would need the ```foo``` ref).
+Component event handling is supported out of the box.  You simply need to use the [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) and add an ```events``` object to your component class.  In this case, we are using the [ref event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/component%20by%20ref%20events?focus=outline) so we need to make sure the child component has the [ref property](http://facebook.github.io/react/docs/more-about-refs.html) of ```child``` (if the event key was ```ref:foo:clicked```, the child component would need a [ref property](http://facebook.github.io/react/docs/more-about-refs.html) of ```foo```).
 
 ```javascript
     var ComponentA = React.createClass({
@@ -36,13 +36,13 @@ Parent-child events are supported out of the box.  You simply need to use the [e
       },
 ```
 
-And remove the current child view binding code that we have
+And remove the current child component binding
 
 ```javascript
     this.refs.child.on('clicked', this.onChildClicked);
 ```
 
-The event will now be managed and, if the child component with the "child" ref changes after a render, the events will be re-bound to the new component.
+The event will now be managed and, if the component with the ```child``` ref changes after a render, the events will be re-bound to the new component.
 
 
 ### Step 3: Use triggerWith to apply scoped parameters
@@ -78,19 +78,19 @@ We have no need for the ```triggerEvent``` method on ```ComponentB``` so remove 
     }
 ```
 
-Use triggerWith to trigger the event and provide a scoped parameter in the render method of ```ComponentB```
+Use [triggerWith](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/events/triggerWith?focus=outline) to trigger the event and provide a scoped parameter in the render method of ```ComponentB```
 
 ```javascript
     <button type="button" onClick={this.triggerWith('clicked', 'foo')}>click me: Component1Child</button>
 ```
 
-Use triggerWith to trigger the ```ComponentB``` global event (notice ```EventBus``` is the additional first parameter)
+Use [triggerWith](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/events/triggerWith?focus=outline) to trigger the ```ComponentB``` global event (notice ```EventBus``` is the additional first parameter)
 
 ```javascript
     <button type="button" onClick={this.triggerWith(EventBus, 'b:clicked')}>Click me: ComponentB</button>
 ```
 
-And we have no need for the ```triggerGlobalEvent``` method in ```ComponentB``` so remove it
+And we have no need for the ```triggerGlobalEvent``` function in ```ComponentB``` so remove it
 
 ```javascript
     // remove this
@@ -101,7 +101,7 @@ And we have no need for the ```triggerGlobalEvent``` method in ```ComponentB``` 
 ```
 
 
-The ```events mixin``` will also provide implementations of ```on```, ```once```, ```off``` and ```trigger``` so remove the following code from ```Component1Child```
+The [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) will also provide implementations of ```on```, ```once```, ```off``` and ```trigger``` so remove the following code from ```Component1Child```
 
 ```javascript
     // remove this
@@ -121,7 +121,7 @@ The ```events mixin``` will also provide implementations of ```on```, ```once```
 
 [view source](./step4/example.js)
 
-We can enhance what is available in the ```events object``` using [React.events.handle](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/React.events/handle?focus=outline).  We will create a handler to trigger global event bus methods so we can use ```app:{event name}``` shorthand in our ```events object```.
+We can enhance what is available in the ```events``` object using [React.events.handle](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/React.events/handle?focus=outline).  We will create a handler to trigger global event bus methods so we can use ```app:{event name}``` shorthand in our ```events``` object.
 
 Register the [custom event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/application%20events?focus=outline)
 
