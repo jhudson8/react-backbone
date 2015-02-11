@@ -15,7 +15,7 @@ then browse to [http://localhost:8080](http://localhost:8080)
 
 ### Step 1: baseline
 
-As a baseline, we'll create a small app that displays repositories from github using the ```react``` search term but has no pagination and no react-backbone integration.
+As a baseline, we'll create a small app that uses the [github API](https://developer.github.com/v3/) and displays repositories from github using the ```react``` search term but has no pagination and no react-backbone integration.
 
 [view source](./step1/example.js)
 
@@ -85,7 +85,7 @@ Use the [collectionEvents mixin](http://jhudson8.github.io/fancydocs/index.html#
       ...
 ```
 
-We don't need to wait for the collection to fully fetch before rendering the component anymore so remove that code.
+We don't need to wait for the collection to fully fetch before rendering so that code now looks like
 
 ```javascript
     goToPage: function(increment) {
@@ -111,7 +111,7 @@ And when we start the app, remove the success handler and just render synchronou
 
 Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
-remove the ```getInitialState``` code, include the [collectionEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) \ and the ```events``` object
+remove the ```getInitialState``` code, include the [collectionEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) and the ```events``` object
 
 ```javascript
     var RepositoriesView = React.createClass({
@@ -137,12 +137,14 @@ But wait, this could be even easier... just include the [collectionChangeAware m
       ...
 ```
 
+And remove the ```events``` object that we added in the previous step.
+
 
 ### Step 6: Show a loading indicator while fetching
 
 [view source](./step6/example.js)
 
-We can use the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) which will set the ```state.loading``` property to a truthy value when any collection/model bound to the component is performing any XHR activity ([by listening to enhanced XHR events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events?focus=outline)).
+We can use the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionXHRAware?focus=outline) which will set ```state.loading``` to a truthy value when any collection bound to the component is performing any XHR activity ([by listening to enhanced XHR events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events?focus=outline)).
 
 Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute when rendering
 
@@ -157,7 +159,7 @@ Add the ```collectionXHRAware``` mixin and use the ```state.loading``` attribute
         ...
 ```
 
-The github API is pretty fast but if you watch closely you'll be able to see the loading indicator.
+The [github API](https://developer.github.com/v3/) is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
 
 ### Step 7: Change collection property name
