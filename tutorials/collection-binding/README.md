@@ -111,7 +111,7 @@ And when we start the app, remove the success handler and just render synchronou
 
 Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
-Remove the ```getInitialState``` code and the ```events``` object.
+Remove the ```getInitialState``` code and add the ```events``` object.
 
 ```javascript
     var RepositoriesView = React.createClass({
