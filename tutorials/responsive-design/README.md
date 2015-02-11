@@ -1,6 +1,6 @@
 This is a progressive tutorial demonstrating managed events and mixin dependencies.
 
-In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.  We will create a mixin which will set a state attribute called "profile" which will either be "large" or "small" based on the width of the component.
+In a perfect world, responsive design can be handled only using CSS and media queries.  But sometimes, you need to render differently based on a device profile.  We will create a mixin which will set a state attribute called ```profile``` which will either have the value of ```large``` or ```small``` depending on the width of the component.
 
 
 ### Running the examples
@@ -22,27 +22,27 @@ As a baseline, we'll create a component which contains all the code to listen fo
 
 In this first pass, the ```onResize``` callback will be executed any time the resize event is triggered.  This is not ideal so we will handle that in the next step.
 
-While this isn't an extreme amount of code, it clouds the component logic, is cumbersome and has potential for memory leaks with the manual window event bindings.
+While this isn't an extreme amount of code, it clouds the component logic, is cumbersome and has potential for memory leaks considering the manual window event bindings.
 
 
 ### Step 2: Throttle the resize listener
 
 [view source](./step2/example.js)
 
-We aren't yet using react-backbone but we need to first throttle the resize event listener to reduce callback executions.
-
-throttle the resize handler and keep a reference to the throttled callback so we can properly unbind
+Throttle the resize handler and keep a reference to the throttled callback function so we can properly unbind.
 
 ```javascript
     componentDidMount: function() {
+
       var resizeListener = _.throttle(this.onResize, 300);
       window.addEventListener('resize', resizeListener);
+
       // so we can keep a reference to the callback to unbind
       this.state.resizeListener = resizeListener;
     },
 ```
 
-and unbind our throttled listener callback
+and unbind our throttled listener callback.
 
 ```javascript
     componentWillUnmount: function() {
@@ -57,9 +57,7 @@ and unbind our throttled listener callback
 
 We are now going to [register a mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager?focus=outline) using [managed events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-events?focus=outline).
 
-We no longer have to worry about whether we unbound our resize listener.  We will also be using the [throttle callback wrapper](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/*throttle?focus=outline).
-
-FYI, managed mixins are handled slightly differently depndending on if a component or a mixin is including them.  We're referencing managed events from a mixin but as a component you only need to include the ```events``` mixin and add an ```events``` hash attribute on the component.
+We no longer have to worry about unbinding our resize listener.  We will also be using the [throttle callback wrapper](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/*throttle?focus=outline).
 
 ```javascript
     // simple function to return the state object that contains the "profile" value
@@ -99,6 +97,7 @@ FYI, managed mixins are handled slightly differently depndending on if a compone
     // notice how easy it is to see what this component is doing now
     var TestComponent = React.createClass({
       mixins: ['responsive'],
+
       render: function() {
         return <div>{this.state.profile}</div>
       }
@@ -110,7 +109,7 @@ FYI, managed mixins are handled slightly differently depndending on if a compone
 
 [view source](./step4/example.js)
 
-react-backbone mixins have the ability to [accept parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) defined by the components that reference them.
+```react-backbone``` mixins have the ability to [accept parameters](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager/section/Advanced%20Features/Mixins%20With%20Parameters?focus=outline) defined by the components that reference them.
 
 Refactor our utility function to allow the width to be provided
 
@@ -127,7 +126,7 @@ Wrap the mixin definition in a function callback which accepts a paramter (the r
 
 ```javascript
     // instead of using a standard object for the mixin attributes, we can use a function
-    // which returns the object to allow us to reference the function parameters in our mixin functions
+    // which returns the object to allow us to reference the function parameters in our mixin
     React.mixins.add('responsive', function(size) {
       size = size || 600;
 
@@ -154,6 +153,8 @@ Provide the mixin parameter when we create our component class
       }
     });
 ```
+
+The component code is now very simple and declaritive using mixins with parameters.
 
 
 ### All done
