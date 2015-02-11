@@ -16,7 +16,7 @@ then browse to [http://localhost:8080](http://localhost:8080)
 
 As a baseline, we'll create a small app that has no react-backbone integration.  This app renders 2 components that are decoupled but communicate by firing events on a global event bus.  One of the components also listens for events on a child component that it renders out.
 
-This is an alternate strategy as compared to passing callback functions to child views.  Both work and it just depends on your individual development style and needs.
+This is an alternate strategy as compared to passing callback functions to child components as properties.  Both work and it just depends on your individual development style and needs.
 
 [view source](./step1/example.js)
 
