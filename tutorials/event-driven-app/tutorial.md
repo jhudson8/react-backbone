@@ -25,7 +25,7 @@ This is an alternate strategy as compared to passing callback functions to child
 
 [view source](./step2/example.js)
 
-Parent-child events are supported out of the box.  You simply need to use the [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) and add an ```events``` object.  In this case, we are using the [ref event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/component%20by%20ref%20events?focus=outline) so we need to make sure the child component has the ```child``` [ref property](http://facebook.github.io/react/docs/more-about-refs.html) (if the event key was ```ref:foo:clicked```, the child component would need the ```foo``` ref).
+Parent-child events are supported out of the box.  You simply need to use the [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) and add an ```events``` object.  In this case, we are using the [ref event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/component%20by%20ref%20events?focus=outline) so we need to make sure the child component has the [ref property](http://facebook.github.io/react/docs/more-about-refs.html) of ```child``` (if the event key was ```ref:foo:clicked```, the child component would need the ```foo``` ref).
 
 ```
     var ComponentA = React.createClass({
