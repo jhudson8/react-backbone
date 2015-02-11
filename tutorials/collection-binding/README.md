@@ -74,6 +74,7 @@ Use the [collectionEvents](http://jhudson8.github.io/fancydocs/index.html#projec
 ```javascript
     var RepositoriesView = React.createClass({
       mixins: ['collectionEvents'],
+
       getInitialState: function() {
         var self = this;
         this.collectionOn('add', function() {

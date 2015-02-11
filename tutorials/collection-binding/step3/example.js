@@ -32,6 +32,7 @@ var RepositoryRow = React.createClass({
 
 var RepositoriesView = React.createClass({
   mixins: ['collectionEvents'],
+
   getInitialState: function() {
     var self = this;
     this.collectionOn('add', function() {
