@@ -27,60 +27,29 @@ Dependencies
 Installation
 --------------
 #### Browser:
-with dependencies together
+
 ```
-... include jquery, backbone, underscore, react ...
-<script src=".../react-backbone-with-deps[-min].js"></script>
-```
-or separate
-```
-... include jquery, backbone, underscore, react ...
-<script src=".../react-mixin-manager[-min].js"></script>
-<script src=".../react-events[-min].js"></script>
-<script src=".../backbone-xhr-events[-min].js"></script> (optional)
-<script src=".../react-backbone[-min].js"></script>
+    ... include jquery, backbone, underscore, react ...
+    <script src=".../react-backbone-with-deps[-min].js"></script>
 ```
 
 #### CommonJS
-with dependencies together
 ```
-var React = require('react');
-var _ = require('underscore');
-var Backbone = require('backbone');
-var $ = require('jquery');
+    var React = require('react');
+    var _ = require('underscore');
+    var Backbone = require('backbone');
+    var $ = require('jquery');
 
-require('react-backbone/with-deps')(React, Backbone, _, $);
-```
-or separate
-```
-var React = require('react');
-var _ = require('underscore');
-var Backbone = require('backbone');
-var $ = require('jquery');
-
-require('react-mixin-manager')(React);
-require('react-events')(React);
-require('react-backbone')(React, Backbone, _, $);
+    require('react-backbone/with-deps')(React, Backbone, _, $);
 ```
 
 #### AMD
-with dependencies together
 ```
-require(
-  ['react', 'backbone', 'underscore', 'jquery', react-backbone/with-deps'],
-  function(React, Backbone, _, $, reactBackbone) {
-    reactBackbone(React, Backbone, _, $); 
-});
-```
-or separate
-```
-require(
-  ['react', 'backbone', 'underscore', 'jquery', 'react-mixin-manager', 'react-events', 'react-backbone'],
-  function(React, Backbone, _, $, reactMixinManager, reactEvents, reactBackbone) {
-    reactMixinManager(React); 
-    reactEvents(React); 
-    reactBackbone(React, Backbone, _, $); 
-});
+    require(
+      ['react', 'backbone', 'underscore', 'jquery', react-backbone/with-deps'],
+      function(React, Backbone, _, $, reactBackbone) {
+        reactBackbone(React, Backbone, _, $); 
+    });
 ```
 
 
@@ -244,7 +213,7 @@ The model can be set using the ```model``` property or by explicitely calling ``
 
 ```
     React.createClass({
-      mixins: ['modelAware']
+      mixins: ['modelAware'] // or ['react-backbone.modelAware']
     });
     ...
     <MyClass model={model}/>
@@ -286,7 +255,7 @@ The model can be set using the ```collection``` property or by explicitely calli
 
 ```
     React.createClass({
-      mixins: ['collectionAware']
+      mixins: ['collectionAware'] // or ['react-backbone.collectionAware']
     });
     ...
     <MyClass collection={collection}/>
@@ -338,7 +307,7 @@ If a component does not contain a ```getValue``` method but does contain a ```mo
 If a model is provided, the attributes will be set on it as long as they pass model validation.
 ```
     React.create.Class({
-      mixins: ['modelPopulate'],
+      mixins: ['modelPopulate'], // or ['react-backbone.modelPopulate']
 
       render: function() {
         var model = this.props.model;
@@ -402,7 +371,7 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelEvents'],
+      mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
       events: {
         'model:foo': 'onFoo',
@@ -425,7 +394,7 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelEvents'],
+      mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
       getInitialState: function() {
         this.modelOn('change', this.onChange);
@@ -445,7 +414,7 @@ Equivalent to Backbone.Events.once but will be unbound when the component is unm
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelEvents'],
+      mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
       getInitialState: function() {
         this.modelOnce('change', this.onChange);
@@ -472,7 +441,7 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 
 ```
     var MyClass React.createClass({
-      mixins: ['collectionEvents'],
+      mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
       events: {
         'collection:foo': 'onFoo',
@@ -495,7 +464,7 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 
 ```
     var MyClass React.createClass({
-      mixins: ['collectionEvents'],
+      mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
       getInitialState: function() {
         this.collectionOn('reset', this.onReset);
@@ -515,7 +484,7 @@ Equivalent to Backbone.Events.once but will be unbound when the component is unm
 
 ```
     var MyClass React.createClass({
-      mixins: ['collectionEvents'],
+      mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
       getInitialState: function() {
         this.collectionOnce('reset', this.onReset);
@@ -553,7 +522,7 @@ When these occur, normalize the error payload using ```React.mixins.modelIndexEr
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelInvalidAware'],
+      mixins: ['modelInvalidAware'], // or ['react-backbone.modelInvalidAware']
 
       render: function() {
         var invalidMessage = this.state.invalid;
@@ -579,7 +548,7 @@ If you want to force a render only on specific model events, see [modelUpdateOn]
 
 ```
     var MyClass React.createClass({
-      mixins: ['modelChangeAware'],
+      mixins: ['modelChangeAware'], // or ['react-backbone.modelChangeAware']
 
       render: function() {
         // will be executed if the associated model changes
@@ -598,7 +567,7 @@ If you want to force a render only on specific collection events, see [collectio
 
 ```
     var MyClass React.createClass({
-      mixins: ['collectionChangeAware'],
+      mixins: ['collectionChangeAware'], // or ['react-backbone.collectionChangeAware']
 
       render: function() {
         // will be executed if the associated model changes
@@ -620,7 +589,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
     var MyComponent = React.createClass({
-      mixins: ['modelUpdateOn'],
+      mixins: ['modelUpdateOn'], // or ['react-backbone.modelUpdateOn']
       ...
     });
     ...
@@ -632,7 +601,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 * when the child/declaring component provides the event name(s) as mixin parameters*
 ```
     var MyComponent = React.createClass({
-      mixins: ['modelUpdateOn("foo", "bar")'],
+      mixins: ['modelUpdateOn("foo", "bar")'], // or ['react-backbone.modelUpdateOn("foo", "bar")']
       ...
     });
 
@@ -660,7 +629,7 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
 ```
     var MyComponent = React.createClass({
-      mixins: ['collectionUpdateOn'],
+      mixins: ['collectionUpdateOn'], // or ['react-backbone.collectionUpdateOn']
       ...
     });
     ...
@@ -672,14 +641,14 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 * when the child/declaring component provides the event name(s) as mixin parameters*
 ```
     var MyComponent = React.createClass({
-      mixins: ['collectionUpdateOn("foo", "bar")'],
+      mixins: ['collectionUpdateOn("foo", "bar")'], // or ['react-backbone.collectionUpdateOn("foo", "bar")']
       ...
     });
 
     // equivalent to
 
     var MyComponent = React.createClass({
-      mixins: ['collectionEvents'],
+      mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
       events: {
         collection: {
@@ -710,7 +679,7 @@ Use the ```loadOn``` property to define the specific async event name to bind to
 When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
 ```
     var MyComponent = React.createClass({
-      mixins: ['modelLoadOn'],
+      mixins: ['modelLoadOn'], // or ['react-backbone.modelLoadOn']
 
       render: function() {
         if (this.state.loading) {
@@ -729,7 +698,7 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
 When the XHR event name(s) are statically defined by the owning component
 ```
     var MyComponent = React.createClass({
-      mixins: ['modelLoadOn("read", "update")'],
+      mixins: ['modelLoadOn("read", "update")'], // or ['react-backbone.modelLoadOn("read", "update")']
       ...
     });
 ```
@@ -749,7 +718,7 @@ Use the ```loadOn``` property to define the specific async event name to bind to
 When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
 ```
     var MyComponent = React.createClass({
-      mixins: ['collectionLoadOn'],
+      mixins: ['collectionLoadOn'], // or ['react-backbone.collectionLoadOn']
 
       render: function() {
         if (this.state.loading) {
@@ -768,7 +737,7 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
 When the XHR event name(s) are statically defined by the owning component
 ```
     var MyComponent = React.createClass({
-      mixins: ['collectionLoadOn("read", "update")'],
+      mixins: ['collectionLoadOn("read", "update")'], // or ['react-backbone.collectionLoadOn("read", "update")']
       ...
     });
 ```
@@ -808,7 +777,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 
 ```
     React.createClass({
-      mixins: ['modelXHRAware'],
+      mixins: ['modelXHRAware'], // or ['react-backbone.modelXHRAware']
 
       render: function() {
         if (this.state.loading) {
@@ -833,7 +802,7 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
 
 ```
     React.createClass({
-      mixins: ['collectionXHRAware'],
+      mixins: ['collectionXHRAware'], // or ['react-backbone.collectionXHRAware']
 
       render: function() {
         if (this.state.loading) {
@@ -860,7 +829,7 @@ For example, by including the ```events``` mixin, you can do this:
 
 ```
     React.createClass({
-      mixins: ['modelEvents'],
+      mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
       events: {
         'model:event1': 'onEvent1',
@@ -885,7 +854,7 @@ For example, by including the ```events``` mixin, you can do this:
 
 ```
     React.createClass({
-      mixins: ['collectionEvents'],
+      mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
       events: {
         'collection:event1': 'onEvent1',
@@ -907,9 +876,10 @@ And the collection that is bound to the component (using the ```collection``` pr
 Memoizes a given function by caching the computed result.  see [_.memoize](http://underscorejs.org/#memoize) for more details
 
 ```
-events: {
-  '*memoize()->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*memoize()->window:resize': 'onWindowResize'
+    }
 ```
 
 ### *delay
@@ -918,9 +888,10 @@ events: {
 Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/#delay) for more details
 
 ```
-events: {
-  '*delay(1000)->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*delay(1000)->window:resize': 'onWindowResize'
+    }
 ```
 
 ### *defer
@@ -929,9 +900,10 @@ events: {
 Defers invoking the function until the current call stack has cleared.  see [_.defer](http://underscorejs.org/#defer) for more details
 
 ```
-events: {
-  '*defer()->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*defer()->window:resize': 'onWindowResize'
+    }
 ```
 
 
@@ -941,9 +913,10 @@ events: {
 Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds.  see [_.throttle](http://underscorejs.org/#throttle) for more details
 
 ```
-events: {
-  '*throttle(1000)->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*throttle(1000)->window:resize': 'onWindowResize'
+    }
 ```
 
 
@@ -953,9 +926,10 @@ events: {
 Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked.  see [_.debounce](http://underscorejs.org/#debounce) for more details
 
 ```
-events: {
-  '*debounce(1000)->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*debounce(1000)->window:resize': 'onWindowResize'
+    }
 ```
 
 
@@ -965,9 +939,10 @@ events: {
 Creates a version of the function that can only be called one time. Repeated calls to the modified function will have no effect, returning the value from the original call.  see [_.once](http://underscorejs.org/#once) for more details
 
 ```
-events: {
-  '*once()->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*once()->window:resize': 'onWindowResize'
+    }
 ```
 
 
@@ -977,9 +952,10 @@ events: {
 Creates a version of the function that will only be run after first being called count times.  see [_.after](http://underscorejs.org/#after) for more details
 
 ```
-events: {
-  '*after(3)->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*after(3)->window:resize': 'onWindowResize'
+    }
 ```
 
 
@@ -989,9 +965,10 @@ events: {
 Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
 
 ```
-events: {
-  '*before(3)->window:resize': 'onWindowResize'
-}
+    mixins: ['events'],
+    events: {
+      '*before(3)->window:resize': 'onWindowResize'
+    }
 ```
 
 
