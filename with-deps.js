@@ -26,7 +26,7 @@
 /*
   Container script which includes the following:
     jhudson8/backbone-xhr-events 0.9.5
-    jhudson8/react-mixin-manager 0.11.2
+    jhudson8/react-mixin-manager 0.12.0
     jhudson8/react-events 0.8.1
     jhudson8/react-backbone 0.18.2
 */
@@ -461,17 +461,27 @@
         return _createClass.apply(React, arguments);
     };
 
+    var namespaceMatch = /^[^\.]+\.(.*)/;
     function addMixin(name, mixin, depends, override, initiatedOnce) {
         if (!override && _mixins[name]) {
             return;
         }
-        if (depends.length) {
-            _dependsOn[name] = depends;
-        }
-        _mixins[name] = mixin;
 
-        if (initiatedOnce) {
-            _initiatedOnce[name] = true;
+        function _add(name) {
+            if (depends.length) {
+                _dependsOn[name] = depends;
+            }
+            _mixins[name] = mixin;
+
+            if (initiatedOnce) {
+                _initiatedOnce[name] = true;
+            }
+        }
+
+        _add(name);
+        var match = name.match(namespaceMatch);
+        if (match) {
+            _add(match[1]);
         }
     }
 
@@ -1239,10 +1249,14 @@
 (function() {
 
     // create local references to existing vars
-    var xhrEventName = Backbone.xhrEventName;
-    var xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute;
-    var getState = React.mixins.getState;
-    var setState = React.mixins.setState;
+    var xhrEventName = Backbone.xhrEventName,
+        xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
+        getState = React.mixins.getState,
+        setState = React.mixins.setState,
+        logDebugWarnings = React.reactBackboneDebugWarnings;
+    if (_.isUndefined(logDebugWarnings)) {
+        logDebugWarnings = true;
+    }
 
     // use Backbone.Events as the events impl if none is already defined
     React.events.mixin = React.events.mixin || Backbone.Events;
@@ -1557,9 +1571,9 @@
         var typeEvents = {
             getInitialState: function() {
                 // model sanity check
-                getModelOrCollections(typeData.type, this, function(obj) {
-                    if (!obj.off || !obj.on) {
-                        console.error('the model/collection does not implement on/off functions - you will see problems');
+                getModelOrCollections(typeData.type, this, function(obj, propName) {
+                    if (logDebugWarnings && !obj.off || !obj.on) {
+                        console.error('props.' + propName + ' does not implement on/off functions - you will see event binding problems (object logged to console below)');
                         console.log(obj);
                     }
                 });
