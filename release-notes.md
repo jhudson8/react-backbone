@@ -2,7 +2,19 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.19.0...master)
+
+## v0.19.0 - February 14th, 2015
+- use "react-backbone" namespace - 9789aa1
+
+Any mixin can be prefixed with "react-backbone".  This allows if reuse the react-backbone mixin names if desired.
+
+For example
+```
+    mixins: ['react-backbone.modelAware']
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.18.2...v0.19.0)
 
 ## v0.18.2 - February 11th, 2015
 This is not a bug fix release.  The only purpose of this release is to allow the tutorial links on the README will be correct in external references to this project.
