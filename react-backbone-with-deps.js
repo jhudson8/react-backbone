@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.9.5
     jhudson8/react-mixin-manager 0.12.0
     jhudson8/react-events 0.8.1
-    jhudson8/react-backbone 0.18.2
+    jhudson8/react-backbone 0.19.0
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1249,7 +1249,8 @@
 (function() {
 
     // create local references to existing vars
-    var xhrEventName = Backbone.xhrEventName,
+    var namespace = 'react-backbone.',
+        xhrEventName = Backbone.xhrEventName,
         xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
         getState = React.mixins.getState,
         setState = React.mixins.setState,
@@ -1260,6 +1261,16 @@
 
     // use Backbone.Events as the events impl if none is already defined
     React.events.mixin = React.events.mixin || Backbone.Events;
+
+    function addMixin() {
+        var args = _.toArray(arguments);
+        if (_.isString(args)) {
+            args[0] = namespace + args[0];
+        } else {
+            args.name = namespace + args.name;
+        }
+        React.mixins.add.apply(React.mixins, args);
+    }
 
     function firstModel(component) {
         if (component.getModel) {
@@ -1558,7 +1569,7 @@
             };
             return rtn;
         };
-        React.mixins.add({ name: typeData.type + 'Aware', initiatedOnce: true }, typeAware, 'state');
+        addMixin({ name: typeData.type + 'Aware', initiatedOnce: true }, typeAware, 'state');
 
         /**
          * Exposes model binding registration functions that will
@@ -1599,7 +1610,7 @@
             delete events[ev];
             this.stopListening(targetModelOrCollections(typeData.type, this, _modelOrCollection), ev, callback, context);
         };
-        React.mixins.add(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
+        addMixin(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
 
         /**
          * Mixin used to force render any time the model has changed
@@ -1615,7 +1626,7 @@
                 }, this);
             }
         };
-        React.mixins.add(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
+        addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
 
         // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
@@ -1673,7 +1684,7 @@
                 return xhrFactory.componentWillMount(undefined, this);
             }
         };
-        React.mixins.add(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
+        addMixin(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
 
         /**
          * Gives any comonent the ability to mark the "loading" attribute in the state as true
@@ -1691,7 +1702,7 @@
                 }
             };
         };
-        React.mixins.add(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
+        addMixin(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
 
         /**
          * Gives any comonent the ability to force an update when an event is fired
@@ -1706,7 +1717,7 @@
                 }
             };
         };
-        React.mixins.add(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
+        addMixin(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
 
         /**
          * Support the "model:{event name}" event, for example:
@@ -1743,7 +1754,7 @@
      * return a set of attributes.  If a callback is provided as the 2nd parameter and this component includes
      * the "modelAware" mixin, set the attributes on the model and execute the callback if there is no validation error.
      */
-    React.mixins.add('modelPopulate', {
+    addMixin('modelPopulate', {
         modelPopulate: function() {
             var components, callback, options, model, drillDown;
 
@@ -1816,7 +1827,7 @@
      * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
      * the state once the callback has completed
      */
-    React.mixins.add('loadWhile', {
+    addMixin('loadWhile', {
         loadWhile: function(options) {
             options = options || {};
             var self = this;
@@ -1846,7 +1857,7 @@
      * against the provided attributes.  If invalid, a truthy value will be returned containing the
      * validation errors.
      */
-    React.mixins.add('modelValidator', {
+    addMixin('modelValidator', {
         modelValidate: function(attributes, options) {
             var model = firstModel(this);
             if (model && model.validate) {
@@ -1860,7 +1871,7 @@
      * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
      * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
      */
-    React.mixins.add('modelInvalidAware', {
+    addMixin('modelInvalidAware', {
         getInitialState: function() {
             var key = getKey(this);
             if (key) {
