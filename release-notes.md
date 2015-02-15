@@ -7,6 +7,8 @@
 ## v0.19.0 - February 14th, 2015
 - use "react-backbone" namespace - 9789aa1
 
+You *must* upgrade to react-mixin-manager 0.12.0
+
 Any mixin can be prefixed with "react-backbone".  This allows if reuse the react-backbone mixin names if desired.
 
 For example
