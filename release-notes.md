@@ -2,7 +2,18 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.19.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.20.0...master)
+
+## v0.20.0 - February 15th, 2015
+- react-mixin-manager 0.12.0 -> 0.13.0 & react-events 0.8.1 -> 0.9.0 - e99863d
+- add react-mixin-manager 0.12.0 hard dependency notification - 5e9eddc
+
+incorporate the latest namespece-related changes for react-mixin-manager and react-events.  There was a notable API change in react-mixin-manager which you can see with the react-mixin-manager/release-notes.md.  (basically the React.mixins.replace method was removed and React.mixins.add will always replace).
+
+Getting close to a 1.0 release
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.19.0...v0.20.0)
 
 ## v0.19.0 - February 14th, 2015
 - use "react-backbone" namespace - 9789aa1
