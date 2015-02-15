@@ -26,8 +26,8 @@
 /*
   Container script which includes the following:
     jhudson8/backbone-xhr-events 0.9.5
-    jhudson8/react-mixin-manager 0.12.0
-    jhudson8/react-events 0.8.1
+    jhudson8/react-mixin-manager 0.13.0
+    jhudson8/react-events 0.9.0
     jhudson8/react-backbone 0.19.0
 */
  (function(main) {
@@ -462,25 +462,18 @@
     };
 
     var namespaceMatch = /^[^\.]+\.(.*)/;
-    function addMixin(name, mixin, depends, override, initiatedOnce) {
-        if (!override && _mixins[name]) {
-            return;
-        }
+    function addMixin(name, mixin, depends, initiatedOnce) {
 
         function _add(name) {
-            if (depends.length) {
-                _dependsOn[name] = depends;
-            }
             _mixins[name] = mixin;
-
-            if (initiatedOnce) {
-                _initiatedOnce[name] = true;
-            }
+            _dependsOn[name] = depends.length && depends;
+            _initiatedOnce[name] = initiatedOnce && true;
         }
 
         _add(name);
         var match = name.match(namespaceMatch);
-        if (match) {
+        // only include the non-namespaced mixin if it is not already taken
+        if (match &&  !_mixins[match[1]]) {
             _add(match[1]);
         }
     }
@@ -489,7 +482,7 @@
         // empty function which is used only as a placeholder to list dependencies
     }
 
-    function mixinParams(args, override) {
+    function mixinParams(args) {
         var name,
             options = args[0],
             initiatedOnce = false;
@@ -506,9 +499,9 @@
         }
 
         if (Array.isArray(args[1])) {
-            return [name, args[1][0], Array.prototype.slice.call(args[1], 1), override, initiatedOnce];
+            return [name, args[1][0], Array.prototype.slice.call(args[1], 1), initiatedOnce];
         } else {
-            return [name, args[1], Array.prototype.slice.call(args, 2), override, initiatedOnce];
+            return [name, args[1], Array.prototype.slice.call(args, 2), initiatedOnce];
         }
     }
 
@@ -564,11 +557,7 @@
         },
 
         add: function( /* options, mixin */ ) {
-            addMixin.apply(this, mixinParams(arguments, false));
-        },
-
-        replace: function( /* options, mixin */ ) {
-            addMixin.apply(this, mixinParams(arguments, true));
+            addMixin.apply(this, mixinParams(arguments));
         },
 
         exists: function(name) {
@@ -688,7 +677,8 @@
         specialWrapper = /^\*([^\(]+)\(([^)]*)\)[->:]*(.*)/,
         noArgMethods = ['forceUpdate'],
         setState = React.mixins.setState,
-        getState = React.mixins.getState;
+        getState = React.mixins.getState,
+        namespace = 'react-events' + '.';
 
     /**
      *  Allow events to be referenced in a hierarchical structure.  All parts in the
@@ -1098,7 +1088,7 @@
     }
 
     //// REGISTER THE REACT MIXIN
-    React.mixins.add('events', function() {
+    React.mixins.add(namespace + 'events', function() {
         var rtn = [{
             /**
              * Return a callback fundtion that will trigger an event on "this" when executed with the provided parameters
@@ -1199,7 +1189,7 @@
     /**
      * Allow for managed bindings to any object which supports on/off.
      */
-    React.mixins.add('listen', {
+    React.mixins.add(namespace + 'listen', {
         componentDidMount: function() {
             // sanity check to prevent duplicate binding
             _watchedEventsUnbindAll(true, this);
