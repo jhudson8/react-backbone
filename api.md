@@ -70,7 +70,8 @@ The ```modelAware```/```collectionAware``` mixin is not required if you want to 
 
 #### Overriding the default model/collection keys
 If you wanted to have a component that use the ```foo``` property for component model bindings
-```
+
+```javascript
     React.createClass({
       mixins: ['modelAware("foo")', 'modelEvents'],
       events: {
@@ -84,7 +85,8 @@ If you wanted to have a component that use the ```foo``` property for component 
 
 #### Multiple object bindings
 Or, if you want to have 2 components (identified by the ```foo``` and ```bar``` property names) that, for example, you want to listen to change events on
-```
+
+```javascript
     React.createClass({
       mixins: ['modelAware("foo", "bar")', 'modelChangeAware'],
       events: {
@@ -129,7 +131,7 @@ Each input component can accept the following properties (in addition to the sta
 A model-aware component that is a very light wrapper around *React.DOM.input*.  The *type* attribute is *text* by default but will be overridden if the *type* property is defined.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
 
-```
+```javascript
     var Text = Backbone.input.Text;
 
     var model = new Backbone.Model({age: 3});
@@ -141,7 +143,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input*.  
 ### TextArea
 A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
-```
+```javascript
     var TextArea = Backbone.input.TextArea;
 
     var model = new Backbone.Model({description: 'foo'});
@@ -153,7 +155,7 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
 ### CheckBox
 A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
 
-```
+```javascript
     var CheckBox = Backbone.input.CheckBox;
 
     var model = new Backbone.Model({acceptTermsOfService: true});
@@ -165,7 +167,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
 ### Select
 A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
-```
+```javascript
     var Select = Backbone.input.Select;
 
     var model = new Backbone.Model({eyeColor: 'green'});
@@ -183,7 +185,7 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
 
 *note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
 
-```
+```javascript
     var RadioGroup = Backbone.input.RadioGroup;
 
     var model = new Backbone.Model({eyeColor: 'green'});
@@ -211,7 +213,7 @@ Utility methods which allows other mixins to depend on ```getModel``` and ```set
 
 The model can be set using the ```model``` property or by explicitely calling ```setModel```.
 
-```
+```javascript
     React.createClass({
       mixins: ['modelAware'] // or ['react-backbone.modelAware']
     });
@@ -224,7 +226,7 @@ The model can be set using the ```model``` property or by explicitely calling ``
 
 There can actually be multiple models bound to a single component.  To access all bound models, a iterator callback method can be provided.
 
-```
+```javascript
     React.createClass({
       mixins: ['modelAware("foo", "bar")']
     });
@@ -253,7 +255,7 @@ Utility methods which allows other mixins to depend on ```getCollection``` and `
 
 The model can be set using the ```collection``` property or by explicitely calling ```setCollection```.
 
-```
+```javascript
     React.createClass({
       mixins: ['collectionAware'] // or ['react-backbone.collectionAware']
     });
@@ -266,7 +268,7 @@ The model can be set using the ```collection``` property or by explicitely calli
 
 There can actually be multiple collections bound to a single component.  To access all bound collections, a iterator callback method can be provided.
 
-```
+```javascript
     React.createClass({
       mixins: ['collectionAware("foo", "bar")']
     });
@@ -305,7 +307,8 @@ Components will only participate in model population if they implement ***getVal
 If a component does not contain a ```getValue``` method but does contain a ```modelPopulate``` method (by including the ```modelPopulate``` mixin), the modelPopulate method on that component will be called as well with the attributes applied to the parent component's model.
 
 If a model is provided, the attributes will be set on it as long as they pass model validation.
-```
+
+```javascript
     React.create.Class({
       mixins: ['modelPopulate'], // or ['react-backbone.modelPopulate']
 
@@ -369,7 +372,7 @@ Utility mixin to support declarative model event bindings as well as expose mana
 
 This mixin should be included (instead of the "events" mixin) if any declarative model event bindings are used.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
@@ -392,7 +395,7 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 
 Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.  Also similar to the "listenTo" method except that if the model is changed, the previous model bindings will be removed and the new model will have the bindings applied.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
@@ -412,7 +415,7 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 
 Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.  Also similar to the "listenToOnce" method except that if the model is changed, the previous model bindings will be removed and the new model will have the bindings applied.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
@@ -439,7 +442,7 @@ Utility mixin to support declarative collection event bindings as well as expose
 
 This mixin should be included (instead of the "events" mixin) if any declarative collection event bindings are used.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
@@ -462,7 +465,7 @@ This mixin should be included (instead of the "events" mixin) if any declarative
 
 Equivalent to Backbone.Events.on but will be unbound when the component is unmounted.  Also similar to the "listenTo" method except that if the collection is changed, the previous collection bindings will be removed and the new collection will have the bindings applied.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
@@ -482,7 +485,7 @@ Equivalent to Backbone.Events.on but will be unbound when the component is unmou
 
 Equivalent to Backbone.Events.once but will be unbound when the component is unmounted.  Also similar to the "listenToOnce" method except that if the collection is changed, the previous model bindings will be removed and the new collection will have the bindings applied.
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
@@ -519,8 +522,7 @@ Allow components to be aware of field specific validation errors.  The ```name``
 
 When these occur, normalize the error payload using ```React.mixins.modelIndexErrors```.
 
-
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['modelInvalidAware'], // or ['react-backbone.modelInvalidAware']
 
@@ -546,7 +548,7 @@ Convienance mixin to include the [modelChangeAware](#snippet/package/modelChange
 Will force a render if the associated model fires the "change" event.
 If you want to force a render only on specific model events, see [modelUpdateOn](#snippet/package/modelUpdateOn).
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['modelChangeAware'], // or ['react-backbone.modelChangeAware']
 
@@ -565,7 +567,7 @@ If you want to force a render only on specific model events, see [modelUpdateOn]
 Will force a render if the associated collection fires the "reset", "add", "remove" or "sort" event.
 If you want to force a render only on specific collection events, see [collectionUpdateOn](#snippet/package/collectionUpdateOn).
 
-```
+```javascript
     var MyClass React.createClass({
       mixins: ['collectionChangeAware'], // or ['react-backbone.collectionChangeAware']
 
@@ -587,7 +589,8 @@ Convienance mixin to include the [modelUpdateOn](#snippet/package/modelUpdateOn)
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['modelUpdateOn'], // or ['react-backbone.modelUpdateOn']
       ...
@@ -599,7 +602,8 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 ```
 
 * when the child/declaring component provides the event name(s) as mixin parameters*
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['modelUpdateOn("foo", "bar")'], // or ['react-backbone.modelUpdateOn("foo", "bar")']
       ...
@@ -627,7 +631,8 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 Listen to a specific event (or array of events).  When this event is fired, the component will be force updated.  The events to listen for are defined as the ```updateOn``` component property which can be a string or array of strings.  In addition, the declaring component can define the keys using parameters (see examples);
 
 *when a parent component provides the event name(s) as the ```updateOn``` parameter*
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['collectionUpdateOn'], // or ['react-backbone.collectionUpdateOn']
       ...
@@ -639,7 +644,8 @@ Listen to a specific event (or array of events).  When this event is fired, the 
 ```
 
 * when the child/declaring component provides the event name(s) as mixin parameters*
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['collectionUpdateOn("foo", "bar")'], // or ['react-backbone.collectionUpdateOn("foo", "bar")']
       ...
@@ -677,7 +683,8 @@ When this event is fired, the state attribute ```loading``` will be set to ```tr
 Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
 
 When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['modelLoadOn'], // or ['react-backbone.modelLoadOn']
 
@@ -696,7 +703,8 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
 ```
 
 When the XHR event name(s) are statically defined by the owning component
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['modelLoadOn("read", "update")'], // or ['react-backbone.modelLoadOn("read", "update")']
       ...
@@ -716,7 +724,8 @@ When this event is fired, the state attribute ```loading``` will be set to ```tr
 Use the ```loadOn``` property to define the specific async event name to bind to.  In addition, the declaring component can define the event names using parameters (see examples).
 
 When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` parameter
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['collectionLoadOn'], // or ['react-backbone.collectionLoadOn']
 
@@ -735,7 +744,8 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
 ```
 
 When the XHR event name(s) are statically defined by the owning component
-```
+
+```javascript
     var MyComponent = React.createClass({
       mixins: ['collectionLoadOn("read", "update")'], // or ['react-backbone.collectionLoadOn("read", "update")']
       ...
@@ -751,7 +761,7 @@ When the XHR event name(s) are statically defined by the owning component
 
 Set the state of the component with ```{loading: true}``` when this method is executed.  And wrap the ***success*** and ***error*** callbacks so that when ano one of them are called, the loading state will be set to false again.
 
-```
+```javascript
     this.getModel().save(attributes, this.loadWhile());
     // or
     this.getModel().save(attributes, this.loadWhile({
@@ -775,7 +785,7 @@ See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backb
 
 When ***any*** XHR event is fired, the state attribute ```loading``` will be set to a truthy value.  state.loading will be set to a falsy value when the XHR activity is complete.
 
-```
+```javascript
     React.createClass({
       mixins: ['modelXHRAware'], // or ['react-backbone.modelXHRAware']
 
@@ -800,7 +810,7 @@ See the docs in [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backb
 
 When ***any*** XHR event is fired, the state attribute ```loading``` will be set to a truthy value.  state.loading will be set to a falsy value when the XHR activity is complete.
 
-```
+```javascript
     React.createClass({
       mixins: ['collectionXHRAware'], // or ['react-backbone.collectionXHRAware']
 
@@ -827,7 +837,7 @@ Model events can be defined using the ```model:``` prefix.
 
 For example, by including the ```events``` mixin, you can do this:
 
-```
+```javascript
     React.createClass({
       mixins: ['modelEvents'], // or ['react-backbone.modelEvents']
 
@@ -842,6 +852,7 @@ For example, by including the ```events``` mixin, you can do this:
       onEvent2: ...
     });
 ```
+
 And the model that is bound to the component (using the ```model``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
 
 
@@ -852,7 +863,7 @@ Collection events can be defined using the ```collection:``` prefix.
 
 For example, by including the ```events``` mixin, you can do this:
 
-```
+```javascript
     React.createClass({
       mixins: ['collectionEvents'], // or ['react-backbone.collectionEvents']
 
@@ -867,6 +878,7 @@ For example, by including the ```events``` mixin, you can do this:
       onEvent2: ...
     });
 ```
+
 And the collection that is bound to the component (using the ```collection``` property) will have ```event1```, ```event2``` and ```event3``` bound to the associated component functions.
 
 
@@ -875,7 +887,7 @@ And the collection that is bound to the component (using the ```collection``` pr
 
 Memoizes a given function by caching the computed result.  see [_.memoize](http://underscorejs.org/#memoize) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*memoize()->window:resize': 'onWindowResize'
@@ -887,7 +899,7 @@ Memoizes a given function by caching the computed result.  see [_.memoize](http:
 
 Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/#delay) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*delay(1000)->window:resize': 'onWindowResize'
@@ -899,7 +911,7 @@ Invokes function after wait millisecond.  see [_.delay](http://underscorejs.org/
 
 Defers invoking the function until the current call stack has cleared.  see [_.defer](http://underscorejs.org/#defer) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*defer()->window:resize': 'onWindowResize'
@@ -912,7 +924,7 @@ Defers invoking the function until the current call stack has cleared.  see [_.d
 
 Creates and returns a new, throttled version of the passed function, that, when invoked repeatedly, will only actually call the original function at most once per every wait milliseconds.  see [_.throttle](http://underscorejs.org/#throttle) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*throttle(1000)->window:resize': 'onWindowResize'
@@ -925,7 +937,7 @@ Creates and returns a new, throttled version of the passed function, that, when 
 
 Creates and returns a new debounced version of the passed function which will postpone its execution until after wait milliseconds have elapsed since the last time it was invoked.  see [_.debounce](http://underscorejs.org/#debounce) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*debounce(1000)->window:resize': 'onWindowResize'
@@ -938,7 +950,7 @@ Creates and returns a new debounced version of the passed function which will po
 
 Creates a version of the function that can only be called one time. Repeated calls to the modified function will have no effect, returning the value from the original call.  see [_.once](http://underscorejs.org/#once) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*once()->window:resize': 'onWindowResize'
@@ -951,7 +963,7 @@ Creates a version of the function that can only be called one time. Repeated cal
 
 Creates a version of the function that will only be run after first being called count times.  see [_.after](http://underscorejs.org/#after) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*after(3)->window:resize': 'onWindowResize'
@@ -964,7 +976,7 @@ Creates a version of the function that will only be run after first being called
 
 Creates a version of the function that can be called no more than count times.  see [_.before](http://underscorejs.org/#before) for more details
 
-```
+```javascript
     mixins: ['events'],
     events: {
       '*before(3)->window:resize': 'onWindowResize'
@@ -980,7 +992,7 @@ API
 
 Return the model key name associated with a component.  While this can be overridden to sute your needs, the default impl is as follows:
 
-```
+```javascript
     if (reactComponent.getModelKey) {
       return component.getModelKey();
     }
@@ -991,11 +1003,13 @@ Return the model key name associated with a component.  While this can be overri
 * ***errors***: the error payload from a model validation
 
 Return the errors in a standardized format.  This can be overridden to suire your needs.  The default implementation will take errors in an array
-```
+
+```javascript
     [{field1Key: message}, {field2Key: message}, ...]
 ```
+
 to a single object
-```
+
+```javascript
     { field1Key: errorMessage, field2Key: errorMessage, ... }
 ```
-
