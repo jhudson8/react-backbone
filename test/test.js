@@ -600,14 +600,6 @@ describe('react-backbone', function() {
       collection1b.trigger('theEvent');
       expect(spy.callCount).to.eql(4);
     });
-    it('should warn if an object that doesn\'t support off/on is used', function() {
-      sinon.stub(console, 'log');
-      sinon.stub(console, 'error');
-      var collection = {},
-          obj = newComponent({props: {collection: collection}}, ['collectionEvents']);
-      expect(console.error.calledWith('props.collection does not implement on/off functions - you will see event binding problems (object logged to console below)'));
-      expect(console.log.calledWith(collection));
-    });
   });
 
   describe('backboneChangeAware', function() {

@@ -1,6 +1,6 @@
 {
   "name": "react-backbone",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "author": "Joe Hudson <joehud@gmail.com>",
   "description": "backbone-aware mixins for React and a whole lot more",
   "repository": {
@@ -23,7 +23,7 @@
     "chai": "~1.10",
     "jquery": "^2.1.3",
     "jsdom": "~1.3",
-    "mocha": "~2.0",
+    "mocha": "^2.1.0",
     "react": "~0.12",
     "react-events": "*",
     "react-mixin-manager": "*",

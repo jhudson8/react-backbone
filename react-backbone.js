@@ -1,5 +1,5 @@
 /*!
- * react-backbone v0.20.0
+ * react-backbone v0.21.0
  * https://github.com/jhudson8/react-backbone
  *
  * Copyright (c) 2014 Joe Hudson<joehud_AT_gmail.com>
@@ -433,7 +433,7 @@
                 }
 
                 if (!keys) {
-                    self[typeData.type + 'On'](xhrEventName, function(method, xhrEvents) {
+                    self[typeData.type + 'On'](xhrEventName, function(xhrEvents) {
                         whenXHRActivityHappens(xhrEvents);
                     });
                 } else {

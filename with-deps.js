@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.11.2
     jhudson8/react-mixin-manager 0.13.0
     jhudson8/react-events 0.9.0
-    jhudson8/react-backbone 0.20.0
+    jhudson8/react-backbone 0.21.0
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1717,7 +1717,7 @@
                 }
 
                 if (!keys) {
-                    self[typeData.type + 'On'](xhrEventName, function(method, xhrEvents) {
+                    self[typeData.type + 'On'](xhrEventName, function(xhrEvents) {
                         whenXHRActivityHappens(xhrEvents);
                     });
                 } else {
