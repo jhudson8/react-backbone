@@ -53,14 +53,14 @@ var RepositoryRow = React.createClass({
 });
 
 var RepositoriesView = React.createClass({
-  mixins: ['collectionChangeAware', 'collectionXHRAware'],
+  mixins: ['collectionAware("repositories")', 'collectionChangeAware', 'collectionXHRAware'],
 
   render: function() {
     if (this.state.loading) {
       return <div>'Loading...'</div>;
     }
 
-    var rows = this.props.collection.map(function(model) {
+    var rows = this.props.repositories.map(function(model) {
       return <RepositoryRow model={model}/>
     });
 
@@ -73,10 +73,10 @@ var RepositoriesView = React.createClass({
   },
 
   nextPage: function() {
-    var collection = this.props.collection,
-        currentPage = collection.page || 1;
-    collection.page = currentPage + 1;
-    collection.fetch();
+    var repositories = this.props.repositories,
+        currentPage = repositories.page || 1;
+    repositories.page = currentPage + 1;
+    repositories.fetch();
   }
 });
 
@@ -84,4 +84,4 @@ var RepositoriesView = React.createClass({
 // START IT UP
 var repositories = new Repositories();
 repositories.fetch();
-React.render(<RepositoriesView collection={repositories}/>, document.body);
+React.render(<RepositoriesView repositories={repositories}/>, document.body);

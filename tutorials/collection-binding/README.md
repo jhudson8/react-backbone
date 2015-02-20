@@ -162,7 +162,37 @@ Add the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.htm
 The [github API](https://developer.github.com/v3/) is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
 
-### Step 7: Change collection property name
+### Step 7: Add similated latency
+
+In order to easily view the loading indicator, we will use [advanced XHR lifecycle events](https://github.com/jhudson8/backbone-xhr-events) to add a simulated 1 second network delay.
+
+The following code which we will add to the top of the file (but could be anywhere) will listen for XHR activity of *any* model, cancel the original response so we can push the same response 1 second later.
+
+```
+    // Backbone.xhrEvents is a global event emitter for XHR activity
+    // the "xhr" event is triggered when Backbone.sync is executed (any model/colleciton XHR activity)
+    Backbone.xhrEvents.on('xhr', function(context) {
+
+      // now, bind to the "after-send" event of this specific XHR request lifecycle
+      context.on('after-send', function(p1, p2, p3, responseType) {
+
+        // after the response has been returned, prevent the default operation so the success handler isn't called
+        // handler (context.preventDefault return value) has error/success/compelete methods to simulate any scenario
+        var handler = context.preventDefault();
+
+        if (responseType === 'success') {
+          setTimeout(function() {
+
+            // after a 1 second delay, simulate the exact same success response that we got a second ago
+            var successOrErrorMethod = handler.success(p1, p2, p3);
+          }, 1000);
+        }
+      });
+    });
+```
+
+
+### Step 8: Change collection property name
 
 [view source](./step7/example.js)
 
