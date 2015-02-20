@@ -2,7 +2,15 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.20.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.0...master)
+
+## v0.21.0 - February 20th, 2015
+- backbone-xhr-events -0.9.5 -> 0.11.2 - cecd748
+
+See [backbone-xhr-events release notes](https://github.com/jhudson8/backbone-xhr-events/blob/master/release-notes.md) for more details but there are API changed if you are using the advanced XHR lifecycle binding (if you bind to any "xhr" events).  If you do not, no changes need to be made in your app
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.20.0...v0.21.0)
 
 ## v0.20.0 - February 15th, 2015
 - react-mixin-manager 0.12.0 -> 0.13.0 & react-events 0.8.1 -> 0.9.0 - e99863d
