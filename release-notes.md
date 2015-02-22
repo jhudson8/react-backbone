@@ -2,7 +2,55 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.1...master)
+
+## v0.21.1 - February 22nd, 2015
+- allow modelAware/collectionAware to create new models/collections - 18801d6
+
+The following details are for the ```modelAware``` mixin but can also be applied to ```collectionAware```.
+
+The ```new``` keyword can be used as the modelAware parameter if a new model should be created.  The model class must be provided as the ```Model``` component attribute.  The react component properties will be provided as the model constructor argument.
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware("new")'],
+      Model: MyModelClass,
+
+      render: function() {
+        // model will be a new instance of MyModelClass
+        var model = this.getModel();
+      }
+    }
+    });
+```
+
+```new:fetch``` can be used instead of ```new``` to auto-fetch the model as well.  For example, the following code examples are functionally the same.
+
+Without the ```new:fetch``` modelAware param
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware'],
+      getInitialState: function() {
+        var model = new MyModel(this.props);
+        model.fetch();
+        this.setModel(model);
+        return null;
+      }
+    });
+```
+
+With the ```new:fetch``` modelAware param
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware("new:fetch")'],
+      Model: MyModelClass
+    });
+```
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.0...v0.21.1)
 
 ## v0.21.0 - February 20th, 2015
 - backbone-xhr-events -0.9.5 -> 0.11.2 - cecd748
