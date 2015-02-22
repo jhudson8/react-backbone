@@ -48,7 +48,8 @@
         xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
         getState = React.mixins.getState,
         setState = React.mixins.setState,
-        logDebugWarnings = React.reactBackboneDebugWarnings;
+        logDebugWarnings = React.reactBackboneDebugWarnings,
+        NEW = /^new:?(.*)/;
     if (_.isUndefined(logDebugWarnings)) {
         logDebugWarnings = true;
     }
@@ -327,12 +328,30 @@
                     _referenceArgs = typeData.defaultParams;
                 }
 
-                var firstModel, singleReferenceArgs, obj;
+                var firstModel, singleReferenceArgs;
                 for (var i=0; i<_referenceArgs.length; i++) {
                     singleReferenceArgs = _referenceArgs[i];
                     for (var j=0; j<singleReferenceArgs.length; j++) {
-                        var propName = singleReferenceArgs[j];
-                        obj = getState(propName, this) || props[propName];
+                        var propName = singleReferenceArgs[j],
+                            obj = getState(propName, this) || props[propName];
+
+                        // if the "new" keyword is used, create a new model/collection using the
+                        // "Model" or "Collection" attribute of the React component
+                        if (!obj) {
+                            var newMatch = propName.match(NEW);
+                            if (newMatch) {
+                                // create the new model/collection
+                                obj = new this[typeData.capType](this.props);
+                                if (newMatch[1] === 'fetch') {
+                                    // and fetch if applicable
+                                    obj.fetch();
+                                }
+                                var stateObj = [];
+                                stateObj[propName] = obj;
+                                setState(stateObj, this);
+                            }
+                        }
+
                         if (obj) {
                             firstModel = firstModel || obj;
                             if (callback) {
@@ -340,7 +359,7 @@
                             } else {
                                 return obj;
                             }
-                        } else if (propsProvided && callback) {
+                        } else if (propsProvided && callback && propName) {
                             // make callback anyway to let callers know of the prop transition
                             callback.call(this, undefined, propName);
                         }

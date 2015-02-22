@@ -151,6 +151,34 @@ describe('react-backbone', function() {
 
   describe('modelAware', function() {
 
+    it('should create new instances', function() {
+      var constructorSpy = sinon.spy(),
+          TestModel = Backbone.Model.extend({
+            initialize: constructorSpy
+          });
+      var obj = newComponent({Model: TestModel}, ['modelAware("new")']);
+      expect(obj.state['new']).to.eql(undefined);
+      var model = obj.getModel();
+      expect(obj.state['new']).to.eql(model);
+      expect(constructorSpy.callCount).to.eql(1);
+    });
+
+    it('should create new instances and call fetch', function() {
+      var constructorSpy = sinon.spy(),
+          TestModel = Backbone.Model.extend({
+            initialize: constructorSpy,
+            fetch: sinon.spy()
+          });
+      var obj = newComponent({Model: TestModel}, ['modelAware("new:fetch")']);
+      expect(obj.state['new']).to.eql(undefined);
+      expect(obj.state['new:fetch']).to.eql(undefined);
+      var model = obj.getModel();
+      expect(obj.state['new']).to.eql(undefined);
+      expect(obj.state['new:fetch']).to.eql(model);
+      expect(constructorSpy.callCount).to.eql(1);
+      expect(model.fetch.callCount).to.eql(1);
+    });
+
     it('should get the model using props.model', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelAware']);
@@ -170,6 +198,34 @@ describe('react-backbone', function() {
 
 
   describe('collectionAware', function() {
+
+    it('should create new instances', function() {
+      var constructorSpy = sinon.spy(),
+          TestCollection = Backbone.Collection.extend({
+            initialize: constructorSpy
+          });
+      var obj = newComponent({Collection: TestCollection}, ['collectionAware("new")']);
+      expect(obj.state['new']).to.eql(undefined);
+      var collection = obj.getCollection();
+      expect(obj.state['new']).to.eql(collection);
+      expect(constructorSpy.callCount).to.eql(1);
+    });
+
+    it('should create new instances and call fetch', function() {
+      var constructorSpy = sinon.spy(),
+          TestCollection = Backbone.Collection.extend({
+            initialize: constructorSpy,
+            fetch: sinon.spy()
+          });
+      var obj = newComponent({Collection: TestCollection}, ['collectionAware("new:fetch")']);
+      expect(obj.state['new']).to.eql(undefined);
+      expect(obj.state['new:fetch']).to.eql(undefined);
+      var collection = obj.getCollection();
+      expect(obj.state['new']).to.eql(undefined);
+      expect(obj.state['new:fetch']).to.eql(collection);
+      expect(constructorSpy.callCount).to.eql(1);
+      expect(collection.fetch.callCount).to.eql(1);
+    });
 
     it('should get the collection using props.collection', function() {
       var collection = new Backbone.Collection(),

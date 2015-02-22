@@ -239,6 +239,47 @@ There can actually be multiple models bound to a single component.  To access al
     });
 ```
 
+The ```new``` keyword can be used as the modelAware parameter if a new model should be created.  The model class must be provided as the ```Model``` component attribute.  The react component properties will be provided as the model constructor argument.
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware("new")'],
+      Model: MyModelClass,
+
+      render: function() {
+        // model will be a new instance of MyModelClass
+        var model = this.getModel();
+      }
+    }
+    });
+```
+
+```new:fetch``` can be used instead of ```new``` to auto-fetch the model as well.  For example, the following code examples are functionally the same.
+
+Without the ```new:fetch``` modelAware param
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware'],
+      getInitialState: function() {
+        var model = new MyModel(this.props);
+        model.fetch();
+        this.setModel(model);
+        return null;
+      }
+    });
+```
+
+With the ```new:fetch``` modelAware param
+
+```javascript
+    React.createClass({
+      mixins: ['modelAware("new:fetch")'],
+      Model: MyModelClass
+    });
+```
+
+
 #### setModel(model)
 * ***model***: the Backbone model to set
 
@@ -278,6 +319,45 @@ There can actually be multiple collections bound to a single component.  To acce
     // iterate all collection bound to this component
     myClass.getCollection(function(model, propName) {
       // will be called twice with (collection1, "foo") and (collection2, "bar")
+    });
+```
+
+The ```new``` keyword can be used as the collectionAware parameter if a new collection should be created.  The collection class must be provided as the ```Collection``` component attribute.  The react component properties will be provided as the collection constructor argument.
+
+```javascript
+    React.createClass({
+      mixins: ['collectionAware("new")'],
+      Collection: MyCollectionClass,
+
+      render: function() {
+        // collection will be a new instance of MyCollectionClass
+        var collection = this.getCollection();
+      }
+    });
+```
+
+```new:fetch``` can be used instead of ```new``` to auto-fetch the model as well.  For example, the following code examples are functionally the same.
+
+Without the ```new:fetch``` collectionAware param
+
+```javascript
+    React.createClass({
+      mixins: ['collectionAware'],
+      getInitialState: function() {
+        var collection = new MyCollection(this.props);
+        collection.fetch();
+        this.setCollection(model);
+        return null;
+      }
+    });
+```
+
+With the ```new:fetch``` collectionAware param
+
+```javascript
+    React.createClass({
+      mixins: ['collectionAware("new:fetch")'],
+      Collection: MyCollection
     });
 ```
 
