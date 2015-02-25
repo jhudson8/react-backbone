@@ -49,7 +49,7 @@ The event will now be managed and, if the component with the ```child``` ref cha
 
 [view source](./step3/example.js)
 
-The [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) exposes a handy helper function called [triggerWith](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/events/triggerWith?focus=outline).  This provides a convienant way to apply scoped variables to a triggered event.
+The [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/events?focus=outline) exposes a handy helper function called [triggerWith](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/events/triggerWith?focus=outline).  This provides a convenient way to apply scoped variables to a triggered event.
 
 Include the ```events``` mixin for ```ComponentB```
 
