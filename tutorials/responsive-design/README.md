@@ -122,7 +122,7 @@ Refactor our utility function to allow the width to be provided
     }
 ```
 
-Wrap the mixin definition in a function callback which accepts a paramter (the responsive breakpoint width).
+Wrap the mixin definition in a function callback which accepts a parameter (the responsive breakpoint width).
 
 ```javascript
     // instead of using a standard object for the mixin attributes, we can use a function
@@ -154,7 +154,7 @@ Provide the mixin parameter when we create our component class
     });
 ```
 
-The component code is now very simple and declaritive using mixins with parameters.
+The component code is now very simple and declarative using mixins with parameters.
 
 
 ### All done

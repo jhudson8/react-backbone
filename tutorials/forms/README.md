@@ -129,7 +129,7 @@ Note: you could also just pass ```{validate: true}``` but that will always valid
     <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={{validateField: true}}/>
 ```
 
-Now you will see error messages as you type but, notice that the error message isn't removed when the input field becomes valid.  This is because there is no ```valid``` event to listen to.  Let's listen to any ```change``` event using the [modelEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and clear the validation state when the model is sucessfully changed.
+Now you will see error messages as you type but, notice that the error message isn't removed when the input field becomes valid.  This is because there is no ```valid``` event to listen to.  Let's listen to any ```change``` event using the [modelEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and clear the validation state when the model is successfully changed.
 
 Add the [modelEvents mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) and the ```events``` object
 
