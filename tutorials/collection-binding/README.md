@@ -109,7 +109,7 @@ And when we start the app, remove the success handler and just render synchronou
 
 [view source](./step4/example.js)
 
-Instead of binding to the ```add``` event in ```getInitialState``` we could just take adavantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
+Instead of binding to the ```add``` event in ```getInitialState``` we could just take advantage of [model](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/modelEvents?focus=outline) / [collection](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/collectionEvents?focus=outline) event declarations.
 
 Remove the ```getInitialState``` code and add the ```events``` object.
 
@@ -162,7 +162,7 @@ Add the [collectionXHRAware mixin](http://jhudson8.github.io/fancydocs/index.htm
 The [github API](https://developer.github.com/v3/) is pretty fast but if you watch closely you'll be able to see the loading indicator.
 
 
-### Step 7: Add similated latency
+### Step 7: Add simulated latency
 
 In order to easily view the loading indicator, we will use [advanced XHR lifecycle events](https://github.com/jhudson8/backbone-xhr-events) to add a simulated 1 second network delay.
 
