@@ -176,7 +176,7 @@ The following code which we will add to the top of the file (but could be anywhe
       // now, bind to the "after-send" event of this specific XHR request lifecycle
       context.on('after-send', function(p1, p2, p3, responseType) {
 
-        // "responseType" will be "success" or "error"
+        // "responseType" will be "success" or "error", p1 - p3 are the parameters provided to the $.ajax success/error callback
         if (responseType === 'success') {
 
           // after the response has been returned, prevent the default operation so the success handler isn't called
