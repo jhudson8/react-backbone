@@ -176,11 +176,13 @@ The following code which we will add to the top of the file (but could be anywhe
       // now, bind to the "after-send" event of this specific XHR request lifecycle
       context.on('after-send', function(p1, p2, p3, responseType) {
 
-        // after the response has been returned, prevent the default operation so the success handler isn't called
-        // handler (context.preventDefault return value) has error/success/compelete methods to simulate any scenario
-        var handler = context.preventDefault();
-
+        // "responseType" will be "success" or "error"
         if (responseType === 'success') {
+
+          // after the response has been returned, prevent the default operation so the success handler isn't called
+          // handler (context.preventDefault return value) has error/success/compelete methods to simulate any scenario
+          var handler = context.preventDefault();
+
           setTimeout(function() {
 
             // after a 1 second delay, simulate the exact same success response that we got a second ago
