@@ -218,6 +218,58 @@ And change all references from ```props.collection``` to ```props.repositories``
 There are more to replace out... above is an example of a single replacement.
 
 
+### Step 9: Retrieve query string from URL
+
+Instead of hardcoding ```react``` as the query, let's retrieve it from the URL.
+
+Change the collection to accept the query value as a constructor parameter
+
+```
+    var Repositories = Backbone.Collection.extend({
+      initialize: function(models, options) {
+        Backbone.Collection.prototype.initialize.apply(this, arguments);
+        this.query = options.query;
+      },
+
+      url: function() {
+        return 'https://api.github.com/search/repositories?q=' + encodeURIComponent(this.query) + '&per_page=10&page=' + (this.page || 1);
+      },
+      ...
+```
+
+Remove the current startup code
+
+```
+    // remove this
+    var repositories = new Repositories();
+    repositories.fetch();
+    React.render(<RepositoriesView repositories={repositories}/>, document.body);
+```
+
+
+And replace the startup logic to listen for hash change events using a Backbone.Router
+
+```
+    // ROUTER
+    var Router = Backbone.Router.extend({
+      routes: {
+        ':query': 'query'
+      },
+
+      query: function(value) {
+        var repositories = new Repositories(undefined, {query: value});
+        repositories.fetch();
+        React.render(<RepositoriesView repositories={repositories}/>, document.body);
+      }
+    });
+    new Router();
+
+    Backbone.history.start();
+```
+
+Now, browse to [http://localhost:8080/#react](http://localhost:8080/#react)
+
+
 ### All done
 
 All done but there is so much more you can do.  Check out some of the [other mixins](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/api/Mixins?focus=outline).
