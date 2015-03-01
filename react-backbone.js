@@ -1,5 +1,5 @@
 /*!
- * react-backbone v0.21.1
+ * react-backbone v0.22.0
  * https://github.com/jhudson8/react-backbone
  *
  * Copyright (c) 2014 Joe Hudson<joehud_AT_gmail.com>
@@ -205,12 +205,14 @@
         }
         var events = getModelAndCollectionEvents(type, context);
         if (unbindModel) {
+            context.trigger(type + ':unbind', bindModel);
             // turn off models that will be replaced
             _.each(events, function(eventData) {
                 this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
             }, context);
         }
         if (bindModel) {
+            context.trigger(type + ':bind', bindModel);
             _.each(events, function(eventData) {
                 modelOrCollectionOnOrOnce(type, eventData.type, [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
             }, context);
@@ -429,12 +431,14 @@
          */
         var typeFetch = {
             getInitialState: function() {
-                this['get' + typeData.capType](function(modelOrCollection) {
+                function doFetch(modelOrCollection) {
                     modelOrCollection.whenFetched(function() {});
-                });
+                }
+                this.on(typeData.type + ':bind', doFetch);
+                this['get' + typeData.capType](doFetch);
             }
         };
-        addMixin(typeData.type + 'Fetch', typeFetch, typeData.type + 'Aware');
+        addMixin(typeData.type + 'Fetch', typeFetch, typeData.type + 'Events');
 
 
         var xhrFactory = {
