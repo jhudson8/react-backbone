@@ -48,8 +48,7 @@
         xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
         getState = React.mixins.getState,
         setState = React.mixins.setState,
-        logDebugWarnings = React.reactBackboneDebugWarnings,
-        NEW = /^new:?(.*)/;
+        logDebugWarnings = React.reactBackboneDebugWarnings;
     if (_.isUndefined(logDebugWarnings)) {
         logDebugWarnings = true;
     }
@@ -334,24 +333,6 @@
                     for (var j=0; j<singleReferenceArgs.length; j++) {
                         var propName = singleReferenceArgs[j],
                             obj = getState(propName, this) || props[propName];
-
-                        // if the "new" keyword is used, create a new model/collection using the
-                        // "Model" or "Collection" attribute of the React component
-                        if (!obj) {
-                            var newMatch = propName.match(NEW);
-                            if (newMatch) {
-                                // create the new model/collection
-                                obj = new this[typeData.capType](this.props);
-                                if (newMatch[1] === 'fetch') {
-                                    // and fetch if applicable
-                                    obj.fetch();
-                                }
-                                var stateObj = [];
-                                stateObj[propName] = obj;
-                                setState(stateObj, this);
-                            }
-                        }
-
                         if (obj) {
                             firstModel = firstModel || obj;
                             if (callback) {
