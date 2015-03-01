@@ -151,34 +151,6 @@ describe('react-backbone', function() {
 
   describe('modelAware', function() {
 
-    it('should create new instances', function() {
-      var constructorSpy = sinon.spy(),
-          TestModel = Backbone.Model.extend({
-            initialize: constructorSpy
-          });
-      var obj = newComponent({Model: TestModel}, ['modelAware("new")']);
-      expect(obj.state['new']).to.eql(undefined);
-      var model = obj.getModel();
-      expect(obj.state['new']).to.eql(model);
-      expect(constructorSpy.callCount).to.eql(1);
-    });
-
-    it('should create new instances and call fetch', function() {
-      var constructorSpy = sinon.spy(),
-          TestModel = Backbone.Model.extend({
-            initialize: constructorSpy,
-            fetch: sinon.spy()
-          });
-      var obj = newComponent({Model: TestModel}, ['modelAware("new:fetch")']);
-      expect(obj.state['new']).to.eql(undefined);
-      expect(obj.state['new:fetch']).to.eql(undefined);
-      var model = obj.getModel();
-      expect(obj.state['new']).to.eql(undefined);
-      expect(obj.state['new:fetch']).to.eql(model);
-      expect(constructorSpy.callCount).to.eql(1);
-      expect(model.fetch.callCount).to.eql(1);
-    });
-
     it('should get the model using props.model', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelAware']);
@@ -197,35 +169,29 @@ describe('react-backbone', function() {
   });
 
 
+  describe('modelFetch', function() {
+    it('should call whenFetched on the default model', function() {
+      var model = new Backbone.Model();
+      model.whenFetched = sinon.spy();
+      var obj = newComponent({props: {model: model}}, ['modelFetch']);
+      obj.mount();
+      expect(model.whenFetched.callCount).to.eql(1);
+    });
+    it('should call whenFetched on multiple custom models', function() {
+      var model1 = new Backbone.Model(),
+          model2 = new Backbone.Model();
+      model1.whenFetched = sinon.spy();
+      model2.whenFetched = sinon.spy();
+      var obj = newComponent({props: {test1: model1, test2: model2}},
+          ['modelAware("test1", "test2")', 'modelFetch']);
+      obj.mount();
+      expect(model1.whenFetched.callCount).to.eql(1);
+      expect(model2.whenFetched.callCount).to.eql(1);
+    });
+  });
+
+
   describe('collectionAware', function() {
-
-    it('should create new instances', function() {
-      var constructorSpy = sinon.spy(),
-          TestCollection = Backbone.Collection.extend({
-            initialize: constructorSpy
-          });
-      var obj = newComponent({Collection: TestCollection}, ['collectionAware("new")']);
-      expect(obj.state['new']).to.eql(undefined);
-      var collection = obj.getCollection();
-      expect(obj.state['new']).to.eql(collection);
-      expect(constructorSpy.callCount).to.eql(1);
-    });
-
-    it('should create new instances and call fetch', function() {
-      var constructorSpy = sinon.spy(),
-          TestCollection = Backbone.Collection.extend({
-            initialize: constructorSpy,
-            fetch: sinon.spy()
-          });
-      var obj = newComponent({Collection: TestCollection}, ['collectionAware("new:fetch")']);
-      expect(obj.state['new']).to.eql(undefined);
-      expect(obj.state['new:fetch']).to.eql(undefined);
-      var collection = obj.getCollection();
-      expect(obj.state['new']).to.eql(undefined);
-      expect(obj.state['new:fetch']).to.eql(collection);
-      expect(constructorSpy.callCount).to.eql(1);
-      expect(collection.fetch.callCount).to.eql(1);
-    });
 
     it('should get the collection using props.collection', function() {
       var collection = new Backbone.Collection(),
@@ -241,6 +207,27 @@ describe('react-backbone', function() {
       var collection2 = new Backbone.Collection();
       obj.setProps({collection: collection2});
       expect(obj.getCollection()).to.eql(collection2);
+    });
+  });
+
+  describe('collectionFetch', function() {
+    it('should call whenFetched on the default collection', function() {
+      var collection = new Backbone.Collection();
+      collection.whenFetched = sinon.spy();
+      var obj = newComponent({props: {collection: collection}}, ['collectionFetch']);
+      obj.mount();
+      expect(collection.whenFetched.callCount).to.eql(1);
+    });
+    it('should call whenFetched on multiple custom collections', function() {
+      var collection1 = new Backbone.Collection(),
+          collection2 = new Backbone.Collection();
+      collection1.whenFetched = sinon.spy();
+      collection2.whenFetched = sinon.spy();
+      var obj = newComponent({props: {test1: collection1, test2: collection2}},
+          ['collectionAware("test1", "test2")', 'collectionFetch']);
+      obj.mount();
+      expect(collection1.whenFetched.callCount).to.eql(1);
+      expect(collection2.whenFetched.callCount).to.eql(1);
     });
   });
 

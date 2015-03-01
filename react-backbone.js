@@ -424,6 +424,19 @@
 
         // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
+        /**
+         * Mixin used to force render any time the model has changed
+         */
+        var typeFetch = {
+            getInitialState: function() {
+                this['get' + typeData.capType](function(modelOrCollection) {
+                    modelOrCollection.whenFetched(function() {});
+                });
+            }
+        };
+        addMixin(typeData.type + 'Fetch', typeFetch, typeData.type + 'Aware');
+
+
         var xhrFactory = {
             getInitialState: function(keys, self) {
                 function whenXHRActivityHappens(xhrEvents) {
