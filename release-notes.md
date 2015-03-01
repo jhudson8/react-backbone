@@ -2,7 +2,17 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.0...master)
+
+## v0.22.0 - February 28th, 2015
+- add modelFetch / collectionFetch mixin - 49a2f58
+- remove ability to use "new" as modelAware parameter - e267711
+
+The ```new``` ```modelAware/collectionAware``` special mixin parameter has been removed because, after second though, this promotes using state for models.  This is an anti-pattern.
+
+A ```modelFetch``` and 	```collectionFetch``` mixin has been added which will ensure that any bound models or collections will be fetched when the component is mounted
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.21.1...v0.22.0)
 
 ## v0.21.1 - February 22nd, 2015
 - allow modelAware/collectionAware to create new models/collections - 18801d6
