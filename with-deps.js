@@ -1676,6 +1676,7 @@
                 getModelOrCollections(typeData.type, this, function(obj, propName) {
                     var currentObj = this.props[propName];
                     unbindAndRebind(typeData.type, currentObj, obj, this);
+                    this.trigger(typeData.type + ':set', obj, propName, currentObj);
                 }, props);
             },
         };
@@ -1744,8 +1745,7 @@
             },
 
             componentWillMount: function(keys, self) {
-                // make sure the model didn't get into a non-loading state before mounting
-                getModelOrCollections(typeData.type, self, function(modelOrCollection) {
+                function _join(modelOrCollection) {
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
                     if (!keys) {
@@ -1761,6 +1761,14 @@
                             joinCurrentModelActivity(key, modelOrCollection, self);
                         });
                     }
+                }
+
+                // make sure the model didn't get into a non-loading state before mounting
+                getModelOrCollections(typeData.type, self, function(modelOrCollection) {
+                    _join(modelOrCollection);
+                });
+                self.on(typeData.type + ':set', function(modelOrCollection) {
+                    _join(modelOrCollection);
                 });
             }
         };
