@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.1...master)
+
+## v0.22.1 - March 17th, 2015
+- bug fix: allow XHRAware mixin to be aware of current XHR activity during a model/collection property change - 77c8d27
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.0...v0.22.1)
 
 ## v0.22.0 - February 28th, 2015
 - add modelFetch / collectionFetch mixin - 49a2f58
