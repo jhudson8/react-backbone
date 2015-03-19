@@ -25,7 +25,7 @@
 
 /*
   Container script which includes the following:
-    jhudson8/backbone-xhr-events 0.11.2
+    jhudson8/backbone-xhr-events 0.12.0
     jhudson8/react-mixin-manager 0.13.0
     jhudson8/react-events 0.9.0
     jhudson8/react-backbone 0.22.1
@@ -161,14 +161,16 @@
     // execute the callback directly if the model is fetch
     // initiate a fetch with this callback as the success option if not fetched
     // or plug into the current fetch if in progress
-    Backbone.Model.prototype.whenFetched = Backbone.Collection.whenFetched = function(success, error) {
+    Backbone.Model.prototype.ensureFetched = Backbone.Collection.prototype.ensureFetched = function(success, error) {
         var model = this;
 
         function successWrapper() {
-            success(model);
+            if (success) {
+                success(model);
+            }
         }
         if (this.hasBeenFetched) {
-            return success(this);
+            return successWrapper();
         }
         // find current fetch call (if any)
         var _fetch = _.find(this[xhrLoadingAttribute], function(req) {
@@ -1475,15 +1477,17 @@
         function _on(modelOrCollection) {
             _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
         }
-        if (_modelOrCollection) {
-            _on(_modelOrCollection);
-        } else {
-            getModelOrCollections(modelType, _this, _on);
+        if (_this.isMounted()) {
+            if (_modelOrCollection) {
+                _on(_modelOrCollection);
+            } else {
+                getModelOrCollections(modelType, _this, _on);
+            }
         }
     }
 
-    function unbindAndRebind(type, unbindModel, bindModel, context) {
-        if (unbindModel === bindModel) {
+    function unbindAndRebind(type, unbindModel, bindModel, context, force) {
+        if (unbindModel === bindModel && !force) {
             // nothing to do
             return;
         }
@@ -1498,7 +1502,8 @@
         if (bindModel) {
             context.trigger(type + ':bind', bindModel);
             _.each(events, function(eventData) {
-                modelOrCollectionOnOrOnce(type, eventData.type, [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
+                modelOrCollectionOnOrOnce(type, eventData.type,
+                        [eventData.ev, eventData.cb, eventData.ctx], this, bindModel, force);
             }, context);
         }
     }
@@ -1520,15 +1525,19 @@
 
     // loading state helpers
     function pushLoadingState(xhrEvent, modelOrCollection, context) {
-        var currentLoads = getState('loading', context);
+        var currentLoads = getState('loading', context),
+            currentlyLoading = currentLoads && currentLoads.length;
         if (!currentLoads) {
             currentLoads = [];
         }
         if (_.isArray(currentLoads)) {
             currentLoads.push(xhrEvent);
-            setState({
-                loading: currentLoads
-            }, context);
+            if (!currentlyLoading) {
+                setState({
+                    loading: currentLoads
+                }, context);
+            }
+
             xhrEvent.on('complete', function() {
                 popLoadingState(xhrEvent, modelOrCollection, context);
             });
@@ -1634,18 +1643,19 @@
                 }
                 return firstModel;
             };
-            rtn['set' + typeData.capType] = function(model, key) {
+            rtn['set' + typeData.capType] = function(modelOrCollection, key) {
                 key = key || typeData.type;
                 var stateData = {};
-                var prevModel;
-                this.getModel(function(model, _key) {
+                var prevModelOrCollection;
+                this['get' + typeData.capType](function(modelOrCollection, _key) {
                     if (_key === key) {
-                        prevModel = model;
+                        prevModelOrCollection = modelOrCollection;
                     }
                 });
                 // unbind previous model
-                unbindAndRebind(typeData.type, prevModel, model, this);
-                stateData[key] = model;
+                unbindAndRebind(typeData.type, prevModelOrCollection, prevModelOrCollection, this);
+                stateData[key] = modelOrCollection;
+                this.trigger(typeData.type + ':set', modelOrCollection, key, prevModelOrCollection);
             };
             return rtn;
         };
@@ -1679,6 +1689,13 @@
                     this.trigger(typeData.type + ':set', obj, propName, currentObj);
                 }, props);
             },
+
+            componentDidMount: function() {
+                getModelOrCollections(typeData.type, this, function(obj, propName) {
+                    var currentObj = this.props[propName];
+                    unbindAndRebind(typeData.type, currentObj, obj, this, true);
+                }, this.props);
+            }
         };
         typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
             modelOrCollectionOnOrOnce(typeData.type, 'on', arguments, this);
@@ -1736,6 +1753,10 @@
 
                 if (!keys) {
                     self[typeData.type + 'On'](xhrEventName, function(xhrEvents) {
+                        // ensure we don't bubble model xhr loading to collection
+                        if (typeData.type === 'collection' && xhrEvents.model instanceof Backbone.Model) {
+                            return;
+                        }
                         whenXHRActivityHappens(xhrEvents);
                     });
                 } else {
@@ -1744,7 +1765,7 @@
                 return {};
             },
 
-            componentWillMount: function(keys, self) {
+            componentDidMount: function(keys, self) {
                 function _join(modelOrCollection) {
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
@@ -1783,8 +1804,8 @@
                 return xhrFactory.getInitialState(undefined, this);
             },
 
-            componentWillMount: function() {
-                return xhrFactory.componentWillMount(undefined, this);
+            componentDidMount: function() {
+                return xhrFactory.componentDidMount(undefined, this);
             }
         };
         addMixin(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
@@ -1800,8 +1821,8 @@
                     return xhrFactory.getInitialState(keys || 'loadOn', this);
                 },
 
-                componentWillMount: function() {
-                    return xhrFactory.componentWillMount(keys || 'loadOn', this);
+                componentDidMount: function() {
+                    return xhrFactory.componentDidMount(keys || 'loadOn', this);
                 }
             };
         };
