@@ -191,15 +191,17 @@
         function _on(modelOrCollection) {
             _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
         }
-        if (_modelOrCollection) {
-            _on(_modelOrCollection);
-        } else {
-            getModelOrCollections(modelType, _this, _on);
+        if (_this.isMounted()) {
+            if (_modelOrCollection) {
+                _on(_modelOrCollection);
+            } else {
+                getModelOrCollections(modelType, _this, _on);
+            }
         }
     }
 
-    function unbindAndRebind(type, unbindModel, bindModel, context) {
-        if (unbindModel === bindModel) {
+    function unbindAndRebind(type, unbindModel, bindModel, context, force) {
+        if (unbindModel === bindModel && !force) {
             // nothing to do
             return;
         }
@@ -214,7 +216,8 @@
         if (bindModel) {
             context.trigger(type + ':bind', bindModel);
             _.each(events, function(eventData) {
-                modelOrCollectionOnOrOnce(type, eventData.type, [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
+                modelOrCollectionOnOrOnce(type, eventData.type,
+                        [eventData.ev, eventData.cb, eventData.ctx], this, bindModel, force);
             }, context);
         }
     }
@@ -354,18 +357,19 @@
                 }
                 return firstModel;
             };
-            rtn['set' + typeData.capType] = function(model, key) {
+            rtn['set' + typeData.capType] = function(modelOrCollection, key) {
                 key = key || typeData.type;
                 var stateData = {};
-                var prevModel;
-                this.getModel(function(model, _key) {
+                var prevModelOrCollection;
+                this['get' + typeData.capType](function(modelOrCollection, _key) {
                     if (_key === key) {
-                        prevModel = model;
+                        prevModelOrCollection = modelOrCollection;
                     }
                 });
                 // unbind previous model
-                unbindAndRebind(typeData.type, prevModel, model, this);
-                stateData[key] = model;
+                unbindAndRebind(typeData.type, prevModelOrCollection, prevModelOrCollection, this);
+                stateData[key] = modelOrCollection;
+                this.trigger(typeData.type + ':set', modelOrCollection, key, prevModelOrCollection);
             };
             return rtn;
         };
@@ -399,6 +403,13 @@
                     this.trigger(typeData.type + ':set', obj, propName, currentObj);
                 }, props);
             },
+
+            componentDidMount: function() {
+                getModelOrCollections(typeData.type, this, function(obj, propName) {
+                    var currentObj = this.props[propName];
+                    unbindAndRebind(typeData.type, currentObj, obj, this, true);
+                }, this.props);
+            }
         };
         typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
             modelOrCollectionOnOrOnce(typeData.type, 'on', arguments, this);
@@ -468,7 +479,7 @@
                 return {};
             },
 
-            componentWillMount: function(keys, self) {
+            componentDidMount: function(keys, self) {
                 function _join(modelOrCollection) {
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
@@ -507,8 +518,8 @@
                 return xhrFactory.getInitialState(undefined, this);
             },
 
-            componentWillMount: function() {
-                return xhrFactory.componentWillMount(undefined, this);
+            componentDidMount: function() {
+                return xhrFactory.componentDidMount(undefined, this);
             }
         };
         addMixin(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
@@ -524,8 +535,8 @@
                     return xhrFactory.getInitialState(keys || 'loadOn', this);
                 },
 
-                componentWillMount: function() {
-                    return xhrFactory.componentWillMount(keys || 'loadOn', this);
+                componentDidMount: function() {
+                    return xhrFactory.componentDidMount(keys || 'loadOn', this);
                 }
             };
         };

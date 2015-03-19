@@ -308,7 +308,7 @@ describe('react-backbone', function() {
       };
       var spy = sinon.spy(),
           attributes = obj.modelPopulate(spy);
-      expect(spy).to.not.have.been.called;
+      expect(spy.callCount).to.eql(0);
       expect(attributes).to.eql({foo: 'bar'});
       expect(Model.prototype.validate).to.have.been.calledWith({foo: 'bar'});
     });
@@ -379,7 +379,6 @@ describe('react-backbone', function() {
       model.trigger('foo');
       // we shouldn't bind yet because we aren't mounted
       expect(spy.callCount).to.eql(0);
-
       obj.mount();
       model.trigger('foo');
       expect(spy.callCount).to.eql(1);
@@ -388,14 +387,6 @@ describe('react-backbone', function() {
       obj.unmount();
       model.trigger('foo');
       expect(spy.callCount).to.eql(1);
-
-      // mount again and ensure that we rebind
-      obj.mount();
-      model.trigger('foo');
-      expect(spy.callCount).to.eql(2);
-      obj.unmount();
-      model.trigger('foo');
-      expect(spy.callCount).to.eql(2);
     });
 
     it('should bind if model does not exist when registered', function() {
@@ -530,14 +521,6 @@ describe('react-backbone', function() {
       obj.unmount();
       collection.trigger('foo');
       expect(spy.callCount).to.eql(1);
-
-      // mount again and ensure that we rebind
-      obj.mount();
-      collection.trigger('foo');
-      expect(spy.callCount).to.eql(2);
-      obj.unmount();
-      collection.trigger('foo');
-      expect(spy.callCount).to.eql(2);
     });
 
     it('should bind if collection does not exist when registered', function() {
@@ -880,59 +863,54 @@ describe('react-backbone', function() {
           obj = newComponent({props: {model: model, collection: collection, loadOn: 'foo'}}, ['backboneLoadOn']);
 
       obj.mount();
-      Backbone.sync('foo', model, {url: 'foo'});
+      // for the event binding
       expect(obj.setState.callCount).to.eql(1);
-      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
-      $.success();
+      Backbone.sync('foo', model, {url: 'foo'});
+      // for the initial XHR activity
       expect(obj.setState.callCount).to.eql(2);
+      
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
+      $.success();
+      expect(obj.setState.callCount).to.eql(3);
 
       Backbone.sync('foo', collection, {url: 'foo'});
-      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.callCount).to.eql(4);
     });
   });
 
   describe('modelLoadOn', function() {
-    it('should not call setState if the component is not mounted (but still set the loading state attribute)', function() {
-      var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
-
-      // initialize the plugins
-      obj.mount();
-
-      // make it look like we aren't mounted
-      obj._mounted = false;
-      Backbone.sync('foo', model, {url: 'foo'});
-      expect(obj.setState).to.not.have.been.called;
-      expect(!!obj.state.loading).to.eql(true);
-
-      obj._mounted = true;
-      $.success();
-      expect(obj.setState).to.have.been.calledWith({loading: false});
-      expect(obj.setState.callCount).to.eql(1);
-    });
-
     it('should set loading state when an async event is triggered (success condition)', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', model, {url: 'foo'});
-      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
-      $.success();
-      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
+      $.success();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should set loading state when an async event is triggered (error condition)', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model, loadOn: 'foo'}}, ['modelLoadOn']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', model, {url: 'foo'});
-      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
-      $.error();
-      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
+      $.error();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should not error if no "loadOn" property is defined', function() {
@@ -944,60 +922,54 @@ describe('react-backbone', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelLoadOn("foo"))']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', model, {url: 'foo'});
-      expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([model.xhrActivity[0]]);
-      $.success();
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
   });
 
 
   describe('collectionLoadOn', function() {
-
-    it('should not call setState if the component is not mounted (but still set the loading state attribute)', function() {
-      var collection = new Backbone.Collection(),
-          obj = newComponent({props: { collection: collection, loadOn: 'foo' }}, ['collectionLoadOn']);
-
-      // initialize the plugins
-      obj.mount();
-
-      // make it look like we aren't mounted
-      obj._mounted = false;
-      Backbone.sync('foo', collection, { url: 'foo' });
-      expect(obj.setState).to.not.have.been.called;
-      expect(!!obj.state.loading).to.eql(true);
-
-      obj._mounted = true;
-      $.success();
-      expect(obj.setState).to.have.been.calledWith({loading: false});
-      expect(obj.setState.callCount).to.eql(1);
-    });
-
     it('should set loading state when an async event is triggered (success condition)', function() {
       var collection = new Backbone.Collection(),
           obj = newComponent({props: { collection: collection, loadOn: 'foo' }}, ['collectionLoadOn']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', collection, { url: 'foo' });
-      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
-      $.success();
-      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      // set the loading state
       expect(obj.setState.callCount).to.eql(2);
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
+      $.success();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should set loading state when an async event is triggered (error condition)', function() {
       var collection = new Backbone.Collection(),
           obj = newComponent({props: {collection: collection, loadOn: 'foo'}}, ['collectionLoadOn']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', collection, {url: 'foo'});
-      expect(!!obj.setState.getCall(0).args[0].loading).to.eql(true);
-      $.error();
-      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
+      $.error();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should not error if no "loadOn" property is defined', function() {
@@ -1009,12 +981,17 @@ describe('react-backbone', function() {
       var collection = new Backbone.Collection(),
           obj = newComponent({props: {collection: collection}}, ['collectionLoadOn("foo"))']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
       Backbone.sync('foo', collection, {url: 'foo'});
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([collection.xhrActivity[0]]);
-      $.success();
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([collection.xhrActivity[0]]);
+      $.success();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
   });
@@ -1065,14 +1042,17 @@ describe('react-backbone', function() {
           collection = new Backbone.Collection(),
           obj = newComponent({props: {model: model, collection: collection}}, ['backboneXHRAware']);
       obj.mount();
-
-      expect(obj.setState.callCount).to.eql(0);
-      Backbone.sync('foo', model, {url: 'foo'});
+      // for the event bindings
       expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([model.xhrActivity[0]]);
-      $.success();
+
+      Backbone.sync('foo', model, {url: 'foo'});
+      // for the loading state
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      // completion of the loading state
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
 
       obj.setState.reset();
       Backbone.sync('foo', collection, {url: 'foo'});
@@ -1088,18 +1068,27 @@ describe('react-backbone', function() {
           collection = new Backbone.Collection(),
           obj = newComponent({props: {model: model, collection: collection}}, ['backboneXHRAware']);
       obj.mount();
+      // for the event bindings
+      expect(obj.setState.callCount).to.eql(1);
 
-      expect(obj.setState.callCount).to.eql(0);
       Backbone.sync('foo', model, {url: 'foo'});
+      // for the the loading state
+      expect(obj.setState.callCount).to.eql(2);
       expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
 
       Backbone.sync('foo', collection, {url: 'foo'});
+      // no need to refresh so we shouldn't update the state with setState
+      expect(obj.setState.callCount).to.eql(2);
       expect(obj.state.loading).to.eql([
         model.xhrActivity[0], collection.xhrActivity[0]]);
 
       $.success();
+      // no need to refresh so we shouldn't update the state with setState
+      expect(obj.setState.callCount).to.eql(2);
       expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
       $.success();
+      // now we should have refreshed
+      expect(obj.setState.callCount).to.eql(3);
       expect(obj.state.loading).to.eql(false);
     });
   });
@@ -1111,34 +1100,42 @@ describe('react-backbone', function() {
       var model = new Backbone.Model(),
           obj = newComponent({props: {model: model}}, ['modelXHRAware']);
       obj.mount();
-
-      expect(obj.setState.callCount).to.eql(0);
-      Backbone.sync('foo', model, {url: 'foo'});
+      // for the event bindings
       expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([model.xhrActivity[0]]);
+
+      Backbone.sync('foo', model, {url: 'foo'});
+      // for the the loading state
+      expect(obj.setState.callCount).to.eql(2);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([model.xhrActivity[0]]);
       $.success();
-      expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql(false);
-      expect(obj.setState.callCount).to.eql(2);
+      // loading complete
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
 
       Backbone.sync('bar', model, {url: 'foo'});
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql([model.xhrActivity[0]]);
-      $.success();
+      // a new loading state
       expect(obj.setState.callCount).to.eql(4);
-      expect(obj.setState.getCall(3).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(3).args[0].loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      // another loading complete
+      expect(obj.setState.callCount).to.eql(5);
+      expect(obj.setState.getCall(4).args[0].loading).to.eql(false);
     });
 
     it('should set loading state if the model is loading when set on the component', function() {
       var model = new Model();
       model.fetch();
       var obj = newComponent({props: {model: model}}, ['modelXHRAware']);
+      expect(obj.setState.callCount).to.eql(0);
       obj.mount();
-      expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
-      expect(obj.setState.callCount).to.eql(1);
-      $.success();
+      // for the event bindings and another for the loading in progress
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql(false);
+
+      expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      // loading complete
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should set loading state if the model is loading after being set but before mounting', function() {
@@ -1147,11 +1144,14 @@ describe('react-backbone', function() {
       model.fetch();
       expect(obj.setState.callCount).to.eql(0);
       obj.mount();
-      expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([model.xhrActivity[0]]);
-      $.success();
+      // for the event bindings and another for the loading in progress
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args).to.eql([{loading: false}]);
+
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([model.xhrActivity[0]]);
+      $.success();
+      // loading complete      
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
     });
   });
 
@@ -1162,33 +1162,41 @@ describe('react-backbone', function() {
       var collection = new Collection(),
           obj = newComponent({props: { collection: collection }}, ['collectionXHRAware']);
       obj.mount();
-
-      expect(obj.setState.callCount).to.eql(0);
-      Backbone.sync('foo', collection, { url: 'foo' });
+      // for the event bindings
       expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([collection.xhrActivity[0]]);
+
+      Backbone.sync('foo', collection, { url: 'foo' });
+      // loading state
+      expect(obj.setState.callCount).to.eql(2);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([collection.xhrActivity[0]]);
       $.success();
-      expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql(false);
-      expect(obj.setState.callCount).to.eql(2);
+      // loading complete
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
 
       Backbone.sync('bar', collection, { url: 'foo' });
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql([collection.xhrActivity[0]]);
-      $.success();
+      // another loading state
       expect(obj.setState.callCount).to.eql(4);
-      expect(obj.setState.getCall(3).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(3).args[0].loading).to.eql([collection.xhrActivity[0]]);
+      $.success();
+      // another loading complete
+      expect(obj.setState.callCount).to.eql(5);
+      expect(obj.setState.getCall(4).args[0].loading).to.eql(false);
     });
 
     it('should set loading state if the collection is loading when set on the component', function() {
       var collection = new Collection();
       collection.fetch();
       var obj = newComponent({props: { collection: collection }}, ['collectionXHRAware']);
+      expect(obj.setState.callCount).to.eql(0);
       obj.mount();
+      // for the event bindings and loading state
+      expect(obj.setState.callCount).to.eql(2);
       expect(obj.state.loading).to.eql([collection.xhrActivity[0]]);
       $.success();
-      expect(obj.setState.callCount).to.eql(2);
-      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
+      // loading complete
+      expect(obj.setState.callCount).to.eql(3);
+      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
     });
 
     it('should set loading state if the collection is loading after being set but before mounting', function() {
@@ -1197,11 +1205,13 @@ describe('react-backbone', function() {
       collection.fetch();
       expect(obj.setState.callCount).to.eql(0);
       obj.mount();
-      expect(obj.setState.callCount).to.eql(1);
-      expect(obj.setState.getCall(0).args[0].loading).to.eql([collection.xhrActivity[0]]);
-      $.success();
+      // for the event bindings and the loading state
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql([collection.xhrActivity[0]]);
+      $.success();
+      // loading complete
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
     });
   });
 
