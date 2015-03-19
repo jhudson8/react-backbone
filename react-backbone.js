@@ -236,15 +236,19 @@
 
     // loading state helpers
     function pushLoadingState(xhrEvent, modelOrCollection, context) {
-        var currentLoads = getState('loading', context);
+        var currentLoads = getState('loading', context),
+            currentlyLoading = currentLoads && currentLoads.length;
         if (!currentLoads) {
             currentLoads = [];
         }
         if (_.isArray(currentLoads)) {
             currentLoads.push(xhrEvent);
-            setState({
-                loading: currentLoads
-            }, context);
+            if (!currentlyLoading) {
+                setState({
+                    loading: currentLoads
+                }, context);
+            }
+
             xhrEvent.on('complete', function() {
                 popLoadingState(xhrEvent, modelOrCollection, context);
             });
