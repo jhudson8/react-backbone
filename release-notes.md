@@ -2,7 +2,16 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.0...master)
+
+## v0.23.0 - March 19th, 2015
+- ensure models/collections from state have correct event bindings - 06c6b28
+- prevent loading state updates on collections from sub-model XHR activity - 158e48c
+- (optimization) prevent setState call with 2nd concurrent XHR event - beaec7f
+- backbone-xhr-events 0.11.2 -> 0.12.0 - 430e78e
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.22.1...v0.23.0)
 
 ## v0.22.1 - March 17th, 2015
 - bug fix: allow XHRAware mixin to be aware of current XHR activity during a model/collection property change - 77c8d27
