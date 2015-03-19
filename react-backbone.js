@@ -456,6 +456,10 @@
 
                 if (!keys) {
                     self[typeData.type + 'On'](xhrEventName, function(xhrEvents) {
+                        // ensure we don't bubble model xhr loading to collection
+                        if (typeData.type === 'collection' && xhrEvents.model instanceof Backbone.Model) {
+                            return;
+                        }
                         whenXHRActivityHappens(xhrEvents);
                     });
                 } else {
