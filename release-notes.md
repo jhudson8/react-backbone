@@ -2,7 +2,26 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.1...master)
+
+## v0.23.1 - March 20th, 2015
+- optimizations - 5cb4f6a
+- remove setModel/setCollection - 6308926
+
+Compatibility notes:
+This should really be a minor release but I just did one yesterday and it hasn't touched too many people - and no one should really be using setModel/setCollection methods.
+
+Using setModel will override any property change (because it sets to state).  Because of this, I want to be more explicit about what is happening.  You can still do this but you must use getInitialState instead
+
+```
+    getInitialState: function() {
+        return {
+            model: myModel
+        }
+    }
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.0...v0.23.1)
 
 ## v0.23.0 - March 19th, 2015
 - ensure models/collections from state have correct event bindings - 06c6b28
