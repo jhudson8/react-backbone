@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.12.0
     jhudson8/react-mixin-manager 0.13.0
     jhudson8/react-events 0.9.0
-    jhudson8/react-backbone 0.23.1
+    jhudson8/react-backbone 0.23.2
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1604,12 +1604,14 @@
         type: 'model',
         defaultParams: [['model']],
         capType: 'Model',
-        changeEvents: ['change']
+        changeEvents: ['change'],
+        cachedKey: '__cachedModels'
     }, {
         type: 'collection',
         defaultParams: [['collection']],
         capType: 'Collection',
-        changeEvents: ['add', 'remove', 'reset', 'sort']
+        changeEvents: ['add', 'remove', 'reset', 'sort'],
+        cachedKey: '__cachedCollections'
     }], function(typeData) {
         var getThings = 'get' + typeData.capType;
 
@@ -1628,12 +1630,16 @@
             var rtn = {
                 getInitialState: function() {
                     return {};
+                },
+                componentWillReceiveProps: function() {
+                    // watch for model or collection changes by property so it can be un/rebound
+                    this.state[typeData.cachedKey] = undefined;
                 }
             };
             rtn[getThings] = function(callback, props) {
                 // normally we wouldn't keep this kind of thing in state but we are clearing
                 // this state value any time the properties change
-                var _cached = !props && this.state && this.state['__cached' + typeData.capType];
+                var _cached = !props && this.state && this.state[typeData.cachedKey];
                 if (!_cached) {
                     _cached = {};
 
@@ -1661,11 +1667,10 @@
                         }
                     }
 
-                }
-
-                // if appropriate, set the cache
-                if (!props && this.state) {
-                    this.state['__cached' + typeData.capType] = _cached;
+                    // if appropriate, set the cache
+                    if (!propsProvided && this.state) {
+                        this.state[typeData.cachedKey] = _cached;
+                    }
                 }
 
                 var firstModel;
