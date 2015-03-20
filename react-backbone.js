@@ -357,20 +357,6 @@
                 }
                 return firstModel;
             };
-            rtn['set' + typeData.capType] = function(modelOrCollection, key) {
-                key = key || typeData.type;
-                var stateData = {};
-                var prevModelOrCollection;
-                this['get' + typeData.capType](function(modelOrCollection, _key) {
-                    if (_key === key) {
-                        prevModelOrCollection = modelOrCollection;
-                    }
-                });
-                // unbind previous model
-                unbindAndRebind(typeData.type, prevModelOrCollection, prevModelOrCollection, this);
-                stateData[key] = modelOrCollection;
-                this.trigger(typeData.type + ':set', modelOrCollection, key, prevModelOrCollection);
-            };
             return rtn;
         };
         addMixin({ name: typeData.type + 'Aware', initiatedOnce: true }, typeAware, 'state');
