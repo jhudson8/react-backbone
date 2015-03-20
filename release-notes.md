@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.2...master)
+
+## v0.23.2 - March 20th, 2015
+Optimize model/collection cache usage
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.1...v0.23.2)
 
 ## v0.23.1 - March 20th, 2015
 - optimizations - 5cb4f6a
