@@ -27,11 +27,3 @@ This project indludes/depends on the following other projects
 * [Forms validation and input field binding](https://github.com/jhudson8/react-backbone/tree/master/tutorials/forms)
 * [Using managed events and mixin dependencies to create a responsive component](https://github.com/jhudson8/react-backbone/tree/master/tutorials/responsive-design)
 * [Custom event handlers and event driven applications](https://github.com/jhudson8/react-backbone/blob/master/tutorials/event-driven-app)
-
-
-### Other React projects that may interest you
-
-* [jhudson8/react-semantic-ui](https://github.com/jhudson8/react-semantic-ui)
-* [jhudson8/react-css-builder](https://github.com/jhudson8/react-css-builder)
-* [jhudson8/react-chartjs](https://github.com/jhudson8/react-chartjs)
-* [jhudson8/gulp-mocha-tdd](https://github.com/jhudson8/gulp-mocha-tdd) (React friendly)

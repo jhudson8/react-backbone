@@ -206,12 +206,14 @@ These mixins can be referenced by their alias (see mixin examples) because they 
 
 ### modelAware
 
-Utility methods which allows other mixins to depend on ```getModel``` and ```setModel``` methods.  This provides an single overridable mixin should you have non-standard model population requirements.
+Utility methods which allows other mixins to depend on the ```getModel``` function.  This provides an single overridable mixin should you have non-standard model population requirements.
 
-#### getModel()
+#### getModel(callback)
+* ***callback***: optional callback (function(model, propName)) for when there are multiple models
+
 *return the single model associated with the current React component.*
 
-The model can be set using the ```model``` property or by explicitely calling ```setModel```.
+The model can be set using the ```model``` property.
 
 ```javascript
     React.createClass({
@@ -240,21 +242,17 @@ There can actually be multiple models bound to a single component.  To access al
 ```
 
 
-#### setModel(model)
-* ***model***: the Backbone model to set
-
-Associate the model with the current React component which can be retrieved using ```getModel```.  When using this, all model event bindings
-will be automatically transferred to the new model.
-
-
 ### collectionAware
 
-Utility methods which allows other mixins to depend on ```getCollection``` and ```setCollection``` methods.  This provides an single overridable mixin should you have non-standard collection population requirements.
+Utility methods which allows other mixins to depend on the ```getCollection``` function.  This provides an single overridable mixin should you have non-standard collection population requirements.
 
-#### getCollection()
+
+#### getCollection(callback)
+* ***callback***: optional callback (function(collection, propName)) for when there are multiple collections
+
 *return the single collection associated with the current React component.*
 
-The model can be set using the ```collection``` property or by explicitely calling ```setCollection```.
+The collection can be set using the ```collection``` property.
 
 ```javascript
     React.createClass({
