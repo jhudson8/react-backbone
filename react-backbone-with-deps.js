@@ -1477,7 +1477,7 @@
         function _on(modelOrCollection) {
             _this[type === 'on' ? 'listenTo' : 'listenToOnce'](modelOrCollection, ev, cb, ctx);
         }
-        if (_this.isMounted()) {
+        if (modelEvents.__bound) {
             if (_modelOrCollection) {
                 _on(_modelOrCollection);
             } else {
@@ -1486,26 +1486,38 @@
         }
     }
 
-    function unbindAndRebind(type, unbindModel, bindModel, context, force) {
-        if (unbindModel === bindModel && !force) {
-            // nothing to do
-            return;
+    function unbindAndRebind(options) {
+        var type = options.type,
+            context = options.context,
+            events = getModelAndCollectionEvents(type, context),
+            bound = events.__bound;
+
+        events.__bound = true;
+
+        function unbindAndRebindModel(unbindModel, bindModel) {
+            if (bound && unbindModel) {
+                context.trigger(type + ':unbind', bindModel);
+                // turn off models that will be replaced
+                _.each(events, function(eventData) {
+                    this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
+                }, context);
+            }
+            if (bindModel) {
+                context.trigger(type + ':bind', bindModel);
+                _.each(events, function(eventData) {
+                    modelOrCollectionOnOrOnce(type, eventData.type,
+                            [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
+                }, context);
+            }
         }
-        var events = getModelAndCollectionEvents(type, context);
-        if (unbindModel) {
-            context.trigger(type + ':unbind', bindModel);
-            // turn off models that will be replaced
-            _.each(events, function(eventData) {
-                this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
-            }, context);
-        }
-        if (bindModel) {
-            context.trigger(type + ':bind', bindModel);
-            _.each(events, function(eventData) {
-                modelOrCollectionOnOrOnce(type, eventData.type,
-                        [eventData.ev, eventData.cb, eventData.ctx], this, bindModel, force);
-            }, context);
-        }
+
+        getModelOrCollections(type, context, function(obj, propName) {
+            var currentObj = this.props[propName];
+            unbindAndRebindModel(currentObj, obj);
+            if (currentObj !== obj && currentObj) {
+                this.trigger(type + ':set', obj, propName, currentObj);
+            }
+        }, options.props || context.props);
     }
 
     /**
@@ -1613,49 +1625,58 @@
             // for example, to get all model change monitoring with models set as "foo" and "bar" props, simply use
             // this will not render as a result of 2 way binding (unless the bind attribute is not === true)
             // mixins: ['modelAware("foo", "bar")', 'modelChangeAware']
-            var rtn = {};
-            rtn[getThings] = function(callback, props) {
-                var _referenceArgs = referenceArgs,
-                    propsProvided = !!props;
-                props = props || this.props;
-                if (!_referenceArgs || _referenceArgs.length === 0) {
-                    _referenceArgs = typeData.defaultParams;
+            var rtn = {
+                getInitialState: function() {
+                    return {};
                 }
+            };
+            rtn[getThings] = function(callback, props) {
+                // normally we wouldn't keep this kind of thing in state but we are clearing
+                // this state value any time the properties change
+                var _cached = !props && this.state && this.state['__cached' + typeData.capType];
+                if (!_cached) {
+                    _cached = {};
 
-                var firstModel, singleReferenceArgs;
-                for (var i=0; i<_referenceArgs.length; i++) {
-                    singleReferenceArgs = _referenceArgs[i];
-                    for (var j=0; j<singleReferenceArgs.length; j++) {
-                        var propName = singleReferenceArgs[j],
-                            obj = getState(propName, this) || props[propName];
-                        if (obj) {
-                            firstModel = firstModel || obj;
-                            if (callback) {
-                                callback.call(this, obj, propName);
-                            } else {
-                                return obj;
+                    var _referenceArgs = referenceArgs,
+                        propsProvided = !!props;
+                    props = props || this.props;
+                    if (!_referenceArgs || _referenceArgs.length === 0) {
+                        _referenceArgs = typeData.defaultParams;
+                    }
+
+                    var singleReferenceArgs;
+                    for (var i=0; i<_referenceArgs.length; i++) {
+                        singleReferenceArgs = _referenceArgs[i];
+                        for (var j=0; j<singleReferenceArgs.length; j++) {
+                            var propName = singleReferenceArgs[j],
+                                obj = getState(propName, this) || props[propName];
+                            if (obj) {
+                                _cached[propName] = obj;
+
+
+                            } else if (propsProvided && callback && propName) {
+                                // make callback anyway to let callers know of the prop transition
+                                callback.call(this, undefined, propName);
                             }
-                        } else if (propsProvided && callback && propName) {
-                            // make callback anyway to let callers know of the prop transition
-                            callback.call(this, undefined, propName);
                         }
                     }
+
                 }
+
+                // if appropriate, set the cache
+                if (!props && this.state) {
+                    this.state['__cached' + typeData.capType] = _cached;
+                }
+
+                var firstModel;
+                _.each(_cached, function(obj, propName) {
+                    firstModel = firstModel || obj;
+                    if (callback) {
+                        callback.call(this, obj, propName);
+                    } 
+                }, this);
+
                 return firstModel;
-            };
-            rtn['set' + typeData.capType] = function(modelOrCollection, key) {
-                key = key || typeData.type;
-                var stateData = {};
-                var prevModelOrCollection;
-                this['get' + typeData.capType](function(modelOrCollection, _key) {
-                    if (_key === key) {
-                        prevModelOrCollection = modelOrCollection;
-                    }
-                });
-                // unbind previous model
-                unbindAndRebind(typeData.type, prevModelOrCollection, prevModelOrCollection, this);
-                stateData[key] = modelOrCollection;
-                this.trigger(typeData.type + ':set', modelOrCollection, key, prevModelOrCollection);
             };
             return rtn;
         };
@@ -1678,23 +1699,23 @@
                         console.log(obj);
                     }
                 });
-                return {};
+                return null;
             },
 
             componentWillReceiveProps: function(props) {
                 // watch for model or collection changes by property so it can be un/rebound
-                getModelOrCollections(typeData.type, this, function(obj, propName) {
-                    var currentObj = this.props[propName];
-                    unbindAndRebind(typeData.type, currentObj, obj, this);
-                    this.trigger(typeData.type + ':set', obj, propName, currentObj);
-                }, props);
+                unbindAndRebind({
+                    context: this,
+                    props: props,
+                    type: typeData.type
+                });
             },
 
             componentDidMount: function() {
-                getModelOrCollections(typeData.type, this, function(obj, propName) {
-                    var currentObj = this.props[propName];
-                    unbindAndRebind(typeData.type, currentObj, obj, this, true);
-                }, this.props);
+                unbindAndRebind({
+                    context: this,
+                    type: typeData.type
+                });
             }
         };
         typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
@@ -1762,7 +1783,7 @@
                 } else {
                     modelOrCollectionEventHandler(typeData.type, keys, self, xhrEventName + ':{key}', whenXHRActivityHappens);
                 }
-                return {};
+                return null;
             },
 
             componentDidMount: function(keys, self) {
@@ -2015,7 +2036,7 @@
                     }, this);
                 });
             }
-            return {};
+            return null;
         }
     }, 'modelEvents');
 
