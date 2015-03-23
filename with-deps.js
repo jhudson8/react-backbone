@@ -26,7 +26,7 @@
 /*
   Container script which includes the following:
     jhudson8/backbone-xhr-events 0.12.0
-    jhudson8/react-mixin-manager 0.13.0
+    jhudson8/react-mixin-manager 0.13.1
     jhudson8/react-events 0.9.0
     jhudson8/react-backbone 0.23.2
 */
@@ -701,6 +701,8 @@
                     if (this.state._deferUpdateTimer && lowestInterval > 0) {
                         // we will be updating soon - keep from rendering multiple times
                         return false;
+                    } else {
+                        return true;
                     }
                 },
                 componentDidUpdate: function() {
