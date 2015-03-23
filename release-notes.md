@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.3...master)
+
+## v0.23.3 - March 23rd, 2015
+- react-mixin-manager 0.13.0 -> 0.13.1 - 8d00da2
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.2...v0.23.3)
 
 ## v0.23.2 - March 20th, 2015
 Optimize model/collection cache usage
