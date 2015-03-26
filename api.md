@@ -29,7 +29,7 @@ Installation
 #### Browser:
 
 ```
-    ... include jquery, backbone, underscore, react ...
+    ... include backbone, underscore, react ...
     <script src=".../react-backbone-with-deps[-min].js"></script>
 ```
 
@@ -38,17 +38,16 @@ Installation
     var React = require('react');
     var _ = require('underscore');
     var Backbone = require('backbone');
-    var $ = require('jquery');
 
-    require('react-backbone/with-deps')(React, Backbone, _, $);
+    require('react-backbone/with-deps')(React, Backbone, _);
 ```
 
 #### AMD
 ```
     require(
-      ['react', 'backbone', 'underscore', 'jquery', react-backbone/with-deps'],
-      function(React, Backbone, _, $, reactBackbone) {
-        reactBackbone(React, Backbone, _, $); 
+      ['react', 'backbone', 'underscore', react-backbone/with-deps'],
+      function(React, Backbone, _, reactBackbone) {
+        reactBackbone(React, Backbone, _);
     });
 ```
 
