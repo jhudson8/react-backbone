@@ -12,6 +12,7 @@ If you are using [webpack](http://webpack.github.io/) you can easily remove jque
 package.json
 ```
   dependencies: {
+    // this seems a bit stale but works fine - anyone know of a better alternative?
     "component-ajax": "0.0.2",
     "exoskeleton": "^0.7.0",
     ...
@@ -20,12 +21,18 @@ package.json
 
 webpack.config.js
 ```
-   resolve: {
-     alias: {
-       backbone: 'exoskeleton/exoskeleton.js',
-       ...
-     }
-   },
+    plugins: [
+        new webpack.IgnorePlugin(/^(jquery|type)$/)
+    ],
+
+    resolve: {
+      alias: {
+        // there is 1 issue with the default AMD loading that needs to be addressed (or figured out)
+        // https://github.com/webpack/webpack/issues/883
+        backbone: 'exoskeleton/exoskeleton.js',
+        ...
+      }
+    },
 ```
 
 When initializing react-backbone
