@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.12.0
     jhudson8/react-mixin-manager 0.13.1
     jhudson8/react-events 0.9.0
-    jhudson8/react-backbone 0.23.3
+    jhudson8/react-backbone 0.24.0
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
