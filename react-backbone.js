@@ -27,19 +27,20 @@
         define([], function() {
             // with AMD
             //  require(
-            //    ['react', 'backbone', 'underscore', 'jquery', react-backbone'], function(React, Backbone, _, $, reactBackbone) {
-            //    reactBackbone(React, Backbone, _, $); 
+            //    ['react', 'backbone', 'underscore', 'jquery', react-backbone'],
+            //    function(React, Backbone, _, reactBackbone) {
+            //    reactBackbone(React, Backbone, _); 
             //  });
             return main;
         });
     } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
         // with CommonJS
-        // require('react-backbone')(require('react'), require('backbone'), require('underscore')), require('jquery'));
+        // require('react-backbone')(require('react'), require('backbone'), require('underscore')));
         module.exports = main;
     } else {
-        main(React, Backbone, _, $);
+        main(React, Backbone, _);
     }
-})(function(React, Backbone, _, $) {
+})(function(React, Backbone, _) {
 
     // main body start
     // create local references to existing vars
@@ -759,16 +760,43 @@
         }
     }, 'modelEvents');
 
+
     var specials = React.events.specials;
     if (specials) {
         // add underscore wrapped special event handlers
-        var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce', 'once', 'after', 'before'];
+        var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce',
+                'once', 'after', 'before'];
         _.each(reactEventSpecials, function(name) {
             specials[name] = specials[name] || function(callback, args) {
                 args.splice(0, 0, callback);
                 return _[name].apply(_, args);
             };
         });
+    }
+
+
+    /******************************************
+     * Input components
+     */
+
+    function getElement(context) {
+        return context.getDOMNode();
+    }
+
+    function getElementValue(context) {
+        return getElement(context).value;
+    }
+
+    function findSubElementByAttribute(context, tagName, key, value) {
+        var el = context.getDOMNode(),
+            matches = el.getElementsByTagName(tagName),
+            rtn = [];
+        for (var i=0; i<matches.length; i++) {
+            if (matches[i][key] === value) {
+                rtn.push(matches[i]);
+            }
+        }
+        return rtn;
     }
 
     function twoWayBinding(context) {
@@ -824,17 +852,18 @@
                         var el = this.getDOMNode();
                         return (el.checked && (el.value || true)) || false;
                     } else {
-                        return $(this.getDOMNode()).val();
+                        return getElementValue(this);
                     }
                 }
             },
             getDOMValue: function() {
                 if (this.isMounted()) {
-                    return $(this.getDOMNode()).val();
+                    return getElementValue(this);
                 }
             }
         }, classAttributes));
     };
+
 
     Backbone.input = Backbone.input || {};
     _.defaults(Backbone.input, {
@@ -857,9 +886,11 @@
                 // select the appropriate radio button
                 var value = getModelValue(this);
                 if (value) {
-                    var selector = 'input[value="' + value.replace('"', '\\"') + '"]';
-                    var el = $(this.getDOMNode()).find(selector);
-                    el.attr('checked', 'checked');
+                    var el = findSubElementByAttribute(
+                        this, 'input', 'value', value.replace('"', '\\"'))[0];
+                    if (el) {
+                        el.checked = 'checked';
+                    }
                 }
 
                 if (!this.state) {
@@ -867,19 +898,19 @@
                 }
                 var changeHandler = this.state.changeHandler = twoWayBinding(this);
                 if (changeHandler) {
-                    $(this.getDOMNode()).on('change', 'input', changeHandler);
+                    getElement(this).addEventListener('change', changeHandler);
                 }
             },
             componentWillUnmount: function() {
                 var changeHandler = this.state && this.state.changeHandler;
                 if (changeHandler) {
-                    $(this.getDOMNode()).off('change', changeHandler);
+                    getElement(this).removeEventListener('change', changeHandler);
                 }
             },
             getValue: function() {
                 if (this.isMounted()) {
-                    var selector = 'input[type="radio"]';
-                    var els = $(this.getDOMNode()).find(selector);
+                    var els = findSubElementByAttribute(
+                        this, 'input', 'type', 'radio');
                     for (var i = 0; i < els.length; i++) {
                         if (els[i].checked) {
                             return els[i].value;
@@ -889,7 +920,7 @@
             },
             getDOMValue: function() {
                 if (this.isMounted()) {
-                    return $(this.getDOMNode()).val();
+                    return getElementValue(this);
                 }
             }
         })
