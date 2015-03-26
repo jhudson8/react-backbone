@@ -2,7 +2,41 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.0...master)
+
+## v0.24.0 - March 26th, 2015
+- remove jquery as a dependency - acce9b0
+
+If you are using [webpack](http://webpack.github.io/) you can easily remove jquery from your app (assuming you don't need it for other purposes) by doing the following
+
+package.json
+```
+  dependencies: {
+    "component-ajax": "0.0.2",
+    "exoskeleton": "^0.7.0",
+    ...
+  }
+```
+
+webpack.config.js
+```
+   resolve: {
+     alias: {
+       backbone: 'exoskeleton/exoskeleton.js',
+       ...
+     }
+   },
+```
+
+When initializing react-backbone
+```
+var ajax = require('component-ajax');
+Backbone.ajax = function() {
+  return ajax.apply(this, arguments);
+};
+```
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.23.3...v0.24.0)
 
 ## v0.23.3 - March 23rd, 2015
 - react-mixin-manager 0.13.0 -> 0.13.1 - 8d00da2
