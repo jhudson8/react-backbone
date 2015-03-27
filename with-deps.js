@@ -1968,6 +1968,8 @@
                     if (callback) {
                         callback.call(this, model);
                     }
+                } else if (options && options.onInvalid) {
+                    options.onInvalid(attributes);
                 }
             }
 

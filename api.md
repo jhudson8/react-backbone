@@ -294,7 +294,7 @@ Utility mixin used to iterate child components and have their associated value s
 #### modelPopulate ([componentArray][, callback][, options][, model])
 * componentArray: the array of components to iterate.  If falsy, all child components that contain a ```ref``` attribute will be used
 * callback: the callback that will be executed ***only if*** the model passed validation when the attributes were set.  If provided, the model will be set automatically.
-* options: the model set options (Backbone.Model.set options parameter)
+* options: the. model set options (Backbone.Model.set options parameter).  Additional an ***onInvalid*** option attribute can be used to be notified if the model failed validation
 * model: the model to set the form values on or false if the default component bound model should not be used in favor or just returning the attributes.  If no model is provided the componet's bound model will be used.
 
 *returns the attribute values*
@@ -303,6 +303,13 @@ Iterate all child components with a [ref](http://facebook.github.io/react/docs/m
 Components will only participate in model population if they implement ***getValue*** to return the value that should be set on the model.
 
 If a component does not contain a ```getValue``` method but does contain a ```modelPopulate``` method (by including the ```modelPopulate``` mixin), the modelPopulate method on that component will be called as well with the attributes applied to the parent component's model.
+
+If it isn't working as expected
+
+* make sure input fields have a ```ref``` attribute (that allows them to participate as fields in population)
+* make sure input fields have a  ```name``` attribute (that is the model attribute association)
+* make sure the component includes the ```modelPopulate``` mixin
+
 
 If a model is provided, the attributes will be set on it as long as they pass model validation.
 
@@ -547,6 +554,11 @@ Remove the provided collectionOn / collectionOnce event bindings.
 *depends on [modelEvents](#snippet/package/modelEvents)*
 
 Allow components to be aware of field specific validation errors.  The ```name``` property must be provide to tell this mixin which model attribute to listen to for ```invalid``` events.  When the event is triggered, the ```invalid``` state attribute will be set as the error message provided to the ```invalid``` event.  The state will not be unset by this mixin (as there is no ```valid``` model event).
+
+If it isn't working as expected
+
+* make sure the component has a ```name``` attribute (that allows them to listen for the invalid event)
+* make sure the component includes the ```modelInvalidAware``` mixin
 
 When these occur, normalize the error payload using ```React.mixins.modelIndexErrors```.
 
