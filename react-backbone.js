@@ -682,7 +682,7 @@
                         callback.call(this, model);
                     }
                 } else if (options && options.onInvalid) {
-                    options.onInvalid(attributes);
+                    options.onInvalid.call(this, attributes);
                 }
             }
 
