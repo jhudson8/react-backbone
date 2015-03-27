@@ -2,7 +2,25 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.1...master)
+
+## v0.24.1 - March 27th, 2015
+- added onInvalid option awareness to the modelPopulate function - 7eddaaa
+- remove jquery references - 9f53497
+
+This is backwards compatible but you can now provide an ```onInvalid``` attribute to the modelPopulate options which will be called if the model fails validation.  The populated attributes object will be provided.
+
+this.modelPopulate(function(model) {
+    // the model is valid
+  }, {
+    onInvalid: function(attributes) {
+      // the model failed the validation check
+    }
+  }
+});
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.0...v0.24.1)
 
 ## v0.24.0 - March 26th, 2015
 - remove jquery as a dependency - acce9b0
