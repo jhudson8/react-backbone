@@ -184,7 +184,7 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
     // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
     // "name" is required;  that is how the Select component knows what model attribute to use
     // "model" is obviously required
-    <Select name="eyeColor" model={model}>
+    <Select ref="eyeColor" name="eyeColor" model={model}>
       <option value="blue">blue</option>
       <option value="green">green</option>
       <option value="brown">brown</option>
@@ -205,7 +205,7 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
     // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
     // "name" is required;  that is how the RadioGroup component knows what model attribute to use
     // "model" is obviously required
-    <RadioGroup name="eyeColor" model={model}>
+    <RadioGroup ref="eyeColor" name="eyeColor" model={model}>
       <input type="radio" value="blue"/> blue
       <input type="radio" value="green"> green
       <input type="radio" value="brown"> brown
