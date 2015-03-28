@@ -136,7 +136,10 @@ A model-aware component that is a very light wrapper around *React.DOM.input*.  
     var model = new Backbone.Model({age: 3});
     ...
     // assuming a model attribute "age" exists
-    <Text type="number" name="age" model={model}/>
+    // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
+    // "name" is required;  that is how the Text component knows what model attribute to use
+    // "model" is obviously required
+    <Text ref="firstName" name="firstName" model={model}/>
 ```
 
 ### TextArea
@@ -148,7 +151,10 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
     var model = new Backbone.Model({description: 'foo'});
     ...
     // assuming a model attribute "description" exists
-    <TextArea type="number" name="description" model={model}/>
+    // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
+    // "name" is required;  that is how the TextArea component knows what model attribute to use
+    // "model" is obviously required
+    <TextArea ref="description" name="description" model={model}/>
 ```
 
 ### CheckBox
@@ -160,7 +166,10 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
     var model = new Backbone.Model({acceptTermsOfService: true});
     ...
     // assuming a model attribute "acceptTermsOfService" exists
-    <CheckBox name="acceptTermsOfService" model={model}/>
+    // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
+    // "name" is required;  that is how the CheckBox component knows what model attribute to use
+    // "model" is obviously required
+    <CheckBox ref="acceptTermsOfService" name="acceptTermsOfService" model={model}/>
 ```
 
 ### Select
@@ -172,6 +181,9 @@ A model-aware component that is a very light wrapper around *React.DOM.select*. 
     var model = new Backbone.Model({eyeColor: 'green'});
     ...
     // assuming a model attribute "eyeColor" exists
+    // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
+    // "name" is required;  that is how the Select component knows what model attribute to use
+    // "model" is obviously required
     <Select name="eyeColor" model={model}>
       <option value="blue">blue</option>
       <option value="green">green</option>
@@ -190,6 +202,9 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
     var model = new Backbone.Model({eyeColor: 'green'});
     ...
     // assuming a model attribute "eyeColor" exists
+    // "ref" is not required but needed if you will be using modelPopulate;  the value does not matter
+    // "name" is required;  that is how the RadioGroup component knows what model attribute to use
+    // "model" is obviously required
     <RadioGroup name="eyeColor" model={model}>
       <input type="radio" value="blue"/> blue
       <input type="radio" value="green"> green
@@ -357,7 +372,11 @@ If a model is provided, the attributes will be set on it as long as they pass mo
       onFormSubmit: function() {
         // use this.refs automatically to get the components that will populate the model
         this.modelPopulate(function(model) {
-          // assuming the model validation passed, this callback will be executed
+          // if the model validation passed, this callback will be executed
+        }, {
+          onInvalid: function(attributes) {
+            // these attributes did not pass model validation
+          }
         });
 
         // or for more control
