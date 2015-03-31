@@ -807,6 +807,8 @@ When the XHR event name(s) are statically defined by the owning component
     });
 ```
 
+For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
+
 
 ### collectionLoadOn
 *depends on [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events), [collectionEvents](#snippet/package/collectionEvents)*
@@ -847,6 +849,8 @@ When the XHR event name(s) are statically defined by the owning component
       ...
     });
 ```
+
+For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
 
 
 ### loadWhile
@@ -903,6 +907,8 @@ You can optional provide an object argument to the mixin allowing you to specifi
 ```
 Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
 
+For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
+
 *multiple models can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
 ### collectionXHRAware
@@ -935,6 +941,8 @@ You can optional provide an object argument to the mixin allowing you to specifi
       mixins: ['collectionXHRAware({read: "fetching"})'],
 ```
 Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
+
+For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
 
 *multiple collections can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
