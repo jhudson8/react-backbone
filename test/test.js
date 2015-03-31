@@ -997,40 +997,49 @@ describe('react-backbone', function() {
 
 
   describe('loadWhile', function() {
-    it('should provide a return callback if none is supplied', function() {
-      var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['loadWhile']);
+    it('should update the loading state attribute (simple scenario)', function() {
+      var model = new Model(),
+          obj = newComponent({}, ['loadWhile']);
       obj.mount();
 
-      var options = obj.loadWhile();
-      expect(obj.setState).to.have.been.calledWith({loading: []});
-      expect(!!options.success).to.eql(true);
-      expect(!!options.error).to.eql(true);
-      options.success();
-      expect(obj.setState).to.have.been.calledWith({loading: undefined});
-      options.error();
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState).to.have.been.calledWith({loading: undefined});
-    });
-    it('should wrap callback functions if they are supplied', function() {
-      var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['loadWhile']);
-      obj.mount();
-
-      var _success = sinon.spy();
-      var _error = sinon.spy();
-      var options = obj.loadWhile({
-        success: _success,
-        error: _error
+      obj.loadWhile(function() {
+        model.fetch();
       });
-      expect(obj.setState).to.have.been.calledWith({loading: []});
-      options.success('foo');
-      expect(obj.setState).to.have.been.calledWith({loading: undefined});
-      expect(_success).to.have.been.calledWith('foo')
-      options.error('bar');
-      expect(_error).to.have.been.calledWith('bar')
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState).to.have.been.calledWith({loading: undefined});
+      expect(obj.state.loading).to.eql(model.xhrActivity);
+      $.success();
+      expect(obj.state.loading).to.eql(undefined);
+    });
+
+    it('should update the loading state attribute (multiple models / multiple XHR)', function() {
+      var model1 = new Model(),
+          model2 = new Model(),
+          obj = newComponent({}, ['loadWhile']);
+      obj.mount();
+
+      obj.loadWhile(function() {
+        model1.fetch();
+        model2.fetch();
+      });
+
+      expect(model1.xhrActivity.length).to.eql(1);
+      expect(model2.xhrActivity.length).to.eql(1);
+      expect(obj.state.loading).to.eql([model1.xhrActivity[0], model2.xhrActivity[0]]);
+
+      $.success();
+      expect(obj.state.loading.length).to.eql(1);
+      $.success();
+      expect(obj.state.loading).to.eql(undefined);
+    });
+
+    it('should use the component as context', function() {
+      var model = new Model(),
+          obj = newComponent({}, ['loadWhile']);
+      obj.mount();
+      var context;
+      obj.loadWhile(function() {
+        context = this;
+      });
+      expect(context).to.eql(obj);
     });
   });
 

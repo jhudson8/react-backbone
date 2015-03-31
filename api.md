@@ -847,28 +847,32 @@ When the XHR event name(s) are statically defined by the owning component
     var MyComponent = React.createClass({
       mixins: ['collectionLoadOn("read", "update")'], // or ['react-backbone.collectionLoadOn("read", "update")']
       ...
-    });
+    })
 ```
 
 For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
 
 
 ### loadWhile
-#### loadWhile (options)
-* ***options***: the optional Backbone options
+#### loadWhile (callback[, loadingStateAttribute])
+* ***callback***: the function that will be executed containing any XHR activity to be monitored
+* ***loadingStateAttribute***: the attribute ("loading" if not provided) to reference the loading state
 
-*returns the options or a new options object if none was provided*
-
-Set the state of the component with ```{loading: true}``` when this method is executed.  And wrap the ***success*** and ***error*** callbacks so that when ano one of them are called, the loading state will be set to false again.
+Set the component state attribute ("loading" or loadingStateAttribute if provided) to a truthy value while *any* XHR activity is in progress as long as it was initiated during the execution of the callback function.
 
 ```javascript
-    this.getModel().save(attributes, this.loadWhile());
-    // or
-    this.getModel().save(attributes, this.loadWhile({
-      success: ...,
-      error: ...,
-      ...
-    }));
+    React.createComponent({
+      mixins: ['loadWhile'],
+
+      doSomething: function() {
+        this.loadWhile(function() {
+          // the "loading" attribute will be truthy as long as any of these fetches are in progress
+          this.props.collection1.fetch();
+          this.props.collection2.fetch();
+          this.props.collection3.fetch();
+        });
+      }
+    });
 ```
 
 
