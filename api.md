@@ -62,6 +62,43 @@ Sections
 * [Custom event handlers and event driven applications](https://github.com/jhudson8/react-backbone/blob/master/tutorials/event-driven-app)
 
 
+### Removing JQuery
+If you are using [webpack](http://webpack.github.io/) you can easily remove jquery from your app (assuming you don't need it for other purposes) by doing the following
+
+package.json
+```
+  dependencies: {
+    // or some other $.ajax implementation
+    "component-ajax": "0.0.2",
+    "exoskeleton": "^0.7.0",
+    ...
+  }
+```
+
+webpack.config.js (npm install https://github.com/webpack/imports-loader)
+```
+    plugins: [
+        new webpack.IgnorePlugin(/^jquery$/)
+    ],
+    loaders: [
+        { test: /exoskeleton\.js$/,    loader: "imports?define=>false"}
+    ],
+    resolve: {
+      alias: {
+        backbone: 'exoskeleton/exoskeleton.js'
+      }
+    },
+```
+
+When initializing react-backbone
+```
+var ajax = require('component-ajax');
+Backbone.ajax = function() {
+  return ajax.apply(this, arguments);
+};
+```
+
+
 ### Multiple models and collections
 React components, by default, will have a single bound model and/or collection (using the ```model``` and ```collection``` properties).  This behavior can be altered by specifically providing the ```modelAware``` or ```collectionAware``` mixin with parameters representing the proerty names.
 
