@@ -2,7 +2,21 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.25.0...master)
+
+## v0.25.0 - March 30th, 2015
+- add parameter awareness to the XHRAware mixin - aa1ba95
+
+You can optional provide an object argument to the mixin allowing you to specificy individual mixin events and overriding the loading state attribute.  The key for each entry is the XHR event type and the value is the state attribute to indicate the loading activity.  For example:
+
+```javascript
+    React.createClass({
+      mixins: ['collectionXHRAware({read: "fetching"})'],
+```
+Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.1...v0.25.0)
 
 ## v0.24.1 - March 27th, 2015
 - added onInvalid option awareness to the modelPopulate function - 7eddaaa
