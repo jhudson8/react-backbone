@@ -44,25 +44,25 @@ If you are using [webpack](http://webpack.github.io/) you can easily remove jque
 package.json
 ```
   dependencies: {
-    // this seems a bit stale but works fine - anyone know of a better alternative?
+    // or some other $.ajax implementation
     "component-ajax": "0.0.2",
     "exoskeleton": "^0.7.0",
     ...
   }
 ```
 
-webpack.config.js
+webpack.config.js (npm install https://github.com/webpack/imports-loader)
 ```
     plugins: [
-        new webpack.IgnorePlugin(/^(jquery|type)$/)
+        new webpack.IgnorePlugin(/^jquery$/)
     ],
-
+    loaders: [
+        { test: /exoskeleton\.js$/,    loader: "imports?define=>false"},
+        { test: /backbone\.js$/,    loader: "imports?define=>false"}
+    ],
     resolve: {
       alias: {
-        // there is 1 issue with the default AMD loading that needs to be addressed (or figured out)
-        // https://github.com/webpack/webpack/issues/883
-        backbone: 'exoskeleton/exoskeleton.js',
-        ...
+        backbone: 'exoskeleton/exoskeleton.js'
       }
     },
 ```
