@@ -28,7 +28,7 @@
     jhudson8/backbone-xhr-events 0.12.0
     jhudson8/react-mixin-manager 0.13.1
     jhudson8/react-events 0.9.0
-    jhudson8/react-backbone 0.25.0
+    jhudson8/react-backbone 0.26.0
 */
  (function(main) {
   if (typeof define === 'function' && define.amd) {
@@ -1337,6 +1337,7 @@
         getState = React.mixins.getState,
         setState = React.mixins.setState,
         logDebugWarnings = React.reactBackboneDebugWarnings,
+        xhrGlobalEvents = Backbone[Backbone.xhrGlobalAttribute],
         LOADING_STATE_NAME = 'loading',
         CAP_ON = 'On',
         CAP_EVENTS = 'Events',
@@ -2022,32 +2023,41 @@
     }, 'modelAware');
 
     /**
-     * Intercept (and return) the options which will set the loading state (state.loading = true) when this is called and undo
-     * the state once the callback has completed
+     * Set the component state attribute "loading" (or 2nd param if exists) to a
+     * truthy value while any XHR activity initiated within the callback function
+     * is in progress.
      */
     addMixin('loadWhile', {
-        loadWhile: function(options) {
-            options = options || {};
+        loadWhile: function(callback, loadingStateName) {
+            loadingStateName = loadingStateName || LOADING_STATE_NAME;
+
             var self = this;
-
-            function wrap(type) {
-                var _callback = options[type];
-                options[type] = function() {
-                    var toSet = {};
-                    toSet[LOADING_STATE_NAME] = undefined;
-                    setState(toSet, self);
-                    if (_callback) {
-                        _callback.apply(this, arguments);
+            function handler(context) {
+                var loadContext = getState(loadingStateName, self);
+                if (!loadContext) {
+                    loadContext = [];
+                }
+                loadContext.push(context);
+                context.on('complete', function() {
+                    loadContext = getState(loadingStateName, self);
+                    loadContext.splice(loadContext.indexOf(context, 1));
+                    if (!loadContext.length) {
+                        var toSet = {};
+                        toSet[loadingStateName] = undefined;
+                        setState(toSet, self);
                     }
-                };
+                });
+                var toSet = {};
+                toSet[loadingStateName] = loadContext;
+                setState(toSet, self);
             }
-            wrap('error');
-            wrap('success');
 
-            var toSet = {};
-            toSet[LOADING_STATE_NAME] = [];
-            setState(toSet, this);
-            return options;
+            xhrGlobalEvents.on(xhrEventName, handler);
+            try {
+                callback.call(this);
+            } finally {
+                xhrGlobalEvents.off(xhrEventName, handler);
+            }
         }
     });
 
