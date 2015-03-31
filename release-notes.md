@@ -57,8 +57,7 @@ webpack.config.js (npm install https://github.com/webpack/imports-loader)
         new webpack.IgnorePlugin(/^jquery$/)
     ],
     loaders: [
-        { test: /exoskeleton\.js$/,    loader: "imports?define=>false"},
-        { test: /backbone\.js$/,    loader: "imports?define=>false"}
+        { test: /exoskeleton\.js$/,    loader: "imports?define=>false"}
     ],
     resolve: {
       alias: {
