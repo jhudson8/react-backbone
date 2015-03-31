@@ -7,7 +7,7 @@
 ## v0.25.0 - March 30th, 2015
 - add parameter awareness to the XHRAware mixin - aa1ba95
 
-You can optional provide an object argument to the mixin allowing you to specificy individual mixin events and overriding the loading state attribute.  The key for each entry is the XHR event type and the value is the state attribute to indicate the loading activity.  For example:
+You can provide an optional argument to the mixin allowing you to specificy individual XHR events and the associated state attribute.  The key for each entry is the XHR event type and the value is the state attribute to indicate the XHR activity.  For example:
 
 ```javascript
     React.createClass({
@@ -15,6 +15,8 @@ You can optional provide an object argument to the mixin allowing you to specifi
 ```
 
 Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
+
+For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
 
 
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.1...v0.25.0)
