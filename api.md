@@ -858,6 +858,14 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
     });
 ```
 
+You can optional provide an object argument to the mixin allowing you to specificy individual mixin events and overriding the loading state attribute.  The key for each entry is the XHR event type and the value is the state attribute to indicate the loading activity.  For example:
+
+```javascript
+    React.createClass({
+      mixins: ['modelXHRAware({read: "fetching"})'],
+```
+Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
+
 *multiple models can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 
 ### collectionXHRAware
@@ -882,6 +890,14 @@ When ***any*** XHR event is fired, the state attribute ```loading``` will be set
       }
     });
 ```
+
+You can optional provide an object argument to the mixin allowing you to specificy individual mixin events and overriding the loading state attribute.  The key for each entry is the XHR event type and the value is the state attribute to indicate the loading activity.  For example:
+
+```javascript
+    React.createClass({
+      mixins: ['collectionXHRAware({read: "fetching"})'],
+```
+Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
 
 *multiple collections can be associated with the component for xhr-awareness.  see [multiple models/components](#section/Multiple%20models%20and%20collections)*
 

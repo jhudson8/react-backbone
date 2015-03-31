@@ -868,7 +868,6 @@ describe('react-backbone', function() {
       Backbone.sync('foo', model, {url: 'foo'});
       // for the initial XHR activity
       expect(obj.setState.callCount).to.eql(2);
-      
       expect(!!obj.setState.getCall(1).args[0].loading).to.eql(true);
       $.success();
       expect(obj.setState.callCount).to.eql(3);
@@ -932,7 +931,7 @@ describe('react-backbone', function() {
       $.success();
       // completion of the loading state
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
     });
   });
 
@@ -991,7 +990,7 @@ describe('react-backbone', function() {
       $.success();
       // completion of the loading state
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
     });
 
   });
@@ -1004,14 +1003,14 @@ describe('react-backbone', function() {
       obj.mount();
 
       var options = obj.loadWhile();
-      expect(obj.setState).to.have.been.calledWith({loading: true});
+      expect(obj.setState).to.have.been.calledWith({loading: []});
       expect(!!options.success).to.eql(true);
       expect(!!options.error).to.eql(true);
       options.success();
-      expect(obj.setState).to.have.been.calledWith({loading: false});
+      expect(obj.setState).to.have.been.calledWith({loading: undefined});
       options.error();
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState).to.have.been.calledWith({loading: false});
+      expect(obj.setState).to.have.been.calledWith({loading: undefined});
     });
     it('should wrap callback functions if they are supplied', function() {
       var model = new Backbone.Model(),
@@ -1024,14 +1023,14 @@ describe('react-backbone', function() {
         success: _success,
         error: _error
       });
-      expect(obj.setState).to.have.been.calledWith({loading: true});
+      expect(obj.setState).to.have.been.calledWith({loading: []});
       options.success('foo');
-      expect(obj.setState).to.have.been.calledWith({loading: false});
+      expect(obj.setState).to.have.been.calledWith({loading: undefined});
       expect(_success).to.have.been.calledWith('foo')
       options.error('bar');
       expect(_error).to.have.been.calledWith('bar')
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState).to.have.been.calledWith({loading: false});
+      expect(obj.setState).to.have.been.calledWith({loading: undefined});
     });
   });
 
@@ -1052,7 +1051,7 @@ describe('react-backbone', function() {
       $.success();
       // completion of the loading state
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: undefined}]);
 
       obj.setState.reset();
       Backbone.sync('foo', collection, {url: 'foo'});
@@ -1060,7 +1059,7 @@ describe('react-backbone', function() {
       expect(obj.setState.getCall(0).args[0].loading).to.eql([collection.xhrActivity[0]]);
       $.success();
       expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(1).args).to.eql([{loading: undefined}]);
     });
 
     it('should keep track of multiple requests and loading: false should only appear when all are done', function() {
@@ -1089,7 +1088,7 @@ describe('react-backbone', function() {
       $.success();
       // now we should have refreshed
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.state.loading).to.eql(false);
+      expect(obj.state.loading).to.eql(undefined);
     });
   });
 
@@ -1110,7 +1109,7 @@ describe('react-backbone', function() {
       $.success();
       // loading complete
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
 
       Backbone.sync('bar', model, {url: 'foo'});
       // a new loading state
@@ -1119,7 +1118,7 @@ describe('react-backbone', function() {
       $.success();
       // another loading complete
       expect(obj.setState.callCount).to.eql(5);
-      expect(obj.setState.getCall(4).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(4).args[0].loading).to.eql(undefined);
     });
 
     it('should set loading state if the model is loading when set on the component', function() {
@@ -1135,7 +1134,7 @@ describe('react-backbone', function() {
       $.success();
       // loading complete
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
     });
 
     it('should set loading state if the model is loading after being set but before mounting', function() {
@@ -1151,7 +1150,24 @@ describe('react-backbone', function() {
       $.success();
       // loading complete      
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: undefined}]);
+    });
+
+    it('should handle XHRAware arguments', function() {
+      var model = new Model(),
+          obj = newComponent({props: {model: model}}, ['modelXHRAware({read: "loading", foo: "abc", all: "def"})']);
+      model.fetch();
+      expect(obj.setState.callCount).to.eql(0);
+      obj.mount();
+      // for the event bindings and another for the loading in progress ("loading" and "def" for all)
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.state.loading).to.eql(model.xhrActivity);
+      expect(obj.state.def).to.eql(model.xhrActivity);
+
+      $.success();
+      expect(obj.setState.callCount).to.eql(5);
+      expect(obj.state.loading).to.eql(undefined);
+      expect(obj.state.def).to.eql(undefined);
     });
   });
 
@@ -1172,7 +1188,7 @@ describe('react-backbone', function() {
       $.success();
       // loading complete
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
 
       Backbone.sync('bar', collection, { url: 'foo' });
       // another loading state
@@ -1181,7 +1197,7 @@ describe('react-backbone', function() {
       $.success();
       // another loading complete
       expect(obj.setState.callCount).to.eql(5);
-      expect(obj.setState.getCall(4).args[0].loading).to.eql(false);
+      expect(obj.setState.getCall(4).args[0].loading).to.eql(undefined);
     });
 
     it('should set loading state if the collection is loading when set on the component', function() {
@@ -1211,7 +1227,24 @@ describe('react-backbone', function() {
       $.success();
       // loading complete
       expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args).to.eql([{loading: false}]);
+      expect(obj.setState.getCall(2).args).to.eql([{loading: undefined}]);
+    });
+
+    it('should handle XHRAware arguments', function() {
+      var collection = new Collection(),
+          obj = newComponent({props: {collection: collection}}, ['collectionXHRAware({read: "loading", foo: "abc", all: "def"})']);
+      collection.fetch();
+      expect(obj.setState.callCount).to.eql(0);
+      obj.mount();
+      // for the event bindings and another for the loading in progress ("loading" and "def" for all)
+      expect(obj.setState.callCount).to.eql(3);
+      expect(obj.state.loading).to.eql(collection.xhrActivity);
+      expect(obj.state.def).to.eql(collection.xhrActivity);
+
+      $.success();
+      expect(obj.setState.callCount).to.eql(5);
+      expect(obj.state.loading).to.eql(undefined);
+      expect(obj.state.def).to.eql(undefined);
     });
   });
 
@@ -1297,32 +1330,6 @@ describe('react-backbone', function() {
         TestUtils.Simulate.change(component.getDOMNode(), { target: { value: 'a' } });
         expect(spy.callCount).to.eql(1);
         expect(spy.getCall(0).args[1]).to.eql('a');
-      });
-      it.skip('should do two way binding for the radio button container', function() {
-        var RadioGroup = React.createFactory(Backbone.input.RadioGroup),
-            model = new Backbone.Model();
-        model.set('foo', 'bar');
-        var component = TestUtils.renderIntoDocument(new RadioGroup({name: 'foo', model: model, bind: true},
-          React.createElement('input', {type:'radio', value: 'aaa'}),
-          React.createElement('input', {type:'radio', value: 'bar'})
-        ));
-        expect(component.getValue()).to.eql('bar');
-
-        var spy = sinon.spy();
-        model.on('change:foo', spy);
-        jquery(component.getDOMNode()).find('input[value="bar"]')[0].checked = false;
-        var inputEl = jquery(component.getDOMNode()).find('input[value="aaa"]');
-        inputEl[0].checked = true;
-
-        var evt = document.createEvent("HTMLEvents");
-        evt.initEvent("change", false, true);
-
-        // FIXME I've tested this manually in browsers but can not get
-        // the event to propogate using jsdom
-        inputEl[0].dispatchEvent(evt);
-        // inputEl[0].fireEvent("change");
-        expect(spy.callCount).to.eql(1);
-        expect(spy.getCall(0).args[1]).to.eql('aaa');
       });
     });
   });

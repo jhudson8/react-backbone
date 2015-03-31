@@ -49,7 +49,11 @@
         xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
         getState = React.mixins.getState,
         setState = React.mixins.setState,
-        logDebugWarnings = React.reactBackboneDebugWarnings;
+        logDebugWarnings = React.reactBackboneDebugWarnings,
+        LOADING_STATE_NAME = 'loading',
+        CAP_ON = 'On',
+        CAP_EVENTS = 'Events',
+        ALL_XHR_ACTIVITY = 'all';
     if (_.isUndefined(logDebugWarnings)) {
         logDebugWarnings = true;
     }
@@ -160,17 +164,33 @@
      * Utility method used to handle model/collection events
      */
     function modelOrCollectionEventHandler(type, identifier, context, eventFormat, callback) {
-        var keys = Array.isArray(identifier) ? identifier : ensureArray(context.props[identifier]),
-            key, eventName;
-        if (keys) {
-            // register the event handlers to watch for these events
-            for (var i = 0; i < keys.length; i++) {
-                key = keys[i];
-                eventName = eventFormat.replace('{key}', key);
-                context[type + 'On'](eventName, _.bind(callback, context), this);
-            }
-            return keys;
+        var keys = identifier;
+        if (_.isString(keys)) {
+            keys = ensureArray(context.props[keys]);
         }
+
+        var isArray = _.isArray(keys);
+        _.each(keys, function(value, key) {
+            if (isArray) {
+                key = value;
+                value = undefined;
+            }
+            var eventName;
+            if (_.isString(eventFormat)) {
+                eventName = eventFormat.replace('{key}', key);
+            } else {
+                eventName = eventFormat(key);
+            }
+            context[type + CAP_ON](eventName, _.bind(callback, { key: key, value: value }), this);
+        }, this);
+        // we would have missed this with _.each
+        if (!keys && _.isFunction(eventFormat)) {
+            var eventName = eventFormat(undefined);
+            if (eventName) {
+                context[type + CAP_ON](eventName, _.bind(callback, {}), this);
+            }
+        }
+        return keys;
     }
 
     /**
@@ -210,18 +230,25 @@
         events.__bound = true;
 
         function unbindAndRebindModel(unbindModel, bindModel) {
+            if (bound && unbindModel === bindModel) {
+                return;
+            }
             if (bound && unbindModel) {
                 context.trigger(type + ':unbind', bindModel);
                 // turn off models that will be replaced
                 _.each(events, function(eventData) {
-                    this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
+                    if (eventData && eventData !== true) {
+                        this.stopListening(unbindModel, eventData.ev, eventData.cb, eventData.ctx);
+                    }
                 }, context);
             }
             if (bindModel) {
                 context.trigger(type + ':bind', bindModel);
                 _.each(events, function(eventData) {
-                    modelOrCollectionOnOrOnce(type, eventData.type,
+                    if (eventData && eventData !== true) {
+                        modelOrCollectionOnOrOnce(type, eventData.type,
                             [eventData.ev, eventData.cb, eventData.ctx], this, bindModel);
+                    }
                 }, context);
             }
         }
@@ -239,7 +266,7 @@
      * Return all bound model events
      */
     function getModelAndCollectionEvents(type, context) {
-        var key = '__' + type + 'Events',
+        var key = '__' + type + CAP_EVENTS,
             modelEvents = getState(key, context);
         if (!modelEvents) {
             modelEvents = {};
@@ -251,8 +278,8 @@
     }
 
     // loading state helpers
-    function pushLoadingState(xhrEvent, modelOrCollection, context) {
-        var currentLoads = getState('loading', context),
+    function pushLoadingState(xhrEvent, stateName, modelOrCollection, context) {
+        var currentLoads = getState(stateName, context),
             currentlyLoading = currentLoads && currentLoads.length;
         if (!currentLoads) {
             currentLoads = [];
@@ -260,20 +287,20 @@
         if (_.isArray(currentLoads)) {
             currentLoads.push(xhrEvent);
             if (!currentlyLoading) {
-                setState({
-                    loading: currentLoads
-                }, context);
+                var toSet = {};
+                toSet[stateName] = currentLoads;
+                setState(toSet, context);
             }
 
             xhrEvent.on('complete', function() {
-                popLoadingState(xhrEvent, modelOrCollection, context);
+                popLoadingState(xhrEvent, stateName, modelOrCollection, context);
             });
         }
     }
 
     // remove the xhrEvent from the loading state
-    function popLoadingState(xhrEvent, modelOrCollection, context) {
-        var currentLoads = getState('loading', context);
+    function popLoadingState(xhrEvent, stateName, modelOrCollection, context) {
+        var currentLoads = getState(stateName, context);
         if (_.isArray(currentLoads)) {
             var i = currentLoads.indexOf(xhrEvent);
             while (i >= 0) {
@@ -281,21 +308,21 @@
                 i = currentLoads.indexOf(xhrEvent);
             }
             if (!currentLoads.length) {
-                setState({
-                    loading: false
-                }, context);
+                var toSet = {};
+                toSet[stateName] = undefined;
+                setState(toSet, context);
             }
         }
     }
 
     // if there is any current xhrEvent that match the method, add a reference to it with this context
-    function joinCurrentModelActivity(method, modelOrCollection, context) {
+    function joinCurrentModelActivity(method, stateName, modelOrCollection, context) {
         var xhrActivity = modelOrCollection[xhrModelLoadingAttribute];
         if (xhrActivity) {
             _.each(xhrActivity, function(xhrEvent) {
-                if (!method || xhrEvent.method === method) {
+                if (!method || method === ALL_XHR_ACTIVITY || xhrEvent.method === method) {
                     // this is one that is applicable
-                    pushLoadingState(xhrEvent, modelOrCollection, context);
+                    pushLoadingState(xhrEvent, stateName, modelOrCollection, context);
                 }
             });
         }
@@ -325,7 +352,7 @@
         type: 'collection',
         defaultParams: [['collection']],
         capType: 'Collection',
-        changeEvents: ['add', 'remove', 'reset', 'sort'],
+        changeEvents: ['change', 'add', 'remove', 'reset', 'sort'],
         cachedKey: '__cachedCollections'
     }], function(typeData) {
         var getThings = 'get' + typeData.capType;
@@ -438,7 +465,7 @@
                 });
             }
         };
-        typeEvents[typeData.type + 'On'] = function( /* ev, callback, context */ ) {
+        typeEvents[typeData.type + CAP_ON] = function( /* ev, callback, context */ ) {
             modelOrCollectionOnOrOnce(typeData.type, 'on', arguments, this);
         };
         typeEvents[typeData.type + 'Once'] = function( /* ev, callback, context */ ) {
@@ -449,7 +476,7 @@
             delete events[ev];
             this.stopListening(targetModelOrCollections(typeData.type, this, _modelOrCollection), ev, callback, context);
         };
-        addMixin(typeData.type + 'Events', typeEvents, typeData.type + 'Aware', 'listen', 'events');
+        addMixin(typeData.type + CAP_EVENTS, typeEvents, typeData.type + 'Aware', 'listen', 'events');
 
         /**
          * Mixin used to force render any time the model has changed
@@ -457,7 +484,7 @@
         var changeAware = {
             getInitialState: function() {
                 _.each(typeData.changeEvents, function(eventName) {
-                    this[typeData.type + 'On'](eventName, function(model, options) {
+                    this[typeData.type + CAP_ON](eventName, function(model, options) {
                         if (!options || !options.twoWayBinding) {
                             this.deferUpdate();
                         }
@@ -465,7 +492,7 @@
                 }, this);
             }
         };
-        addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + 'Events', 'listen', 'events', 'deferUpdate');
+        addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + CAP_EVENTS, 'listen', 'events', 'deferUpdate');
 
         // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
@@ -481,46 +508,53 @@
                 this['get' + typeData.capType](doFetch);
             }
         };
-        addMixin(typeData.type + 'Fetch', typeFetch, typeData.type + 'Events');
+        addMixin(typeData.type + 'Fetch', typeFetch, typeData.type + CAP_EVENTS);
 
 
         var xhrFactory = {
             getInitialState: function(keys, self) {
                 function whenXHRActivityHappens(xhrEvents) {
-                    getModelOrCollections(typeData.type, self, function(modelOrCollection) {
-                        pushLoadingState(xhrEvents, modelOrCollection, self);
-                    });
+                    // ensure we don't bubble model xhr loading to collection
+                    if (typeData.type === 'collection' && xhrEvents.model instanceof Backbone.Model) {
+                        return;
+                    }
+                    pushLoadingState(xhrEvents, this.value || LOADING_STATE_NAME, xhrEvents.model, self);
                 }
 
-                if (!keys) {
-                    self[typeData.type + 'On'](xhrEventName, function(xhrEvents) {
-                        // ensure we don't bubble model xhr loading to collection
-                        if (typeData.type === 'collection' && xhrEvents.model instanceof Backbone.Model) {
-                            return;
-                        }
-                        whenXHRActivityHappens(xhrEvents);
-                    });
-                } else {
-                    modelOrCollectionEventHandler(typeData.type, keys, self, xhrEventName + ':{key}', whenXHRActivityHappens);
-                }
+                var keyFormatter = function(key) {
+                    if (!key || key === ALL_XHR_ACTIVITY) {
+                        return xhrEventName;
+                    } else {
+                        return xhrEventName + ':' + key;
+                    }
+                };
+
+
+                modelOrCollectionEventHandler(typeData.type, keys, self, keyFormatter,
+                    whenXHRActivityHappens);
+
                 return null;
             },
 
             componentDidMount: function(keys, self) {
+                var _keys = keys;
+                if (_.isString(_keys)) {
+                    _keys = [_keys];
+                }
+                var isArr = _.isArray(keys);
+
                 function _join(modelOrCollection) {
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
                     if (!keys) {
-                        joinCurrentModelActivity(keys, modelOrCollection, self);
+                        joinCurrentModelActivity(ALL_XHR_ACTIVITY, LOADING_STATE_NAME, modelOrCollection, self);
                     } else {
-                        var _keys = _.isArray(keys) ? keys : self.props[keys];
-                        if (!_keys) {
-                            return;
-                        } else if (!_.isArray(_keys)) {
-                            _keys = [_keys];
-                        }
-                        _.each(_keys, function(key) {
-                            joinCurrentModelActivity(key, modelOrCollection, self);
+                        _.each(_keys, function(value, key) {
+                            if (isArr) {
+                                key = value;
+                                value = LOADING_STATE_NAME;
+                            }
+                            joinCurrentModelActivity(key, value, modelOrCollection, self);
                         });
                     }
                 }
@@ -540,16 +574,25 @@
          * will be set to true and, if an error occurs with loading, the "error" state attribute
          * will be set with the error contents
          */
-        var xhrAware = {
-            getInitialState: function() {
-                return xhrFactory.getInitialState(undefined, this);
-            },
-
-            componentDidMount: function() {
-                return xhrFactory.componentDidMount(undefined, this);
+        var xhrAware = function() {
+            var args;
+            if (arguments.length === 0) {
+                args = undefined;
+            } else if (arguments.length === 1) {
+                args = arguments[0];
             }
+
+            return {
+                getInitialState: function() {
+                    return xhrFactory.getInitialState(args, this);
+                },
+
+                componentDidMount: function() {
+                    return xhrFactory.componentDidMount(args, this);
+                }
+            };
         };
-        addMixin(typeData.type + 'XHRAware', xhrAware, typeData.type + 'Events');
+        addMixin(typeData.type + 'XHRAware', xhrAware, typeData.type + CAP_EVENTS);
 
         /**
          * Gives any comonent the ability to mark the "loading" attribute in the state as true
@@ -567,7 +610,7 @@
                 }
             };
         };
-        addMixin(typeData.type + 'LoadOn', loadOn, typeData.type + 'Events');
+        addMixin(typeData.type + 'LoadOn', loadOn, typeData.type + CAP_EVENTS);
 
         /**
          * Gives any comonent the ability to force an update when an event is fired
@@ -576,13 +619,14 @@
             var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
             return {
                 getInitialState: function() {
+                    var self = this;
                     modelOrCollectionEventHandler(typeData.type, keys || 'updateOn', this, '{key}', function() {
-                        this.deferUpdate();
+                        self.deferUpdate();
                     });
                 }
             };
         };
-        addMixin(typeData.type + 'UpdateOn', updateOn, typeData.type + 'Events', 'deferUpdate');
+        addMixin(typeData.type + 'UpdateOn', updateOn, typeData.type + CAP_EVENTS, 'deferUpdate');
 
         /**
          * Support the "model:{event name}" event, for example:
@@ -598,10 +642,10 @@
         React.events.handle(_modelOrCollctionPattern, function(options, callback) {
             return {
                 on: function() {
-                    if (!this[typeData.type + 'On']) {
+                    if (!this[typeData.type + CAP_ON]) {
                         throw new Error('use the ' + typeData.type + ' "Events" mixin instead of "events"');
                     }
-                    this[typeData.type + 'On'](options.path, callback);
+                    this[typeData.type + CAP_ON](options.path, callback);
                 },
                 off: function() { /* NOP, modelOn will clean up */ }
             };
@@ -702,9 +746,9 @@
             function wrap(type) {
                 var _callback = options[type];
                 options[type] = function() {
-                    setState({
-                        loading: false
-                    }, self);
+                    var toSet = {};
+                    toSet[LOADING_STATE_NAME] = undefined;
+                    setState(toSet, self);
                     if (_callback) {
                         _callback.apply(this, arguments);
                     }
@@ -712,9 +756,10 @@
             }
             wrap('error');
             wrap('success');
-            setState({
-                loading: true
-            }, this);
+
+            var toSet = {};
+            toSet[LOADING_STATE_NAME] = [];
+            setState(toSet, this);
             return options;
         }
     });
