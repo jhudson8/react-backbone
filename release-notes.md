@@ -13,6 +13,7 @@ You can optional provide an object argument to the mixin allowing you to specifi
     React.createClass({
       mixins: ['collectionXHRAware({read: "fetching"})'],
 ```
+
 Will only listen for ```read``` events (fetch) and will use ```state.fetching``` instead of the standard ```state.loading```.
 
 
@@ -24,6 +25,7 @@ Will only listen for ```read``` events (fetch) and will use ```state.fetching```
 
 This is backwards compatible but you can now provide an ```onInvalid``` attribute to the modelPopulate options which will be called if the model fails validation.  The populated attributes object will be provided.
 
+```javascript
 this.modelPopulate(function(model) {
     // the model is valid
   }, {
@@ -32,6 +34,7 @@ this.modelPopulate(function(model) {
     }
   }
 });
+```
 
 
 [Commits](https://github.com/jhudson8/react-backbone/compare/v0.24.0...v0.24.1)
