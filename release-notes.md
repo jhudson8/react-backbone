@@ -2,7 +2,35 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.25.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.26.0...master)
+
+## v0.26.0 - March 31st, 2015
+- overhaul the loadWhile mixin - 2e52ce9
+
+Exposes the ```loadWhile(callback[, loadingStateAttribute])``` function
+
+* ***callback***: the function that will be executed containing any XHR activity to be monitored
+* ***loadingStateAttribute***: the attribute ("loading" if not provided) to reference the loading state
+
+Set the component state attribute ("loading" or loadingStateAttribute if provided) to a truthy value while *any* XHR activity is in progress as long as it was initiated during the execution of the callback function.
+
+```javascript
+    React.createComponent({
+      mixins: ['loadWhile'],
+
+      doSomething: function() {
+        this.loadWhile(function() {
+          // the "loading" attribute will be truthy as long as any of these fetches are in progress
+          this.props.collection1.fetch();
+          this.props.collection2.fetch();
+          this.props.collection3.fetch();
+        });
+      }
+    });
+```
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.25.0...v0.26.0)
 
 ## v0.25.0 - March 30th, 2015
 - add parameter awareness to the XHRAware mixin - aa1ba95
