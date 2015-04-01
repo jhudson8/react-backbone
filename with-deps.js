@@ -1341,7 +1341,13 @@
         LOADING_STATE_NAME = 'loading',
         CAP_ON = 'On',
         CAP_EVENTS = 'Events',
-        ALL_XHR_ACTIVITY = 'all';
+        EVENTS = 'events',
+        CHANGE = 'change',
+        ALL_XHR_ACTIVITY = 'all',
+        LISTEN = 'listen',
+        DEFER_UPDATE = 'deferUpdate',
+        COLLECTION = 'collection',
+        MODEL = 'model';
     if (_.isUndefined(logDebugWarnings)) {
         logDebugWarnings = true;
     }
@@ -1366,7 +1372,7 @@
     }
 
     function getModelOrCollections(type, context, callback, props) {
-        if (type === 'collection') {
+        if (type === COLLECTION) {
             return context.getCollection(callback, props);
         } else {
             return context.getModel(callback, props);
@@ -1631,16 +1637,16 @@
 
     // create mixins that are duplicated for both models and collections
     _.each([{
-        type: 'model',
-        defaultParams: [['model']],
+        type: MODEL,
+        defaultParams: [[MODEL]],
         capType: 'Model',
-        changeEvents: ['change'],
+        changeEvents: [CHANGE],
         cachedKey: '__cachedModels'
     }, {
-        type: 'collection',
-        defaultParams: [['collection']],
+        type: COLLECTION,
+        defaultParams: [[COLLECTION]],
         capType: 'Collection',
-        changeEvents: ['change', 'add', 'remove', 'reset', 'sort'],
+        changeEvents: [CHANGE, 'add', 'remove', 'reset', 'sort'],
         cachedKey: '__cachedCollections'
     }], function(typeData) {
         var getThings = 'get' + typeData.capType;
@@ -1764,7 +1770,7 @@
             delete events[ev];
             this.stopListening(targetModelOrCollections(typeData.type, this, _modelOrCollection), ev, callback, context);
         };
-        addMixin(typeData.type + CAP_EVENTS, typeEvents, typeData.type + 'Aware', 'listen', 'events');
+        addMixin(typeData.type + CAP_EVENTS, typeEvents, typeData.type + 'Aware', LISTEN, EVENTS);
 
         /**
          * Mixin used to force render any time the model has changed
@@ -1780,7 +1786,7 @@
                 }, this);
             }
         };
-        addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + CAP_EVENTS, 'listen', 'events', 'deferUpdate');
+        addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + CAP_EVENTS, LISTEN, EVENTS, DEFER_UPDATE);
 
         // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
@@ -1803,7 +1809,7 @@
             getInitialState: function(keys, self) {
                 function whenXHRActivityHappens(xhrEvents) {
                     // ensure we don't bubble model xhr loading to collection
-                    if (typeData.type === 'collection' && xhrEvents.model instanceof Backbone.Model) {
+                    if (typeData.type === COLLECTION && xhrEvents.model instanceof Backbone.Model) {
                         return;
                     }
                     pushLoadingState(xhrEvents, this.value || LOADING_STATE_NAME, xhrEvents.model, self);
@@ -1886,17 +1892,14 @@
          * Gives any comonent the ability to mark the "loading" attribute in the state as true
          * when any async event of the given type (defined by the "key" property) occurs.
          */
-        var loadOn = function() {
-            var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-            return {
-                getInitialState: function() {
-                    return xhrFactory.getInitialState(keys || 'loadOn', this);
-                },
+        var loadOn = {
+            getInitialState: function() {
+                return xhrFactory.getInitialState(this.props.loadOn, this);
+            },
 
-                componentDidMount: function() {
-                    return xhrFactory.componentDidMount(keys || 'loadOn', this);
-                }
-            };
+            componentDidMount: function() {
+                return xhrFactory.componentDidMount(this.props.loadOn, this);
+            }
         };
         addMixin(typeData.type + 'LoadOn', loadOn, typeData.type + CAP_EVENTS);
 
@@ -1914,7 +1917,7 @@
                 }
             };
         };
-        addMixin(typeData.type + 'UpdateOn', updateOn, typeData.type + CAP_EVENTS, 'deferUpdate');
+        addMixin(typeData.type + 'UpdateOn', updateOn, typeData.type + CAP_EVENTS, DEFER_UPDATE);
 
         /**
          * Support the "model:{event name}" event, for example:
@@ -1943,7 +1946,7 @@
 
     // add helper methods to include both model and collection mixins using a single mixin
     _.each(['XHRAware', 'ChangeAware', 'LoadOn', 'UpdateOn'], function(mixinKey) {
-        React.mixins.alias('backbone' + mixinKey, 'model' + mixinKey, 'collection' + mixinKey);
+        React.mixins.alias('backbone' + mixinKey, MODEL + mixinKey, COLLECTION + mixinKey);
     });
 
     /**
@@ -2242,13 +2245,13 @@
                 }
                 var changeHandler = this.state.changeHandler = twoWayBinding(this);
                 if (changeHandler) {
-                    getElement(this).addEventListener('change', changeHandler);
+                    getElement(this).addEventListener(CHANGE, changeHandler);
                 }
             },
             componentWillUnmount: function() {
                 var changeHandler = this.state && this.state.changeHandler;
                 if (changeHandler) {
-                    getElement(this).removeEventListener('change', changeHandler);
+                    getElement(this).removeEventListener(CHANGE, changeHandler);
                 }
             },
             getValue: function() {
