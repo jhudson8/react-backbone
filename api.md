@@ -798,15 +798,6 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
     <MyComponent loadOn={['read', 'update']} model={myModel}/>
 ```
 
-When the XHR event name(s) are statically defined by the owning component
-
-```javascript
-    var MyComponent = React.createClass({
-      mixins: ['modelLoadOn("read", "update")'], // or ['react-backbone.modelLoadOn("read", "update")']
-      ...
-    });
-```
-
 For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)
 
 
@@ -839,15 +830,6 @@ When the XHR event name(s) are dynamically provded as as the ```modelLoadOn``` p
     <MyComponent loadOn="read" collection={myCollection}/>
     // or
     <MyComponent loadOn={['read', 'update']} collection={myCollection}/>
-```
-
-When the XHR event name(s) are statically defined by the owning component
-
-```javascript
-    var MyComponent = React.createClass({
-      mixins: ['collectionLoadOn("read", "update")'], // or ['react-backbone.collectionLoadOn("read", "update")']
-      ...
-    })
 ```
 
 For more details on all XHR events [look here](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/backbone-xhr-events/section/XHR%20Method%20Reference?focus=outline)

@@ -599,17 +599,14 @@
          * Gives any comonent the ability to mark the "loading" attribute in the state as true
          * when any async event of the given type (defined by the "key" property) occurs.
          */
-        var loadOn = function() {
-            var keys = arguments.length > 0 ? Array.prototype.slice.call(arguments, 0) : undefined;
-            return {
-                getInitialState: function() {
-                    return xhrFactory.getInitialState(keys || 'loadOn', this);
-                },
+        var loadOn = {
+            getInitialState: function() {
+                return xhrFactory.getInitialState(this.props.loadOn, this);
+            },
 
-                componentDidMount: function() {
-                    return xhrFactory.componentDidMount(keys || 'loadOn', this);
-                }
-            };
+            componentDidMount: function() {
+                return xhrFactory.componentDidMount(this.props.loadOn, this);
+            }
         };
         addMixin(typeData.type + 'LoadOn', loadOn, typeData.type + CAP_EVENTS);
 

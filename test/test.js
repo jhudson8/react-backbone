@@ -916,23 +916,6 @@ describe('react-backbone', function() {
       newComponent({props: {model: new Backbone.Model()}}, ['modelLoadOn']);
       // we are just looking for an error thrown in getInitialState
     });
-
-    it('should support mixin parameters instead of the "loadOn" property', function() {
-      var model = new Backbone.Model(),
-          obj = newComponent({props: {model: model}}, ['modelLoadOn("foo"))']);
-      obj.mount();
-      // for the event bindings
-      expect(obj.setState.callCount).to.eql(1);
-
-      Backbone.sync('foo', model, {url: 'foo'});
-      // for the loading state
-      expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql([model.xhrActivity[0]]);
-      $.success();
-      // completion of the loading state
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
-    });
   });
 
 
@@ -975,24 +958,6 @@ describe('react-backbone', function() {
       newComponent({props: {collection: new Backbone.Collection()}}, ['collectionLoadOn']);
       // we are just looking for an error thrown in getInitialState
     });
-
-    it('should support mixin parameters instead of the "loadOn" property', function() {
-      var collection = new Backbone.Collection(),
-          obj = newComponent({props: {collection: collection}}, ['collectionLoadOn("foo"))']);
-      obj.mount();
-      // for the event bindings
-      expect(obj.setState.callCount).to.eql(1);
-
-      Backbone.sync('foo', collection, {url: 'foo'});
-      // for the loading state
-      expect(obj.setState.callCount).to.eql(2);
-      expect(obj.setState.getCall(1).args[0].loading).to.eql([collection.xhrActivity[0]]);
-      $.success();
-      // completion of the loading state
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
-    });
-
   });
 
 
