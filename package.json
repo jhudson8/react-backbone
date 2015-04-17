@@ -30,7 +30,6 @@
     "react-events": "*",
     "backbone-xhr-events": "*",
     "chai": "~1.10",
-    "jquery": "^2.1.3",
     "jsdom": "~1.3",
     "mocha": "^2.1.0",
     "react": "~0.12",

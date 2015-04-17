@@ -7,7 +7,6 @@ global.window = document.parentWindow;
 global.navigator = {
   userAgent: 'Mozilla/5.0'
 };
-var jquery = require('jquery');
 
 var chai = require('chai'),
     sinon = require('sinon'),
