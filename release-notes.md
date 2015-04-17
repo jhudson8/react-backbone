@@ -2,7 +2,45 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v0.26.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.0...master)
+
+## v1.0.0 - April 17th, 2015
+There are no longer initialization requirements for react-backbone.  Now the dependencies are listed as peerDependencies
+
+* "react": "*",
+* "backbone": "*",
+* "underscore": "*",
+* "react-mixin-manager": ">=1.0",
+* "react-events": ">=1.0",
+* "backbone-xhr-events": ">=1.0"
+
+So, you must include all of the modules as dependencies of your project.
+
+The only initialization you need to do is just require the module
+
+```
+var ReactBackbone = require('react-backbone');
+```
+
+All input components are now available on ```ReactBackbone.input``` rather than ```Backbone.input```.  for example:
+
+```
+var ReactBackbone = require('react-backbone');
+var Text = ReactBackbone.input.Text;
+```
+
+The following utility functions are now located on ```ReactBackbone```
+
+* getModelKey
+* modelIndexErrors
+* getModelValue
+* setModelValue
+
+Also, the with-deps files have been removed as the dependencies are handled intrinsicly.
+
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v0.26.0...v1.0.0)
 
 ## v0.26.0 - March 31st, 2015
 - overhaul the loadWhile mixin - 2e52ce9
