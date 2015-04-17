@@ -24,32 +24,34 @@
  */
 (function(main) {
     if (typeof define === 'function' && define.amd) {
-        define([], function() {
-            // with AMD
-            //  require(
-            //    ['react', 'backbone', 'underscore', 'jquery', react-backbone'],
-            //    function(React, Backbone, _, reactBackbone) {
-            //    reactBackbone(React, Backbone, _); 
-            //  });
-            return main;
+        define(['react-mixin-manager', 'react-events', 'react', 'backbone', 'underscore', 'backbone-xhr-events'],
+            function(ReactMixinManager, ReactEvents, React, Backbone, _) {
+            // AMD
+            return main(ReactMixinManager, ReactEvents, Backbone, _);
         });
     } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
-        // with CommonJS
-        // require('react-backbone')(require('react'), require('backbone'), require('underscore')));
-        module.exports = main;
-    } else {
-        main(React, Backbone, _);
-    }
-})(function(React, Backbone, _) {
+        // CommonJS
+        // just initialize backbone-xhr-events
+        require('backbone-xhr-events');
 
-    // main body start
+        module.exports = main(
+            require('react-mixin-manager'),
+            require('react-events'),
+            require('react'),
+            require('backbone'),
+            require('underscore')
+        );
+    } else {
+        main(ReactMixinManager, ReactEvents, React, Backbone, _);
+    }
+})(function(ReactMixinManager, ReactEvents, React, Backbone, _) {
+
     // create local references to existing vars
     var namespace = 'react-backbone.',
         xhrEventName = Backbone.xhrEventName,
         xhrModelLoadingAttribute = Backbone.xhrModelLoadingAttribute,
-        getState = React.mixins.getState,
-        setState = React.mixins.setState,
-        logDebugWarnings = React.reactBackboneDebugWarnings,
+        getState = ReactMixinManager.getState,
+        setState = ReactMixinManager.setState,
         xhrGlobalEvents = Backbone[Backbone.xhrGlobalAttribute],
         LOADING_STATE_NAME = 'loading',
         CAP_ON = 'On',
@@ -60,13 +62,18 @@
         LISTEN = 'listen',
         DEFER_UPDATE = 'deferUpdate',
         COLLECTION = 'collection',
-        MODEL = 'model';
-    if (_.isUndefined(logDebugWarnings)) {
-        logDebugWarnings = true;
-    }
+        MODEL = 'model',
+        rtn = {};
 
     // use Backbone.Events as the events impl if none is already defined
-    React.events.mixin = React.events.mixin || Backbone.Events;
+    if (!ReactEvents.mixin) {
+        ReactEvents.mixin = Backbone.Events;
+    }
+
+    function logDebugWarnings() {
+        var doLog = React.reactBackboneDebugWarnings;
+        return _.isUndefined(doLog) || doLog;
+    }
 
     function addMixin() {
         var args = _.toArray(arguments);
@@ -75,7 +82,7 @@
         } else {
             args.name = namespace + args.name;
         }
-        React.mixins.add.apply(React.mixins, args);
+        ReactMixinManager.add.apply(ReactMixinManager, args);
     }
 
     function firstModel(component) {
@@ -127,7 +134,7 @@
         }
         return context.props.name || context.props.key || context.props.ref;
     }
-    React.mixins.getModelKey = getKey;
+    rtn.getModelKey = getKey;
 
     /**
      * Returns model validation errors in a standard format.
@@ -153,7 +160,7 @@
             return errors;
         }
     }
-    React.mixins.modelIndexErrors = modelIndexErrors;
+    rtn.modelIndexErrors = modelIndexErrors;
 
     /**
      * Return the callback function (key, model) if both the model exists
@@ -336,13 +343,12 @@
     }
 
     // helpers to get and set a model value when only the component is known
-    Backbone.input = Backbone.input || {};
-    var getModelValue = Backbone.input.getModelValue = function(component) {
+    var getModelValue = rtn.getModelValue = function(component) {
         return ifModelAndKey(component, function(key, model) {
             return model.get(key);
         });
     };
-    Backbone.input.setModelValue = function(component, value, options) {
+    rtn.setModelValue = function(component, value, options) {
         return ifModelAndKey(component, function(key, model) {
             return model.set(key, value, options);
         });
@@ -448,7 +454,7 @@
             getInitialState: function() {
                 // model sanity check
                 getModelOrCollections(typeData.type, this, function(obj, propName) {
-                    if (logDebugWarnings && !obj.off || !obj.on) {
+                    if ((!obj.off || !obj.on) && logDebugWarnings()) {
                         console.error('props.' + propName + ' does not implement on/off functions - you will see event binding problems (object logged to console below)');
                         console.log(obj);
                     }
@@ -500,8 +506,6 @@
             }
         };
         addMixin(typeData.type + 'ChangeAware', changeAware, typeData.type + CAP_EVENTS, LISTEN, EVENTS, DEFER_UPDATE);
-
-        // THE FOLLING MIXINS ASSUME THE INCLUSION OF [backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
         /**
          * Mixin used to force render any time the model has changed
@@ -643,7 +647,7 @@
          * When using these model events, you *must* include the "model/collectionEvents" mixin
          */
         var _modelOrCollctionPattern = new RegExp('^' + typeData.type + '(\\[.+\\])?$');
-        React.events.handle(_modelOrCollctionPattern, function(options, callback) {
+        ReactEvents.handle(_modelOrCollctionPattern, function(options, callback) {
             return {
                 on: function() {
                     if (!this[typeData.type + CAP_ON]) {
@@ -659,7 +663,7 @@
 
     // add helper methods to include both model and collection mixins using a single mixin
     _.each(['XHRAware', 'ChangeAware', 'LoadOn', 'UpdateOn'], function(mixinKey) {
-        React.mixins.alias('backbone' + mixinKey, MODEL + mixinKey, COLLECTION + mixinKey);
+        ReactMixinManager.alias('backbone' + mixinKey, MODEL + mixinKey, COLLECTION + mixinKey);
     });
 
     /**
@@ -793,7 +797,7 @@
 
     /**
      * Using the "key" property, bind to the model and look for invalid events.  If an invalid event
-     * is found, set the "error" state to the field error message.  Use React.mixins.modelIndexErrors
+     * is found, set the "error" state to the field error message.  Use require('react-backbone').modelIndexErrors
      * to return the expected error format: { field1Key: errorMessage, field2Key: errorMessage, ... }
      */
     addMixin('modelInvalidAware', {
@@ -821,7 +825,7 @@
     }, 'modelEvents');
 
 
-    var specials = React.events.specials;
+    var specials = ReactEvents.specials;
     if (specials) {
         // add underscore wrapped special event handlers
         var reactEventSpecials = ['memoize', 'delay', 'defer', 'throttle', 'debounce',
@@ -925,8 +929,8 @@
     };
 
 
-    Backbone.input = Backbone.input || {};
-    _.defaults(Backbone.input, {
+    rtn.input = {};
+    _.defaults(rtn.input, {
         Text: _inputClass('input', {
             type: 'text'
         }),
@@ -985,6 +989,6 @@
             }
         })
     });
-    // main body end
 
+    return rtn;
 });

@@ -1,12 +1,3 @@
-/*global require, describe, it, beforeEach, afterEach */
-/*
-var jsdom = require("jsdom").jsdom;
-global.document = jsdom('<html><body></body></html>');
-global.window = document.parentWindow;
-global.navigator = {
-  userAgent: 'Mozilla/5.0'
-};
-*/
 var jsdom = require('jsdom');
  
 // move into beforeEach and flip global.window.close on to improve
@@ -52,18 +43,15 @@ chai.use(sinonChai);
 Backbone.$ = $;
 var TestUtils = React.addons.TestUtils;
 
-// intitialize dependencies
-require('react-mixin-manager')(React);
-require('backbone-xhr-events')(Backbone, _);
-require('react-events')(React);
-// add react-backbone mixins
-require('../index')(React, Backbone, _, jquery);
+var ReactMixinManager = require('react-mixin-manager');
+var ReactEvents = require('react-events');
+var ReactBackbone = require('../index');
 
 
 function newComponent(attributes, mixins) {
 
   if (mixins) {
-    mixins = React.mixins.get(mixins);
+    mixins = ReactMixinManager.get(mixins);
   } else {
     mixins = [];
   }
@@ -143,7 +131,7 @@ describe('react-backbone', function() {
       var errors = [
         {foo: 'bar', abc: 'def'}
       ];
-      errors = React.mixins.modelIndexErrors(errors);
+      errors = ReactBackbone.modelIndexErrors(errors);
       expect(errors.foo).to.eql('bar');
       expect(errors.abc).to.eql('def');
     });
@@ -317,21 +305,21 @@ describe('react-backbone', function() {
 
   describe('getModelValue', function() {
 
-    it('should get value from model using Backbone.input.getModelValue(component) and set the model value using "key"', function() {
+    it('should get value from model using ReactBackbone.getModelValue(component) and set the model value using "key"', function() {
       var model = new Backbone.Model({foo: 'bar'}),
           obj = newComponent({props: {model: model, key: 'foo'}}, ['modelAware']);
-      var val = Backbone.input.getModelValue(obj);
+      var val = ReactBackbone.getModelValue(obj);
       expect(val).to.eql('bar');
 
-      Backbone.input.setModelValue(obj, 'baz');
+      ReactBackbone.setModelValue(obj, 'baz');
       expect(model.get('foo')).to.eql('baz');
     });
 
     it('should get and set the model value using "ref"', function() {
       var model = new Backbone.Model({foo: 'bar'}),
           obj = newComponent({props: {model: model, ref: 'foo'}}, ['modelAware']);
-      expect(Backbone.input.getModelValue(obj)).to.eql('bar');
-      Backbone.input.setModelValue(obj, 'baz');
+      expect(ReactBackbone.getModelValue(obj)).to.eql('bar');
+      ReactBackbone.setModelValue(obj, 'baz');
       expect(model.get('foo')).to.eql('baz');
     });
   });
@@ -1225,11 +1213,11 @@ describe('react-backbone', function() {
 
   describe('react-events integration', function() {
     it('should include events mixin, Backbone.Events for on/off/trigger mixin and the react-events "state" mixin', function() {
-      var mixins = React.mixins.get('events');
+      var mixins = ReactMixinManager.get('events');
       expect(mixins.length).to.eql(3);
     });
-    it('set React.events.mixin to Backbone.Events', function() {
-      expect(React.events.mixin).to.eql(Backbone.Events);
+    it('set ReactEvents.mixin to Backbone.Events', function() {
+      expect(ReactEvents.mixin).to.eql(Backbone.Events);
       var obj = newComponent({}, ['modelEvents']);
       expect(!!obj.on).to.eql(true);
       expect(!!obj.off).to.eql(true);
@@ -1281,7 +1269,7 @@ describe('react-backbone', function() {
   describe('input fields', function() {
     describe('two way binding', function() {
       it('should not do it if the bind property is not provided', function() {
-        var TextBox = React.createFactory(Backbone.input.Text),
+        var TextBox = React.createFactory(ReactBackbone.input.Text),
             model = new Backbone.Model();
         model.set('foo', 'bar');
         var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model}));
@@ -1293,7 +1281,7 @@ describe('react-backbone', function() {
         expect(spy.callCount).to.eql(0);
       });
       it('should do two way binding for standard input fields', function() {
-        var TextBox = React.createFactory(Backbone.input.Text),
+        var TextBox = React.createFactory(ReactBackbone.input.Text),
             model = new Backbone.Model();
         model.set('foo', 'bar');
         var component = TestUtils.renderIntoDocument(new TextBox({name: 'foo', model: model, bind: true}));
@@ -1308,8 +1296,4 @@ describe('react-backbone', function() {
     });
   });
 
-  describe('with-deps', function() {
-    // just make sure the "with-deps" file is not hosed since it is a copy
-    require('../with-deps')(_.clone(React), _.clone(Backbone), _);
-  });
 });
