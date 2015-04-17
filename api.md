@@ -30,24 +30,23 @@ Installation
 
 ```
     ... include backbone, underscore, react ...
-    <script src=".../react-backbone-with-deps[-min].js"></script>
+    <script src=".../underscore[-min].js"></script>
+    <script src=".../backbone[-min].js"></script>
+    <script src=".../react[-min].js"></script>
+    <script src=".../react-mixin-manager[-min].js"></script>
+    <script src=".../react-events[-min].js"></script>
+    <script src=".../react-backbone[-min].js"></script>
 ```
 
 #### CommonJS
 ```
-    var React = require('react');
-    var _ = require('underscore');
-    var Backbone = require('backbone');
-
-    require('react-backbone/with-deps')(React, Backbone, _);
+    var ReactBackbone = require('react-backbone');
 ```
 
 #### AMD
 ```
-    require(
-      ['react', 'backbone', 'underscore', react-backbone/with-deps'],
-      function(React, Backbone, _, reactBackbone) {
-        reactBackbone(React, Backbone, _);
+    require(['react-backbone'], function(ReactBackbone) {
+        ...
     });
 ```
 
@@ -168,7 +167,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input*.  
 
 
 ```javascript
-    var Text = Backbone.input.Text;
+    var Text = ReactBackbone.input.Text;
 
     var model = new Backbone.Model({age: 3});
     ...
@@ -183,7 +182,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input*.  
 A model-aware component that is a very light wrapper around *React.DOM.textarea*.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
 ```javascript
-    var TextArea = Backbone.input.TextArea;
+    var TextArea = ReactBackbone.input.TextArea;
 
     var model = new Backbone.Model({description: 'foo'});
     ...
@@ -198,7 +197,7 @@ A model-aware component that is a very light wrapper around *React.DOM.textarea*
 A model-aware component that is a very light wrapper around *React.DOM.input* (type=checkbox).  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).  The *value* property is not required (true/false) will be used but if the *value* property is specified, that value will be set on the model in the checked case.
 
 ```javascript
-    var CheckBox = Backbone.input.CheckBox;
+    var CheckBox = ReactBackbone.input.CheckBox;
 
     var model = new Backbone.Model({acceptTermsOfService: true});
     ...
@@ -213,7 +212,7 @@ A model-aware component that is a very light wrapper around *React.DOM.input* (t
 A model-aware component that is a very light wrapper around *React.DOM.select*.  This component will initialize with the correct default value from the provided model using the "name" property as well as participate in the *modelPopulate* mixin (if the "ref" attribute is provided).
 
 ```javascript
-    var Select = Backbone.input.Select;
+    var Select = ReactBackbone.input.Select;
 
     var model = new Backbone.Model({eyeColor: 'green'});
     ...
@@ -234,7 +233,7 @@ A model-aware component that should contain one or *React.DOM.input* (type=radio
 *note: this component does not create the radio buttons for you - it is only a wrapper for nested content provided by you to expose the functions necessary for getting and setting model values.*
 
 ```javascript
-    var RadioGroup = Backbone.input.RadioGroup;
+    var RadioGroup = ReactBackbone.input.RadioGroup;
 
     var model = new Backbone.Model({eyeColor: 'green'});
     ...
@@ -1092,7 +1091,7 @@ Creates a version of the function that can be called no more than count times.  
 
 API
 -------------
-### React.mixins
+### react-backbone
 #### getModelKey (component)
 * ***component***: The ReactComponent that is associated with the model key specific property
 
