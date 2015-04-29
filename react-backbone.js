@@ -710,7 +710,7 @@
                         var value = component.getValue();
                         attributes[key] = value;
                     }
-                } else if (component.modelPopulate && component.getModels) {
+                } else if (component.modelPopulate) {
                     if (!model && !drillDown) {
                         // if we aren't populating to models, this is not necessary
                         return;
