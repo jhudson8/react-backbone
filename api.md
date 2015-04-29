@@ -1095,13 +1095,10 @@ API
 #### getModelKey (component)
 * ***component***: The ReactComponent that is associated with the model key specific property
 
-Return the model key name associated with a component.  While this can be overridden to sute your needs, the default impl is as follows:
+Return the model key name associated with a component.  This just returns the ```name``` property but this function can be overridden to suit your needs.
 
 ```javascript
-    if (reactComponent.getModelKey) {
-      return component.getModelKey();
-    }
-    return component.props.name || component.props.key || component.props.ref;
+    require('react-backbone').getModelKey(myComponent);
 ```
 
 #### modelIndexErrors (errors, component)
@@ -1117,4 +1114,14 @@ to a single object
 
 ```javascript
     { field1Key: errorMessage, field2Key: errorMessage, ... }
+```
+
+
+#### getModelValue (component)
+* ***component***: The associated React component
+
+Return the value associated with the model specific to the React component.  The React component must include the ```modelAware``` mixin (or another that depends on ```modelAware```) and have the ```name``` property matching the requested model attribute.
+
+```javascript
+    require('react-backbone').getModelValue(myComponent);
 ```
