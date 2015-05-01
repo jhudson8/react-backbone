@@ -914,7 +914,7 @@
                 if (this.isMounted()) {
                     if (isCheckable) {
                         var el = this.getDOMNode();
-                        return (el.checked && (el.value || true)) || false;
+                        return el.checked ? true : false;
                     } else {
                         return getElementValue(this);
                     }
