@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.0...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.1...master)
+
+## v1.0.1 - May 9th, 2015
+- bug fix: in-browser source include loading - 14f1402
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.0...v1.0.1)
 
 ## v1.0.0 - April 17th, 2015
 There are no longer initialization requirements for react-backbone.  Now the dependencies are listed as peerDependencies
