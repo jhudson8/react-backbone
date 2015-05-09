@@ -42,7 +42,7 @@
             require('underscore')
         );
     } else {
-        main(ReactMixinManager, ReactEvents, React, Backbone, _);
+        ReactBackbone = main(ReactMixinManager, ReactEvents, React, Backbone, _);
     }
 })(function(ReactMixinManager, ReactEvents, React, Backbone, _) {
 
