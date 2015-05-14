@@ -1089,13 +1089,13 @@ describe('react-backbone', function() {
       expect(obj.setState.callCount).to.eql(0);
       obj.mount();
       // for the event bindings and another for the loading in progress
-      expect(obj.setState.callCount).to.eql(2);
+      expect(obj.setState.callCount).to.eql(1);
 
       expect(obj.state.loading).to.eql([model.xhrActivity[0]]);
       $.success();
       // loading complete
-      expect(obj.setState.callCount).to.eql(3);
-      expect(obj.setState.getCall(2).args[0].loading).to.eql(undefined);
+      expect(obj.setState.callCount).to.eql(2);
+      expect(obj.setState.getCall(1).args[0].loading).to.eql(undefined);
     });
 
     it('should set loading state if the model is loading after being set but before mounting', function() {
@@ -1168,12 +1168,12 @@ describe('react-backbone', function() {
       expect(obj.setState.callCount).to.eql(0);
       obj.mount();
       // for the event bindings and loading state
-      expect(obj.setState.callCount).to.eql(2);
+      expect(obj.setState.callCount).to.eql(1);
       expect(obj.state.loading).to.eql([collection.xhrActivity[0]]);
       $.success();
       // loading complete
-      expect(obj.setState.callCount).to.eql(3);
-      expect(!!obj.setState.getCall(2).args[0].loading).to.eql(false);
+      expect(obj.setState.callCount).to.eql(2);
+      expect(!!obj.setState.getCall(1).args[0].loading).to.eql(false);
     });
 
     it('should set loading state if the collection is loading after being set but before mounting', function() {

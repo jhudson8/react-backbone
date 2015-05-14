@@ -42,7 +42,7 @@
             require('underscore')
         );
     } else {
-        ReactBackbone = main(ReactMixinManager, ReactEvents, React, Backbone, _);
+        main(ReactMixinManager, ReactEvents, React, Backbone, _);
     }
 })(function(ReactMixinManager, ReactEvents, React, Backbone, _) {
 
@@ -292,14 +292,22 @@
     }
 
     // loading state helpers
-    function pushLoadingState(xhrEvent, stateName, modelOrCollection, context) {
+    function pushLoadingState(xhrEvent, stateName, modelOrCollection, context, force) {
         var currentLoads = getState(stateName, context),
             currentlyLoading = currentLoads && currentLoads.length;
         if (!currentLoads) {
             currentLoads = [];
         }
         if (_.isArray(currentLoads)) {
-            currentLoads.push(xhrEvent);
+            if (_.indexOf(currentLoads, xhrEvent) >= 0) {
+                if (!force) {
+                    return;
+                }
+                
+            } else {
+                currentLoads.push(xhrEvent);
+            }
+            
             if (!currentlyLoading) {
                 var toSet = {};
                 toSet[stateName] = currentLoads;
@@ -330,13 +338,13 @@
     }
 
     // if there is any current xhrEvent that match the method, add a reference to it with this context
-    function joinCurrentModelActivity(method, stateName, modelOrCollection, context) {
+    function joinCurrentModelActivity(method, stateName, modelOrCollection, context, force) {
         var xhrActivity = modelOrCollection[xhrModelLoadingAttribute];
         if (xhrActivity) {
             _.each(xhrActivity, function(xhrEvent) {
                 if (!method || method === ALL_XHR_ACTIVITY || xhrEvent.method === method) {
                     // this is one that is applicable
-                    pushLoadingState(xhrEvent, stateName, modelOrCollection, context);
+                    pushLoadingState(xhrEvent, stateName, modelOrCollection, context, force);
                 }
             });
         }
@@ -529,7 +537,8 @@
                     if (typeData.type === COLLECTION && xhrEvents.model instanceof Backbone.Model) {
                         return;
                     }
-                    pushLoadingState(xhrEvents, this.value || LOADING_STATE_NAME, xhrEvents.model, self);
+                    pushLoadingState(xhrEvents, this.value || LOADING_STATE_NAME, xhrEvents.model,
+                        self, rtn);
                 }
 
                 var keyFormatter = function(key) {
@@ -544,7 +553,30 @@
                 modelOrCollectionEventHandler(typeData.type, keys, self, keyFormatter,
                     whenXHRActivityHappens);
 
-                return null;
+                // return the initial state
+                var rtn = [];
+                getModelOrCollections(typeData.type, self, function(obj, propName) {
+                    _.each(obj[xhrModelLoadingAttribute], function(xhrActivity) {
+                        var match = false;
+                        if (!keys || keys === ALL_XHR_ACTIVITY) {
+                            match = true;
+                        } else {
+                            if (keys.indexOf(xhrActivity.event) >= 0 || xhrActivity.event === keys) {
+                                match = true;
+                            }
+                        }
+                        if (match) {
+                            rtn.push(xhrActivity);
+                        }
+                    });
+                }, self.props);
+                if (rtn.length > 0) {
+                    var _rtn = {};
+                    _rtn[LOADING_STATE_NAME] = rtn;
+                    return _rtn;
+                } else {
+                    return null;
+                }
             },
 
             componentDidMount: function(keys, self) {
@@ -558,14 +590,16 @@
                     // we may bind an extra for any getInitialState bindings but
                     // the cleanup logic will deal with duplicate bindings
                     if (!keys) {
-                        joinCurrentModelActivity(ALL_XHR_ACTIVITY, LOADING_STATE_NAME, modelOrCollection, self);
+                        joinCurrentModelActivity(ALL_XHR_ACTIVITY, LOADING_STATE_NAME,
+                            modelOrCollection, self, true);
                     } else {
                         _.each(_keys, function(value, key) {
                             if (isArr) {
                                 key = value;
                                 value = LOADING_STATE_NAME;
                             }
-                            joinCurrentModelActivity(key, value, modelOrCollection, self);
+                            joinCurrentModelActivity(key, value, modelOrCollection,
+                                self, true);
                         });
                     }
                 }
