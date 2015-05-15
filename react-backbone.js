@@ -555,20 +555,22 @@
 
                 // return the initial state
                 var rtn = [];
-                getModelOrCollections(typeData.type, self, function(obj, propName) {
-                    _.each(obj[xhrModelLoadingAttribute], function(xhrActivity) {
-                        var match = false;
-                        if (!keys || keys === ALL_XHR_ACTIVITY) {
-                            match = true;
-                        } else {
-                            if (keys.indexOf(xhrActivity.event) >= 0 || xhrActivity.event === keys) {
+                getModelOrCollections(typeData.type, self, function(obj) {
+                    if (obj) {
+                        _.each(obj[xhrModelLoadingAttribute], function(xhrActivity) {
+                            var match = false;
+                            if (!keys || keys === ALL_XHR_ACTIVITY) {
                                 match = true;
+                            } else {
+                                if (keys.indexOf(xhrActivity.event) >= 0 || xhrActivity.event === keys) {
+                                    match = true;
+                                }
                             }
-                        }
-                        if (match) {
-                            rtn.push(xhrActivity);
-                        }
-                    });
+                            if (match) {
+                                rtn.push(xhrActivity);
+                            }
+                        });
+                    }
                 }, self.props);
                 if (rtn.length > 0) {
                     var _rtn = {};
