@@ -687,7 +687,7 @@
             return {
                 on: function() {
                     if (!this[typeData.type + CAP_ON]) {
-                        throw new Error('use the ' + typeData.type + ' "Events" mixin instead of "events"');
+                        throw new Error('use the "' + typeData.type + 'Events" mixin instead of "events"');
                     }
                     this[typeData.type + CAP_ON](options.path, callback);
                 },
@@ -740,13 +740,7 @@
 
             _.each(components, function(component) {
                 // the component *must* implement getValue or modelPopulate to participate
-                if (component.getValue) {
-                    var key = getKey(component);
-                    if (key) {
-                        var value = component.getValue();
-                        attributes[key] = value;
-                    }
-                } else if (component.modelPopulate) {
+                if (component.modelPopulate) {
                     if (!model && !drillDown) {
                         // if we aren't populating to models, this is not necessary
                         return;
@@ -758,6 +752,12 @@
                             populateModel: testModel
                         }, options), true);
                         _.defaults(attributes, _attributes);
+                    }
+                } else if (component.getValue) {
+                    var key = getKey(component);
+                    if (key) {
+                        var value = component.getValue();
+                        attributes[key] = value;
                     }
                 }
             });
