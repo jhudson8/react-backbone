@@ -2,7 +2,16 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.1...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.2...master)
+
+## v1.0.2 - May 26th, 2015
+- [#4](https://github.com/jhudson8/react-backbone/issues/4) - Errors on script initialization
+- fix bug when using the model/collection declaritive event bindings - 3e84c88
+- null model check - b7f349d
+- ensure state.loading is valid on first render (getInitialState response) - 09e1b2d
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.1...v1.0.2)
 
 ## v1.0.1 - May 9th, 2015
 - bug fix: in-browser source include loading - 14f1402
