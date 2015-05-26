@@ -286,7 +286,7 @@
             modelEvents = {};
             var stateVar = {};
             stateVar[key] = modelEvents;
-            setState(stateVar, context);
+            setState(stateVar, context, false);
         }
         return modelEvents;
     }
