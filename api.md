@@ -30,9 +30,7 @@ Installation
 
 ```
     ... include backbone, underscore, react ...
-    <script src=".../underscore[-min].js"></script>
-    <script src=".../backbone[-min].js"></script>
-    <script src=".../react[-min].js"></script>
+    <script src=".../backbone-xhr-events[-min].js"></script>
     <script src=".../react-mixin-manager[-min].js"></script>
     <script src=".../react-events[-min].js"></script>
     <script src=".../react-backbone[-min].js"></script>
@@ -40,14 +38,15 @@ Installation
 
 #### CommonJS
 ```
-    var ReactBackbone = require('react-backbone');
+    npm install --save backbone-xhr-events
+    npm install --save react-mixin-manager
+    npm install --save react-events
+    npm install --save react-backbone
 ```
 
 #### AMD
 ```
-    require(['react-backbone'], function(ReactBackbone) {
-        ...
-    });
+    AMD is supported if you really want to use it... but why would you do that to yourself?  Use webpack instead.
 ```
 
 
