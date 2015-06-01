@@ -647,7 +647,7 @@ If you want to force a render only on specific model events, see [modelUpdateOn]
       mixins: ['modelChangeAware'], // or ['react-backbone.modelChangeAware']
 
       render: function() {
-        // will be executed if the associated model changes
+        // will be executed if the associated collection changes
       }
     });
 ```
