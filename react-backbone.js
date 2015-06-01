@@ -27,7 +27,7 @@
         define(['react-mixin-manager', 'react-events', 'react', 'backbone', 'underscore', 'backbone-xhr-events'],
             function(ReactMixinManager, ReactEvents, React, Backbone, _) {
             // AMD
-            return main(ReactMixinManager, ReactEvents, Backbone, _);
+            return main(ReactMixinManager, ReactEvents, React, Backbone, _);
         });
     } else if (typeof exports !== 'undefined' && typeof require !== 'undefined') {
         // CommonJS
