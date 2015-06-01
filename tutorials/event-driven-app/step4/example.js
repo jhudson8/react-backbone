@@ -2,14 +2,14 @@
 var React = require('react');
 var Backbone = require('backbone');
 var _ = require('underscore');
-var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+var ReactEvents = require('react-events');
+require('react-backbone');
 
 // our event bus
 var EventBus = _.clone(Backbone.Events);
 
 // allow "app:{event name}" to be referenced in the events object
-React.events.handle('app', {
+ReactEvents.handle('app', {
   target: EventBus
 });
 
@@ -74,10 +74,10 @@ var ComponentB = React.createClass({
 
 // INITIAL RENDER
 // create DOM elements for the 2 top level components (ComponentA and ComponentB)
-var aElement = document.createElement('div')
-document.body.appendChild(aElement)
-var bElement = document.createElement('div')
-document.body.appendChild(bElement)
+var aElement = document.createElement('div');
+document.body.appendChild(aElement);
+var bElement = document.createElement('div');
+document.body.appendChild(bElement);
 
 React.render(<ComponentA/>, aElement);
 React.render(<ComponentB/>, bElement);

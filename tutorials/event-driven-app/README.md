@@ -123,10 +123,15 @@ The [events mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudso
 
 We can enhance what is available in the ```events``` object using [React.events.handle](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/method/React.events/handle?focus=outline).  We will create a handler to trigger global event bus methods so we can use ```app:{event name}``` shorthand in our ```events``` object.
 
+Define a variable for the [react-events object](https://github.com/jhudson8/react-events)
+```javascript
+    var ReactEvents = require('react-events');
+```
+
 Register the [custom event handler](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/bundle/jhudson8/react-events/package/application%20events?focus=outline)
 
 ```javascript
-    React.events.handle('app', {
+    ReactEvents.handle('app', {
       target: EventBus
     });
 ```

@@ -57,6 +57,11 @@ and unbind our throttled listener callback.
 
 We are now going to [register a mixin](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-mixin-manager?focus=outline) using [managed events](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-events?focus=outline).
 
+First, keep a reference to the [react-mixin-manager object](https://github.com/jhudson8/react-mixin-manager)
+```javascript
+    var ReactMixinManager = require('react-mixin-manager');
+```
+
 We no longer have to worry about unbinding our resize listener.  We will also be using the [throttle callback wrapper](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone/snippet/package/*throttle?focus=outline).
 
 ```javascript
@@ -69,7 +74,7 @@ We no longer have to worry about unbinding our resize listener.  We will also be
     }
 
     // this mixin *should* live in a separate file thus making the actual component code *very* simple
-    React.mixins.add('responsive', {
+    ReactMixinManager.add('responsive', {
 
       // the "manageEvents" method is available because we import the "events" mixin
       mixins: ['events'],

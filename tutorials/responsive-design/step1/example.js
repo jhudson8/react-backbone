@@ -1,9 +1,7 @@
 // initialize react-backbone
 var React = require('react');
-var Backbone = require('backbone');
-var _ = require('underscore');
 var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+require('react-backbone');
 
 
 var TestComponent = React.createClass({
@@ -22,14 +20,14 @@ var TestComponent = React.createClass({
   },
 
   render: function() {
-    return <div>{this.state.profile}</div>
+    return <div>{this.state.profile}</div>;
   },
 
   onResize: function() {
     var width = $(this.getDOMNode()).width();
     this.setState({
       profile: width > 600 ? 'large' : 'small'
-    })
+    });
   }
 });
 

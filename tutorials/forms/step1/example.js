@@ -2,8 +2,7 @@
 var React = require('react');
 var Backbone = require('backbone');
 var _ = require('underscore');
-var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+require('react-backbone');
 
 
 // MODEL
@@ -45,7 +44,7 @@ var InputWithLabel = React.createClass({
 
   // allow the value of the input component to be retrieved
   getValue: function() {
-    return $(this.refs.input.getDOMNode()).val();
+    return this.refs.input.getDOMNode().value;
   }
 });
 
@@ -107,9 +106,9 @@ var TestComponent = React.createClass({
     // for simplicity, we'll just show the first error
     var errorStr = [];
     _.each(errors, function(error) {
-      _.each(error, function(message, key) {
+      _.each(error, function(message) {
         errorStr.push(message);
-      })
+      });
     });
     this.setState({error: errorStr.join(', ')});
   }

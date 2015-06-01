@@ -1,9 +1,8 @@
 // initialize react-backbone
 var React = require('react');
-var Backbone = require('backbone');
-var _ = require('underscore');
 var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+var ReactMixinManager = require('react-mixin-manager');
+require('react-backbone');
 
 
 // simple function to return the state object that contains the "profile" value
@@ -15,7 +14,7 @@ function getStateValues (self) {
 }
 
 // this mixin *should* live in a separate file thus making the actual component code *very* simple
-React.mixins.add('responsive', {
+ReactMixinManager.add('responsive', {
 
   // the "manageEvents" method is available because we import the "events" mixin
   mixins: ['events'],
@@ -43,7 +42,7 @@ React.mixins.add('responsive', {
 var TestComponent = React.createClass({
   mixins: ['responsive'],
   render: function() {
-    return <div>{this.state.profile}</div>
+    return <div>{this.state.profile}</div>;
   }
 });
 

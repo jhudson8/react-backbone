@@ -1,9 +1,7 @@
 // initialize react-backbone
 var React = require('react');
 var Backbone = require('backbone');
-var _ = require('underscore');
-var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+require('react-backbone');
 
 
 // BACKBONE MODELS / COLLECTIONS
@@ -24,14 +22,14 @@ var RepositoryRow = React.createClass({
   render: function() {
     var model = this.props.model;
 
-    return <tr><td>{model.get('name')}</td><td>{model.get('description')}</td></tr>
+    return <tr><td>{model.get('name')}</td><td>{model.get('description')}</td></tr>;
   }
 });
 
 var RepositoriesView = React.createClass({
   render: function() {
     var rows = this.props.collection.map(function(model) {
-      return <RepositoryRow model={model}/>
+      return <RepositoryRow key={model.get('full_name')} model={model}/>;
     });
 
     return <table><tr><th>name</th><th>description</th></tr>{rows}</table>;

@@ -2,8 +2,7 @@
 var React = require('react');
 var Backbone = require('backbone');
 var _ = require('underscore');
-var $ = require('jquery');
-require('react-backbone/with-deps')(React, Backbone, _, $);
+var ReactBackbone = require('react-backbone');
 
 
 // MODEL
@@ -29,7 +28,7 @@ var MyModel = Backbone.Model.extend({
 // COMPONENTS
 
 // create a reusable components which represent a label with an input field
-var Text = Backbone.input.Text;
+var TextField = ReactBackbone.input.Text;
 var InputWithLabel = React.createClass({
   mixins: ['modelInvalidAware'],
 
@@ -41,7 +40,7 @@ var InputWithLabel = React.createClass({
     return <div>
       <label htmlFor={this.state.id}>{this.props.label}</label>
       <div>
-        <Text id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={{validateField: true}}/>
+        <TextField id={this.state.id} type="text" ref="input" model={this.props.model} name={this.props.name} bind={{validateField: true}}/>
         {this.state.invalid}
       </div>
     </div>;
@@ -56,7 +55,6 @@ var InputWithLabel = React.createClass({
 // and here is the overall form component
 var TestComponent = React.createClass({
   render: function() {
-    var model = this.props.model;
 
     // return the form and input contents
     return <form onSubmit={this.onSubmit}>

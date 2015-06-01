@@ -14,7 +14,10 @@
     "jquery": "~2.1",
     "react": "^0.12.2",
     "underscore": "~1.7",
-    "react-backbone": "*"
+    "react-backbone": "*",
+    "react-events": "*",
+    "react-mixin-manager": "*",
+    "backbone-xhr-events": "*"
   },
   "devDependencies": {
     "css-loader": "~0.9",
