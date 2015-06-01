@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.2...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.3...master)
+
+## v1.0.3 - June 1st, 2015
+- fix AMD reference - 926715a
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.2...v1.0.3)
 
 ## v1.0.2 - May 26th, 2015
 - [#4](https://github.com/jhudson8/react-backbone/issues/4) - Errors on script initialization
