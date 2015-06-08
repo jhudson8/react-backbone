@@ -33,7 +33,7 @@ This project indludes/depends on the following other projects
       mixins: ['modelXHRAware'],
 
       render: function() {
-        // this.loading will be truthy during any XHR activity initiated by this.props.model
+        // this.state.loading will be truthy during any XHR activity initiated by this.props.model
       }
     });
 ```
