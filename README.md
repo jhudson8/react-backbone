@@ -16,6 +16,17 @@ This project indludes/depends on the following other projects
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
 
+```
+    React.createClass({
+      mixins: ['modelChangeAware'],
+
+      render: function() {
+        // will be called when ever this.props.model is changed
+      }
+    });
+```
+
+
 ## Docs
 
 [View the installation and API docs](http://jhudson8.github.io/fancydocs/index.html#project/jhudson8/react-backbone)
