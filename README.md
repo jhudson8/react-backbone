@@ -46,7 +46,7 @@ This project indludes/depends on the following other projects
         'model:foo': 'onFoo',
         '*throttle(300)->model:foo': 'onThrottledFoo'
         ''
-      }
+      },
 
       onFoo: function() {
         will be executed when this.props.model triggers the "foo" event
