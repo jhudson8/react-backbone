@@ -23,7 +23,7 @@ This project indludes/depends on the following other projects
       mixins: ['modelChangeAware'],
 
       render: function() {
-        // will be called when ever this.props.model is changed
+        // will be called any time this.props.model is changed
       }
     });
 ```
