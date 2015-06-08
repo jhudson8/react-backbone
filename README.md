@@ -16,6 +16,8 @@ This project indludes/depends on the following other projects
 * [jhudson8/backbone-xhr-events](https://github.com/jhudson8/backbone-xhr-events)
 
 
+## Common Examples
+
 ```
     React.createClass({
       mixins: ['modelChangeAware'],
@@ -26,6 +28,29 @@ This project indludes/depends on the following other projects
     });
 ```
 
+```
+    React.createClass({
+      mixins: ['modelXHRAware'],
+
+      render: function() {
+        // this.loading will be truthy during any XHR activity initiated by this.props.model
+      }
+    });
+```
+
+```
+    React.createClass({
+      mixins: ['modelEvents'],
+
+      events: {
+        'model:foo': 'onFoo'
+      }
+
+      onFoo: function() {
+        will be executed when this.props.model triggers the "foo" event
+      }
+    });
+```
 
 ## Docs
 
