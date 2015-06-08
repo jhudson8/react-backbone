@@ -43,12 +43,18 @@ This project indludes/depends on the following other projects
       mixins: ['modelEvents'],
 
       events: {
-        'model:foo': 'onFoo'
+        'model:foo': 'onFoo',
+        '*throttle(300)->model:foo': 'onThrottledFoo'
+        ''
       }
 
       onFoo: function() {
         will be executed when this.props.model triggers the "foo" event
-      }
+      },
+
+      onThrottledFoo: function() {
+        will be executed and throttled when this.props.model triggers the "foo" event
+      },
     });
 ```
 
