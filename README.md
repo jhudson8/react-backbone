@@ -53,7 +53,7 @@ This project indludes/depends on the following other projects
       },
 
       onThrottledFoo: function() {
-        will be executed and throttled when this.props.model triggers the "foo" event
+        will be executed and throttled (300ms) when this.props.model triggers the "foo" event
       },
     });
 ```
