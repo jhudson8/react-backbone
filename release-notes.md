@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.3...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.4...master)
+
+## v1.0.4 - July 25th, 2015
+- bug fix: don't try to rebind to new model/collection if it does not exist - 068f9bc
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.3...v1.0.4)
 
 ## v1.0.3 - June 1st, 2015
 - fix AMD reference - 926715a
