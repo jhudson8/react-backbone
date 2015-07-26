@@ -1,5 +1,5 @@
 /*!
- * react-backbone v1.0.4
+ * react-backbone v1.0.3
  * https://github.com/jhudson8/react-backbone
  *
  * Copyright (c) 2014 Joe Hudson<joehud_AT_gmail.com>
@@ -532,6 +532,7 @@
 
         var xhrFactory = {
             getInitialState: function(keys, self) {
+                console.log(keys);
                 function whenXHRActivityHappens(xhrEvents) {
                     // ensure we don't bubble model xhr loading to collection
                     if (typeData.type === COLLECTION && xhrEvents.model instanceof Backbone.Model) {
@@ -562,8 +563,12 @@
                             if (!keys || keys === ALL_XHR_ACTIVITY) {
                                 match = true;
                             } else {
-                                if (keys.indexOf(xhrActivity.event) >= 0 || xhrActivity.event === keys) {
-                                    match = true;
+                                if (_.isArray(keys)) {
+                                    if (keys.indexOf(xhrActivity.event) >= 0 || xhrActivity.event === keys) {
+                                        match = true;
+                                    }
+                                } else if (keys[xhrActivity.event]) {
+                                    match = keys[xhrActivity.event];
                                 }
                             }
                             if (match) {
