@@ -611,7 +611,9 @@
                     _join(modelOrCollection);
                 });
                 self.on(typeData.type + ':set', function(modelOrCollection) {
-                    _join(modelOrCollection);
+                    if (modelOrCollection) {
+                        _join(modelOrCollection);
+                    }
                 });
             }
         };
