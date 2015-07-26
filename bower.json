@@ -1,7 +1,7 @@
 {
   "name": "react-backbone",
   "main": "react-backbone.js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "homepage": "https://github.com/jhudson8/react-backbone",
   "authors": [
     "Joe Hudson <joehud@gmail.com>"
