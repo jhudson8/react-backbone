@@ -2,7 +2,13 @@
 
 ## Development
 
-[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.4...master)
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.5...master)
+
+## v1.0.5 - July 25th, 2015
+- fix specific XHRAware mixin... `modelXHRAware({read: "fetching", create: "creating", update: "updating"})` - 7a7b2c5
+
+
+[Commits](https://github.com/jhudson8/react-backbone/compare/v1.0.4...v1.0.5)
 
 ## v1.0.4 - July 25th, 2015
 - bug fix: don't try to rebind to new model/collection if it does not exist - 068f9bc
